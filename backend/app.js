@@ -4,7 +4,8 @@ import session from 'express-session';
 import dotenv from 'dotenv';
 import authRotas from './routes/authRotas.js';
 import passport from './config/ldap.js';
-import { readAll } from './config/database.js';
+import userRotas from './routes/userRotas.js'
+import authMiddleware from './middlewares/authMiddleware.js';
 
 // 1. Carrega variáveis de ambiente PRIMEIRO
 dotenv.config();
@@ -42,15 +43,11 @@ try {
 
 // 5. Rotas
 app.use('/auth', authRotas);
+app.use('/users', authMiddleware, userRotas)
 
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'online' });
 });
-
-app.get('/users', async (req, res) => {
-  const algumacoisa = await readAll('usuarios')
-  res.send(algumacoisa)
-})
 
 // 6. Tratamento de erros robusto
 process.on('unhandledRejection', (reason, promise) => {
