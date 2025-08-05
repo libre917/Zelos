@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 export async function generateHashedPassword(password) {
 
   try {
+    
     // Gerar o salt
     const salt = await bcrypt.genSalt(10);
 

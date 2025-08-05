@@ -43,8 +43,9 @@ export async function createUserController(req, res) {
 
 export async function updateUserController(req, res) {
     try {
-        const id = req.usuarioId
+        const id = req.params.id
         const { nome, senha, email, funcao, status } = req.body;
+
         const senhaHasheada = await generateHashedPassword(senha);
 
         const data = {

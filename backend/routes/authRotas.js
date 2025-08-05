@@ -1,7 +1,10 @@
 import express from 'express';
 import passport from '../config/ldap.js';
+import { loginController } from '../controllers/AuthController.js';
 
 const router = express.Router();
+
+router.post('/authLogin', loginController)
 
 // Rota de Login
 router.post('/login', (req, res, next) => {
