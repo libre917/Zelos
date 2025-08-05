@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,15 +10,18 @@
             font-family: Arial, sans-serif;
             margin: 20px;
         }
+
         form {
             display: flex;
             flex-direction: column;
             max-width: 400px;
             margin-bottom: 20px;
         }
+
         label {
             margin-top: 10px;
         }
+
         input[type="text"],
         input[type="file"] {
             padding: 8px;
@@ -26,6 +30,7 @@
             border: 1px solid #ccc;
             border-radius: 4px;
         }
+
         button {
             padding: 10px 15px;
             background-color: #4CAF50;
@@ -34,6 +39,7 @@
             border-radius: 4px;
             cursor: pointer;
         }
+
         #response {
             margin-top: 20px;
             padding: 15px;
@@ -43,6 +49,7 @@
         }
     </style>
 </head>
+
 <body>
 
     <h1>Adicionar Novo Livro</h1>
@@ -69,7 +76,7 @@
     </div>
 
     <script>
-        document.getElementById('livroForm').addEventListener('submit', async function(event) {
+        document.getElementById('livroForm').addEventListener('submit', async function (event) {
             event.preventDefault();
 
             const form = document.getElementById('livroForm');
@@ -94,4 +101,5 @@
     </script>
 
 </body>
+
 </html>

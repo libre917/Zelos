@@ -1,6 +1,6 @@
 import { read, readAll, create, update} from "../config/database.js";
 
-export async function getCha(){
+export async function getTickets(){
     try{
         return await readAll('chamados');
     } catch (err){
