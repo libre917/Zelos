@@ -7,7 +7,7 @@ const router = express.Router();
 router.get('/', authMiddleware,  getReportsController);
 
 //rota para obter um apontamento
-router.get('/:id', authMiddleware, getReportController)
+router.get('/:id', authMiddleware, getReportController);
 
 //rota para criar apontamento
 router.post('/', createReportController);

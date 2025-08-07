@@ -4,7 +4,10 @@ import session from 'express-session';
 import dotenv from 'dotenv';
 import authRotas from './routes/authRotas.js';
 import passport from './config/ldap.js';
-import userRotas from './routes/userRotas.js'
+import userRotas from './routes/userRotas.js';
+import reportRotas from './routes/reportRotas.js';
+import ticketRotas from './routes/ticketRotas.js';
+import poolRotas from './routes/poolRotas.js';
 
 // 1. Carrega variáveis de ambiente PRIMEIRO
 dotenv.config();
@@ -42,7 +45,10 @@ try {
 
 // 5. Rotas
 app.use('/auth', authRotas);
-app.use('/users', userRotas)
+app.use('/users', userRotas);
+app.use('/ticket', ticketRotas);
+app.use('/report', reportRotas);
+app.use('/pool', poolRotas);
 
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'online' });
