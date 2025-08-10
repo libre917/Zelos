@@ -29,11 +29,10 @@ export async function getUserController(req, res) {
 export async function createUserController(req, res) {
     try {
         const { nome, senha, email, funcao } = req.body;
-        const senhaHasheada = await generateHashedPassword(senha);
 
         const data = {
             nome: nome,
-            senha: senhaHasheada,
+            senha: senha,
             email: email,
             funcao: funcao,
         };
@@ -52,17 +51,15 @@ export async function updateUserController(req, res) {
         const id = req.params.id;
         const { nome, senha, email, funcao, status } = req.body;
 
-        const senhaHasheada = await generateHashedPassword(senha);
-
         const data = {
             nome: nome,
-            senha: senhaHasheada,
+            senha: senha,
             email: email,
             funcao: funcao,
             status: status,
         };
         const updatedUser = await updateUser(id, data);
-        res.status(200).json(updatedUser);
+        res.status(200).json({ mensagem: 'Usuário atualizado com sucesso', userId: updatedUser });
     } catch (err) {
         console.error('Erro:', err);
         const status = err.status || 500;
