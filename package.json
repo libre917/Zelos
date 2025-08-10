@@ -1,0 +1,6 @@
+{
+    "scripts": {
+        "install": "cd backend && npm install && cd .. && cd frontend && npm install",
+        "start": "node --watch backend/app.js"
+    }
+}
