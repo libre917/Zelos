@@ -71,7 +71,7 @@ async function create(table, data) {
         const [result] = await connection.execute(sql, values);
 
         // Retorna o ID do registro inserido
-        return result.insertId;
+        return {id: result.insertId};
     } finally {
         // Libera a conexão com o banco de dados
         connection.release();

@@ -1,5 +1,5 @@
 import express from 'express';
-import { createUserController, getUserController, getUsersController, updateUserController } from '../controllers/UsersController.js';
+import { createUserController, getUserController, getUsersController, updateUserController, createTechnicianController } from '../controllers/UsersController.js';
 import authMiddleware from '../middlewares/authMiddleware.js';
 const router = express.Router();
 
@@ -11,6 +11,9 @@ router.get('/:id', authMiddleware, getUserController)
 
 //rota para criar usuario 
 router.post('/', createUserController);
+
+//rota para criar tecnico
+router.post('/tecnico', authMiddleware, createTechnicianController);
 
 //rota para atualizar usuario
 router.put('/:id', authMiddleware, updateUserController);

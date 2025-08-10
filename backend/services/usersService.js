@@ -1,6 +1,7 @@
 import { read, readAll, create, update } from '../config/database.js';
 import { User } from '../model/User.js';
 import { generateHashedPassword } from '../hashPassword.js';
+import { getPool } from './poolService.js';
 import erroStatus from '../utils/erroStatus.js';
 
 export async function getUsers() {
@@ -17,6 +18,19 @@ export async function getUser(id) {
         return await read('usuarios', `id = '${id}'`);
     } catch (err) {
         console.error('Erro ao buscar usuário:', err);
+        throw err;
+    }
+}
+
+export async function getRoleUser(id) {
+    try {
+        const user = await getUser(id);
+        if (!user) {
+            throw erroStatus('Usuário não encontrado', 404);
+        }
+        return user.funcao;
+    } catch (err) {
+        console.error('Erro ao buscar função do usuário:', err);
         throw err;
     }
 }
@@ -44,6 +58,38 @@ export async function createUser(data) {
         return await create('usuarios', userData);
     } catch (err) {
         console.error('Erro ao criar usuário:', err);
+        throw err;
+    }
+}
+
+export async function createTechnician(data, id_pool) {
+    try {
+        const poolExistente = await getPool(id_pool);
+        if (!poolExistente) {
+            throw erroStatus('Pool não encontrado', 404);
+        }
+        if (!data.nome || !data.email || !data.senha || !data.funcao) {
+            throw erroStatus('Nome, email, senha e função obrigatórios', 400);
+        }
+        let userData = new User(data);
+        if (!userData.email.includes('@')) {
+            throw erroStatus('Email inválido', 400);
+        }
+        const funcoesValidas = ['tecnico'];
+        if (!funcoesValidas.includes(userData.funcao)) {
+            throw erroStatus('Função inválida', 400);
+        }
+        const emailExistente = await read('usuarios', `email = '${userData.email}'`);
+        if (emailExistente) {
+            throw erroStatus('Email já cadastrado', 409);
+        }
+        userData.senha = await generateHashedPassword(userData.senha);
+        const tecnicoId = await create('usuarios', userData);
+        
+        const relacaoTecId = await create('pool_tecnico', { id_pool, id_tecnico: tecnicoData.id });
+        return {relacaoTecId, tecnicoId};
+    } catch (err) {
+        console.error('Erro ao criar técnico:', err);
         throw err;
     }
 }

@@ -1,5 +1,4 @@
-import { generateHashedPassword } from '../hashPassword.js';
-import { getUser, getUsers, createUser, updateUser } from '../services/usersService.js';
+import { getUser, getUsers, createUser, updateUser, createTechnician } from '../services/usersService.js';
 
 export async function getUsersController(req, res) {
     try {
@@ -7,7 +6,7 @@ export async function getUsersController(req, res) {
         res.status(200).json(users);
     } catch (err) {
         console.error('Erro:', err);
-        const status = err.status || 500;       
+        const status = err.status || 500;
         const mensagem = err.message || 'Erro interno do servidor';
         res.status(status).json({ mensagem });
     }
@@ -38,6 +37,26 @@ export async function createUserController(req, res) {
         };
         await createUser(data);
         res.status(201).json({ mensagem: 'Usuário criado com sucesso' });
+    } catch (err) {
+        console.error('Erro:', err);
+        const status = err.status || 500;
+        const mensagem = err.message || 'Erro interno do servidor';
+        res.status(status).json({ mensagem });
+    }
+}
+
+export async function createTechnicianController(req, res) {
+    try {
+        const { nome, senha, email, funcao, id_pool } = req.body;
+
+        const data = {
+            nome,
+            senha,
+            email,
+            funcao,
+        };
+        const createdTec = await createTechnician(data, id_pool);
+        res.status(201).json(createdTec);
     } catch (err) {
         console.error('Erro:', err);
         const status = err.status || 500;
