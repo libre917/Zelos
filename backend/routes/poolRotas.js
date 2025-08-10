@@ -5,15 +5,15 @@ import authMiddleware from '../middlewares/authMiddleware.js';
 const router = express.Router();
 
 // Rota para obter todos os pools
-router.get('/', authMiddleware, getPoolsController);
+router.get('/',  getPoolsController);
 
 // Rota para obter um pool específico
-router.get('/:id', authMiddleware, getPoolController);
+router.get('/:id',  getPoolController);
 
 // Rota para criar um novo pool
-router.post('/', authMiddleware, createPoolController);
+router.post('/',  createPoolController);
 
 // Rota para atualizar um pool
-router.put('/:id', authMiddleware, updatePoolController);
+router.put('/:id',  updatePoolController);
 
 export default router;

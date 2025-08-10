@@ -1,4 +1,6 @@
 import { read, readAll, create, update } from "../config/database.js";
+import { User } from "../model/User.js";
+import erroStatus from "../utils/erroStatus.js";
 
 export async function getUsers() {
     try {
@@ -20,7 +22,13 @@ export async function getUser(id) {
 
 export async function createUser(data){
     try{
-        return await create('usuarios', data);
+        const userData = new User(data);
+        const emailExistente =  await read('usuarios', `email = '${userData.email}'`)
+        if(emailExistente){
+            throw erroStatus('Email já cadastrado', 409);
+        }
+        
+        return await create('usuarios', userData);
     } catch (err) {
         console.error('Erro ao criar usuário:', err);
         throw err

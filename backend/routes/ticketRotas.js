@@ -10,15 +10,15 @@ import authMiddleware from '../middlewares/authMiddleware.js';
 const router = express.Router();
 
 // Rota para obter todos os chamados
-router.get('/', authMiddleware, getTicketsController);
+router.get('/', getTicketsController);
 
 // Rota para obter um chamado específico
-router.get('/:id', authMiddleware, getTicketController);
+router.get('/:id', getTicketController);
 
 // Rota para criar um novo chamado
-router.post('/', authMiddleware, createTicketController);
+router.post('/', createTicketController);
 
 // Rota para atualizar um chamado
-router.put('/:id', authMiddleware, updateTicketController);
+router.put('/:id', updateTicketController);
 
 export default router;

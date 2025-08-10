@@ -1,5 +1,4 @@
 import jwt from 'jsonwebtoken';
-import { JWT_SECRET } from '../config/jwt.js'; // Importar a chave secreta
 
 const authMiddleware = (req, res, next) => {
   const authHeader = req.headers.authorization;
@@ -11,7 +10,7 @@ const authMiddleware = (req, res, next) => {
   const [ , token] = authHeader.split(' ');
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.usuarioId = decoded.id;
     next();
   } catch (error) {

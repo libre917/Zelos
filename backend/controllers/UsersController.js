@@ -1,5 +1,5 @@
-import { generateHashedPassword } from "../hashPassword.js";
-import { getUser, getUsers, createUser, updateUser } from "../models/Users.js";
+import { generateHashedPassword } from '../hashPassword.js';
+import { getUser, getUsers, createUser, updateUser } from '../services/usersService.js';
 
 export async function getUsersController(req, res) {
     try {
@@ -7,7 +7,9 @@ export async function getUsersController(req, res) {
         res.status(200).json(users);
     } catch (err) {
         console.error('Erro:', err);
-        res.status(500).json({ mensagem: "Erro ao buscar usuarios" })
+        const status = err.status || 500;       
+        const mensagem = err.message || 'Erro interno do servidor';
+        res.status(status).json({ mensagem });
     }
 }
 
@@ -15,35 +17,39 @@ export async function getUserController(req, res) {
     try {
         const id = req.usuarioId || req.params.id;
         const user = await getUser(id);
-        res.status(200).json(user)
+        res.status(200).json(user);
     } catch (err) {
         console.error('Erro:', err);
-        res.status(500).json({ mensagem: "Erro ao buscar usuario" })
+        const status = err.status || 500;
+        const mensagem = err.message || 'Erro interno do servidor';
+        res.status(status).json({ mensagem });
     }
 }
 
 export async function createUserController(req, res) {
     try {
-        const { nome, senha, email, funcao, status } = req.body;
+        const { nome, senha, email, funcao } = req.body;
         const senhaHasheada = await generateHashedPassword(senha);
 
         const data = {
             nome: nome,
             senha: senhaHasheada,
             email: email,
-            funcao: funcao
-        }
-        const createdUser = await createUser(data);
-        res.status(201).json("Usuario criado com sucesso");
+            funcao: funcao,
+        };
+        await createUser(data);
+        res.status(201).json({ mensagem: 'Usuário criado com sucesso' });
     } catch (err) {
         console.error('Erro:', err);
-        res.status(500).json({ mensagem: "Erro ao criar a porra do usuario burro do cacete" })
+        const status = err.status || 500;
+        const mensagem = err.message || 'Erro interno do servidor';
+        res.status(status).json({ mensagem });
     }
 }
 
 export async function updateUserController(req, res) {
     try {
-        const id = req.params.id
+        const id = req.params.id;
         const { nome, senha, email, funcao, status } = req.body;
 
         const senhaHasheada = await generateHashedPassword(senha);
@@ -53,12 +59,14 @@ export async function updateUserController(req, res) {
             senha: senhaHasheada,
             email: email,
             funcao: funcao,
-            status: status
-        }
+            status: status,
+        };
         const updatedUser = await updateUser(id, data);
-        res.status(200).json(updatedUser)
+        res.status(200).json(updatedUser);
     } catch (err) {
         console.error('Erro:', err);
-        res.status(500).json({ mensagem: "Erro ao atualizar a porra do usuario burro do cacete" })
+        const status = err.status || 500;
+        const mensagem = err.message || 'Erro interno do servidor';
+        res.status(status).json({ mensagem });
     }
 }

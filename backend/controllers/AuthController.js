@@ -1,6 +1,5 @@
 import jwt from 'jsonwebtoken';
 import { read, compare } from '../config/database.js';
-import { JWT_SECRET } from '../config/jwt.js'; // Importar a chave secreta
 
 const loginController = async (req, res) => {
   const { email, senha } = req.body;
@@ -21,7 +20,7 @@ const loginController = async (req, res) => {
     }
 
     // Gerar o token JWT
-    const token = jwt.sign({ id: usuario.id, tipo: usuario.tipo }, JWT_SECRET, {
+    const token = jwt.sign({ id: usuario.id, tipo: usuario.tipo }, process.env.JWT_SECRET, {
       expiresIn: '1h',
     });
 
