@@ -3,9 +3,8 @@ import {
     createTicketController, 
     getTicketController, 
     getTicketsController, 
-    updateTicketController,
+    setTechnicianToTicketController,
 } from '../controllers/TicketsController.js';
-import authMiddleware from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
 
@@ -18,7 +17,7 @@ router.get('/:id', getTicketController);
 // Rota para criar um novo chamado
 router.post('/', createTicketController);
 
-// Rota para atualizar um chamado
-router.put('/:id', updateTicketController);
+// Rota para setar um técnico a um chamado
+router.put('/:id/tecnico', setTechnicianToTicketController);
 
 export default router;

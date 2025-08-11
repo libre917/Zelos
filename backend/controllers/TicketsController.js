@@ -1,4 +1,5 @@
-import { getTickets, getTicket, createTicket, updateTicket } from '../services/ticketsService.js';
+import { getTickets, getTicket, createTicket, setTechnicianToTicket } from '../services/ticketsService.js';
+import { getRoleUser } from '../services/usersService.js';
 
 export async function getTicketsController(req, res) {
     try {
@@ -6,7 +7,9 @@ export async function getTicketsController(req, res) {
         res.status(200).json(tickets);
     } catch (err) {
         console.error('Erro ao buscar chamados:', err);
-        res.status(500).json({ message: 'Erro ao buscar chamados' });
+        const status = err.status || 500;
+        const mensagem = err.message || 'Erro interno do servidor';
+        res.status(status).json({ mensagem });
     }
 }
 
@@ -22,27 +25,24 @@ export async function getTicketController(req, res) {
         res.status(200).json(ticket);
     } catch (err) {
         console.error('Erro ao buscar chamado:', err);
-        res.status(500).json({ message: 'Erro ao buscar chamado' });
+        const status = err.status || 500;
+        const mensagem = err.message || 'Erro interno do servidor';
+        res.status(status).json({ mensagem });
     }
 }
 
 export async function createTicketController(req, res) {
     try {
-        const { titulo, descricao, tipo_id, tecnico_id, usuario_id, status } = req.body;
-
-        // Validações básicas
-        if (!titulo || !descricao) {
-            return res.status(400).json({ message: 'Título e descrição são obrigatórios' });
-        }
-
+        const { titulo, descricao, tipo_id, tecnico_id, status } = req.body;
         const data = {
             titulo,
             descricao,
-            tipo_id: tipo_id || null,
-            tecnico_id: tecnico_id || null,
-            usuario_id: usuario_id || req.usuarioId, // Usa o ID do usuário logado se não especificado
-            status: status || 'pendente',
+            tipo_id: tipo_id ,
+            tecnico_id: tecnico_id ,
+            status: status ,
+            usuario_id: req.usuarioId, // Usa o ID do usuário logado
         };
+        
 
         const createdTicket = await createTicket(data);
         res.status(201).json({
@@ -51,7 +51,38 @@ export async function createTicketController(req, res) {
         });
     } catch (err) {
         console.error('Erro ao criar chamado:', err);
-        res.status(500).json({ message: 'Erro ao criar chamado' });
+        const status = err.status || 500;
+        const mensagem = err.message || 'Erro interno do servidor';
+        res.status(status).json({ mensagem });
+    }
+}
+
+export async function setTechnicianToTicketController(req, res) {
+    try {
+        const id = req.params.id;
+        let tecnico_id = req.usuarioId;
+        const role = await getRoleUser(tecnico_id);
+        if (role !== 'tecnico') {
+            tecnico_id = req.body.tecnico_id;
+            if (!tecnico_id) {
+                return res.status(400).json({ message: 'ID do técnico é obrigatório' });
+            }
+            const technicianRole = await getRoleUser(tecnico_id);
+            if (technicianRole !== 'tecnico') {
+                return res.status(400).json({ message: 'ID do técnico inválido' });
+            }
+        }
+        const updatedRows = await setTechnicianToTicket(id, tecnico_id);
+
+        if (updatedRows === 0) {
+            return res.status(400).json({ message: 'Nenhuma alteração foi feita' });
+        }
+        res.status(200).json({ message: 'Técnico atribuído ao chamado com sucesso' });
+    } catch (err) {
+        console.error('Erro ao atribuir técnico ao chamado:', err);
+        const status = err.status || 500;
+        const mensagem = err.message || 'Erro interno do servidor';
+        res.status(status).json({ mensagem });
     }
 }
 
@@ -59,20 +90,14 @@ export async function updateTicketController(req, res) {
     try {
         const id = req.params.id;
         const { titulo, descricao, tipo_id, tecnico_id, usuario_id, status } = req.body;
-
-        // Verifica se o chamado existe
-        const existingTicket = await getTicket(id);
-        if (!existingTicket) {
-            return res.status(404).json({ message: 'Chamado não encontrado' });
-        }
-
-        const data = {};
-        if (titulo !== undefined) data.titulo = titulo;
-        if (descricao !== undefined) data.descricao = descricao;
-        if (tipo_id !== undefined) data.tipo_id = tipo_id;
-        if (tecnico_id !== undefined) data.tecnico_id = tecnico_id;
-        if (usuario_id !== undefined) data.usuario_id = usuario_id;
-        if (status !== undefined) data.status = status;
+        const data = {
+            titulo,
+            descricao,
+            tipo_id: tipo_id,
+            tecnico_id: tecnico_id || null,
+            usuario_id: usuario_id || req.usuarioId, // Usa o ID do usuário logado se não especificado
+            status: status || 'pendente',
+        };
 
         const updatedRows = await updateTicket(id, data);
 
@@ -83,6 +108,8 @@ export async function updateTicketController(req, res) {
         res.status(200).json({ message: 'Chamado atualizado com sucesso' });
     } catch (err) {
         console.error('Erro ao atualizar chamado:', err);
-        res.status(500).json({ message: 'Erro ao atualizar chamado' });
+        const status = err.status || 500;
+        const mensagem = err.message || 'Erro interno do servidor';
+        res.status(status).json({ mensagem });
     }
 }
