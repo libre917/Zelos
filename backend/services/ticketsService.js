@@ -95,7 +95,7 @@ export async function setTechnicianToTicket(ticketId, technicianId) {
             throw erroStatus('Chamado não encontrado', 404);
         }
         if (ticket.tipo_id === null) {
-            return await update('chamados', { tecnico_id: technicianId }, `id = '${ticketId}'`);
+            return await update('chamados', { tecnico_id: technicianId, status: "em andamento"  }, `id = '${ticketId}'`);
         }
         const pool = await getPoolTechniciansById(ticket.tipo_id);
         console.log(pool, technicianId);
@@ -103,7 +103,7 @@ export async function setTechnicianToTicket(ticketId, technicianId) {
         if (pool.id_tecnico !== technicianId) {
             throw erroStatus('Técnico não autorizado para este tipo de chamado', 403);
         }
-        return await update('chamados', { tecnico_id: technicianId }, `id = '${ticketId}'`);
+        return await update('chamados', { tecnico_id: technicianId, status: "em andamento" }, `id = '${ticketId}'`);
 
     } catch (err) {
         console.error('Erro ao atribuir técnico ao chamado:', err);
