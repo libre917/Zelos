@@ -44,7 +44,7 @@ export async function createUser(data) {
         if (!userData.email.includes('@')) {
             throw erroStatus('Email inválido', 400);
         }
-        const funcoesValidas = ['admin', 'user', 'tecnico'];
+        const funcoesValidas = ['admin', 'usuario', 'tecnico'];
         if (!funcoesValidas.includes(userData.funcao)) {
             throw erroStatus('Função inválida', 400);
         }
@@ -71,7 +71,7 @@ export async function createTechnician(data, id_pool) {
         if (!data.nome || !data.email || !data.senha || !data.funcao) {
             throw erroStatus('Nome, email, senha e função obrigatórios', 400);
         }
-        let userData = new User(data);
+        const userData = new User(data);
         if (!userData.email.includes('@')) {
             throw erroStatus('Email inválido', 400);
         }
