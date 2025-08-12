@@ -35,8 +35,15 @@ export async function getRoleUser(id) {
     }
 }
 
-export async function createUser(data) {
+export async function createUser(id_admin, data) {
     try {
+        if (!id_admin) {
+            throw erroStatus('ID do administrador é obrigatório', 400);
+        }
+        const userRole = await getRoleUser(id_admin);
+        if (userRole !== 'admin') {
+            throw erroStatus('Apenas administradores podem criar usuários', 403);
+        }
         if (!data.nome || !data.email || !data.senha || !data.funcao) {
             throw erroStatus('Nome, email, senha e função obrigatórios', 400);
         }
@@ -44,7 +51,7 @@ export async function createUser(data) {
         if (!userData.email.includes('@')) {
             throw erroStatus('Email inválido', 400);
         }
-        const funcoesValidas = ['admin', 'usuario', 'tecnico'];
+        const funcoesValidas = ['admin', 'usuario'];
         if (!funcoesValidas.includes(userData.funcao)) {
             throw erroStatus('Função inválida', 400);
         }
@@ -62,8 +69,15 @@ export async function createUser(data) {
     }
 }
 
-export async function createTechnician(data, id_pool) {
+export async function createTechnician(id_admin, data, id_pool) {
     try {
+        if (!id_admin) {
+            throw erroStatus('ID do administrador é obrigatório', 400);
+        }
+        const userRole = await getRoleUser(id_admin);
+        if (userRole !== 'admin') {
+            throw erroStatus('Apenas administradores podem criar usuários', 403);
+        }
         const poolExistente = await getPool(id_pool);
         if (!poolExistente) {
             throw erroStatus('Pool não encontrado', 404);
@@ -85,9 +99,9 @@ export async function createTechnician(data, id_pool) {
         }
         userData.senha = await generateHashedPassword(userData.senha);
         const tecnicoId = await create('usuarios', userData);
-        
-        const relacaoTecId = await create('pool_tecnico', { id_pool, id_tecnico: tecnicoData.id });
-        return {relacaoTecId, tecnicoId};
+
+        const relacaoTecId = await create('pool_tecnico', { id_pool, id_tecnico: data.id });
+        return { relacaoTecId, tecnicoId };
     } catch (err) {
         console.error('Erro ao criar técnico:', err);
         throw err;
