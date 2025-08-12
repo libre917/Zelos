@@ -85,31 +85,3 @@ export async function setTechnicianToTicketController(req, res) {
         res.status(status).json({ mensagem });
     }
 }
-
-export async function updateTicketController(req, res) {
-    try {
-        const id = req.params.id;
-        const { titulo, descricao, tipo_id, tecnico_id, usuario_id, status } = req.body;
-        const data = {
-            titulo,
-            descricao,
-            tipo_id: tipo_id,
-            tecnico_id: tecnico_id || null,
-            usuario_id: usuario_id || req.usuarioId, // Usa o ID do usuário logado se não especificado
-            status: status || 'pendente',
-        };
-
-        const updatedRows = await updateTicket(id, data);
-
-        if (updatedRows === 0) {
-            return res.status(400).json({ message: 'Nenhuma alteração foi feita' });
-        }
-
-        res.status(200).json({ message: 'Chamado atualizado com sucesso' });
-    } catch (err) {
-        console.error('Erro ao atualizar chamado:', err);
-        const status = err.status || 500;
-        const mensagem = err.message || 'Erro interno do servidor';
-        res.status(status).json({ mensagem });
-    }
-}

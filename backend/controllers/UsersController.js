@@ -28,6 +28,7 @@ export async function getUserController(req, res) {
 export async function createUserController(req, res) {
     try {
         const { nome, senha, email, funcao } = req.body;
+        const id = req.usuarioId;
 
         const data = {
             nome: nome,
@@ -35,7 +36,7 @@ export async function createUserController(req, res) {
             email: email,
             funcao: funcao,
         };
-        await createUser(data);
+        await createUser(id, data);
         res.status(201).json({ mensagem: 'Usuário criado com sucesso' });
     } catch (err) {
         console.error('Erro:', err);
@@ -48,6 +49,7 @@ export async function createUserController(req, res) {
 export async function createTechnicianController(req, res) {
     try {
         const { nome, senha, email, funcao, id_pool } = req.body;
+        const id = req.usuarioId;
 
         const data = {
             nome,
@@ -55,7 +57,7 @@ export async function createTechnicianController(req, res) {
             email,
             funcao,
         };
-        const createdTec = await createTechnician(data, id_pool);
+        const createdTec = await createTechnician(id, data, id_pool);
         res.status(201).json(createdTec);
     } catch (err) {
         console.error('Erro:', err);
