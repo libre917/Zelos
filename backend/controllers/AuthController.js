@@ -11,6 +11,10 @@ const loginController = async (req, res) => {
     if (!usuario) {
       return res.status(404).json({ mensagem: 'Usuário não encontrado' });
     }
+    if (usuario.status === 'inativo') {
+      return res.status(403).json({ mensagem: 'Usuário inativo' });
+    }
+    
 
     // Verificar se a senha está correta (comparar a senha enviada com o hash armazenado)
     const senhaCorreta = await compare(senha, usuario.senha);
@@ -21,7 +25,7 @@ const loginController = async (req, res) => {
 
     // Gerar o token JWT
     const token = jwt.sign({ id: usuario.id, tipo: usuario.tipo }, process.env.JWT_SECRET, {
-      expiresIn: '1h',
+      expiresIn: '1d',
     });
 
     res.json({ mensagem: 'Login realizado com sucesso', token });

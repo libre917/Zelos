@@ -5,7 +5,9 @@ export async function getReportsController(req, res) {
         const reports = await getReports();
         res.json(reports);
     } catch (err) {
-        res.status(500).json({ error: 'Erro ao obter apontamentos' });
+        const status = err.status || 500;
+        const mensagem = err.message || 'Erro ao obter apontamentos';
+        res.status(status).json({ mensagem, status });
     }
 }
 
@@ -17,7 +19,9 @@ export async function getReportController(req, res) {
         }
         res.json(report);
     } catch (err) {
-        res.status(500).json({ error: 'Erro ao obter apontamento' });
+        const status = err.status || 500;
+        const mensagem = err.message || 'Erro ao obter apontamento';
+        res.status(status).json({ mensagem, status });
     }
 }
 
@@ -26,6 +30,8 @@ export async function createReportController(req, res) {
         const report = await createReport(req.body);
         res.status(201).json(report);
     } catch (err) {
-        res.status(err.status || 500).json({ error: err.message || 'Erro ao criar apontamento' });
+        const status = err.status || 500;
+        const mensagem = err.message || 'Erro ao criar apontamento';
+        res.status(status).json({ mensagem, status });
     }
 }

@@ -9,7 +9,7 @@ export async function getTicketsController(req, res) {
         console.error('Erro ao buscar chamados:', err);
         const status = err.status || 500;
         const mensagem = err.message || 'Erro interno do servidor';
-        res.status(status).json({ mensagem });
+        res.status(status).json({ mensagem, status });
     }
 }
 
@@ -27,7 +27,7 @@ export async function getTicketController(req, res) {
         console.error('Erro ao buscar chamado:', err);
         const status = err.status || 500;
         const mensagem = err.message || 'Erro interno do servidor';
-        res.status(status).json({ mensagem });
+        res.status(status).json({ mensagem, status });
     }
 }
 
@@ -53,7 +53,7 @@ export async function createTicketController(req, res) {
         console.error('Erro ao criar chamado:', err);
         const status = err.status || 500;
         const mensagem = err.message || 'Erro interno do servidor';
-        res.status(status).json({ mensagem });
+        res.status(status).json({ mensagem, status });
     }
 }
 
@@ -82,6 +82,6 @@ export async function setTechnicianToTicketController(req, res) {
         console.error('Erro ao atribuir técnico ao chamado:', err);
         const status = err.status || 500;
         const mensagem = err.message || 'Erro interno do servidor';
-        res.status(status).json({ mensagem });
+        res.status(status).json({ mensagem, status });
     }
 }

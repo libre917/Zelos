@@ -1,4 +1,4 @@
-import { getPool, getPools, createPool, updatePool } from '../services/poolService.js';
+import { getPool, getPools, createPool, updatePool, getTicketsByPoolId } from '../services/poolService.js';
 
 export async function getPoolsController(req, res) {
     try {
@@ -8,7 +8,7 @@ export async function getPoolsController(req, res) {
         console.error('Erro ao buscar pools:', err);
         const status = err.status || 500;
         const mensagem = err.message || 'Erro interno do servidor';
-        res.status(status).json({ mensagem });
+        res.status(status).json({ mensagem, status });
     }
 }
 
@@ -26,7 +26,20 @@ export async function getPoolController(req, res) {
         console.error('Erro ao buscar pool:', err);
         const status = err.status || 500;
         const mensagem = err.message || 'Erro interno do servidor';
-        res.status(status).json({ mensagem });
+        res.status(status).json({ mensagem, status });
+    }
+}
+
+export async function getTicketsByPoolIdController(req, res) {
+    try {
+        const id = req.params.id;
+        const tickets = await getTicketsByPoolId(id);
+        res.status(200).json(tickets);
+    } catch (err) {
+        console.error('Erro ao buscar tickets da pool:', err);
+        const status = err.status || 500;
+        const mensagem = err.message || 'Erro interno do servidor';
+        res.status(status).json({ mensagem, status });
     }
 }
 
@@ -50,7 +63,7 @@ export async function createPoolController(req, res) {
         console.error('Erro ao criar pool:', err);
         const status = err.status || 500;
         const mensagem = err.message || 'Erro interno do servidor';
-        res.status(status).json({ mensagem });
+        res.status(status).json({ mensagem, status });
     }
 }
 
@@ -70,6 +83,6 @@ export async function updatePoolController(req, res) {
         console.error('Erro ao atualizar pool:', err);
         const status = err.status || 500;
         const mensagem = err.message || 'Erro interno do servidor';
-        res.status(status).json({ mensagem });
+        res.status(status).json({ mensagem, status });
     }
 }

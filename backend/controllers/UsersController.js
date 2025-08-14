@@ -1,4 +1,4 @@
-import { getUser, getUsers, createUser, updateUser, createTechnician } from '../services/usersService.js';
+import { getUser, getUsers, createUser, updateUser, createTechnician, setStatusUser } from '../services/usersService.js';
 
 export async function getUsersController(req, res) {
     try {
@@ -42,7 +42,7 @@ export async function createUserController(req, res) {
         console.error('Erro:', err);
         const status = err.status || 500;
         const mensagem = err.message || 'Erro interno do servidor';
-        res.status(status).json({ mensagem });
+        res.status(status).json({ mensagem, status });
     }
 }
 
@@ -52,10 +52,10 @@ export async function createTechnicianController(req, res) {
         const id = req.usuarioId;
 
         const data = {
-            nome,
-            senha,
-            email,
-            funcao,
+            nome: nome,
+            senha: senha,
+            email: email,
+            funcao: funcao,
         };
         const createdTec = await createTechnician(id, data, id_pool);
         res.status(201).json(createdTec);
@@ -63,7 +63,7 @@ export async function createTechnicianController(req, res) {
         console.error('Erro:', err);
         const status = err.status || 500;
         const mensagem = err.message || 'Erro interno do servidor';
-        res.status(status).json({ mensagem });
+        res.status(status).json({ mensagem, status });
     }
 }
 
@@ -85,6 +85,21 @@ export async function updateUserController(req, res) {
         console.error('Erro:', err);
         const status = err.status || 500;
         const mensagem = err.message || 'Erro interno do servidor';
-        res.status(status).json({ mensagem });
+        res.status(status).json({ mensagem, status });
+    }
+}
+
+export async function setStatusUserController(req, res) {
+    try {
+        const id = req.params.id;
+        const { status } = req.body;
+
+        await setStatusUser(id, status);
+        res.status(200).json({ mensagem: 'Status do usuário atualizado com sucesso' });
+    } catch (err) {
+        console.error('Erro:', err);
+        const status = err.status || 500;
+        const mensagem = err.message || 'Erro interno do servidor';
+        res.status(status).json({ mensagem, status });
     }
 }

@@ -13,7 +13,9 @@ export async function getPools() {
 
 export async function getPool(id) {
     try {
-        return await read('pool', `id = '${id}'`);
+        const pool = await read('pool', `id = '${id}'`);
+        const poolTec = await readAll('pool_tecnico', `id_pool = '${id}'`);
+        return {pool, poolTec};
     } catch (err) {
         console.error('Erro ao obter pool:', err);
         throw err;
@@ -51,6 +53,15 @@ export async function getPoolTechniciansById(id_pool) {
         throw err;
     }
 }
+
+export const getTicketsByPoolId = async (id_pool) => {
+    try {
+        return await readAll('chamados', `tipo_id = '${id_pool}'`);
+    } catch (err) {
+        console.error('Erro ao obter tickets da pool:', err);
+        throw err;
+    }
+};
 
 export async function createPool(data) {
     try {

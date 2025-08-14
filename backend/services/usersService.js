@@ -100,7 +100,7 @@ export async function createTechnician(id_admin, data, id_pool) {
         userData.senha = await generateHashedPassword(userData.senha);
         const tecnicoId = await create('usuarios', userData);
 
-        const relacaoTecId = await create('pool_tecnico', { id_pool, id_tecnico: data.id });
+        const relacaoTecId = await create('pool_tecnico', { id_pool, id_tecnico: tecnicoId.id });
         return { relacaoTecId, tecnicoId };
     } catch (err) {
         console.error('Erro ao criar técnico:', err);
@@ -139,6 +139,22 @@ export async function updateUser(id, data) {
         return await update('usuarios', user, `id = ${id}`);
     } catch (err) {
         console.error('Erro ao atualizar o usuário:', err);
+        throw err;
+    }
+}
+
+export async function setStatusUser(id, status) {
+    try {
+        const usuarioExistente = await getUser(id);
+        if (!usuarioExistente) {
+            throw erroStatus('Usuário não encontrado', 404);
+        }
+        if (status !== 'ativo' && status !== 'inativo') {
+            throw erroStatus('Status deve ser "ativo" ou "inativo"', 400);
+        }
+        return await update('usuarios', { status }, `id = ${id}`);
+    } catch (err) {
+        console.error('Erro ao atualizar o status do usuário:', err);
         throw err;
     }
 }

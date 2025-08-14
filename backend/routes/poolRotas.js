@@ -1,11 +1,13 @@
 import express from 'express';
-import { createPoolController, getPoolController, getPoolsController, updatePoolController } from '../controllers/PoolController.js';
-import authMiddleware from '../middlewares/authMiddleware.js';
+import { createPoolController, getPoolController, getPoolsController, getTicketsByPoolIdController, updatePoolController } from '../controllers/PoolController.js';
 
 const router = express.Router();
 
 // Rota para obter todos os pools
 router.get('/',  getPoolsController);
+
+// rota para obter tickets de um pool específico
+router.get('/:id/tickets',  getTicketsByPoolIdController);
 
 // Rota para obter um pool específico
 router.get('/:id',  getPoolController);
