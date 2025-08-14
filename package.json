@@ -2,5 +2,10 @@
     "scripts": {
         "install": "cd backend && npm install && cd .. && cd frontend && npm install",
         "start": "node --watch backend/app.js"
+    },
+    "devDependencies": {
+        "autoprefixer": "^10.4.21",
+        "postcss": "^8.5.6",
+        "tailwindcss": "^4.1.11"
     }
 }
