@@ -3,7 +3,7 @@
 
 import Image from "next/image";
 import { Eye, EyeClosed } from "lucide-react"; // Importando Icons do lucide-react para ícone de visibilidade
-import { use, useState } from "react";
+import { useState } from "react";
 
 
 export default function Home() {

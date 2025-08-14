@@ -3,6 +3,20 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --primary: #e53e3e;
+  --primary-dark: #c53030;
+  --primary-light: #fc8181;
+  --secondary: #2b6cb0;
+  --secondary-dark: #2c5282;
+  --secondary-light: #63b3ed;
+  --accent: #f6ad55;
+  --gray-light: #f7fafc;
+  --gray-medium: #e2e8f0;
+  --gray-dark: #4a5568;
+  --success: #48bb78;
+  --warning: #ed8936;
+  --error: #f56565;
+  --info: #4299e1;
 }
 
 @theme inline {
@@ -20,7 +34,32 @@
 }
 
 body {
-  background: var(--background);
+ 
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+}
+
+/* Estilos personalizados para elementos comuns */
+.btn {
+  @apply px-4 py-2 rounded-md font-medium transition-all duration-200 shadow-sm;
+}
+
+.btn-primary {
+  @apply bg-red-600 hover:bg-red-700 text-white;
+}
+
+.btn-secondary {
+  @apply bg-blue-600 hover:bg-blue-700 text-white;
+}
+
+.btn-outline {
+  @apply border border-gray-300 hover:bg-gray-100 text-gray-700;
+}
+
+.card {
+  @apply bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden;
+}
+
+.input-field {
+  @apply mt-1 block w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-red-400 focus:border-red-400 transition outline-none bg-gray-50 shadow-sm;
 }
