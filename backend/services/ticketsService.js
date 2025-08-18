@@ -50,8 +50,8 @@ export async function getTicketsByStatus(status) {
 
 export async function createTicket(data) {
     try {
-        if (!data.titulo || !data.descricao || !data.usuario_id) {
-            throw erroStatus('Título, descrição e ID do usuário são obrigatórios', 400);
+        if (!data.titulo || !data.descricao || !data.usuario_id || !data.tipo_id) {
+            throw erroStatus('Título, descrição, ID do usuário e ID do tipo são obrigatórios', 400);
         }
         const ticketData = new Ticket(data);
         

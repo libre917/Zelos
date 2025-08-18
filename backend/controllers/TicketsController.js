@@ -33,13 +33,11 @@ export async function getTicketController(req, res) {
 
 export async function createTicketController(req, res) {
     try {
-        const { titulo, descricao, tipo_id, tecnico_id, status } = req.body;
+        const { titulo, descricao, tipo_id } = req.body;
         const data = {
             titulo,
             descricao,
             tipo_id: tipo_id ,
-            tecnico_id: tecnico_id ,
-            status: status ,
             usuario_id: req.usuarioId, // Usa o ID do usuário logado
         };
         

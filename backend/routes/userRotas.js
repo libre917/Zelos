@@ -10,7 +10,7 @@ router.get('/', authMiddleware,  getUsersController);
 router.get('/:id', authMiddleware, getUserController)
 
 //rota para criar usuario 
-router.post('/', createUserController);
+router.post('/',authMiddleware, createUserController);
 
 //rota para criar tecnico
 router.post('/tecnico', authMiddleware, createTechnicianController);
