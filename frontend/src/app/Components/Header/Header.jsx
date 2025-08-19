@@ -35,18 +35,6 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Barra de pesquisa */}
-      <div className={`absolute left-0 top-full w-full bg-white p-3 shadow-md transition-all duration-300 ${isSearchOpen ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0 pointer-events-none'} md:relative md:top-0 md:w-1/3 md:translate-y-0 md:opacity-100 md:shadow-none md:p-0 md:pointer-events-auto`}>
-        <div className="relative">
-          <input 
-            type="text" 
-            placeholder="Buscar chamados..." 
-            className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-4 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-          />
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-        </div>
-      </div>
-
       {/* Ações */}
       <div className="flex items-center space-x-1 sm:space-x-4">
         {/* Botão de pesquisa mobile */}

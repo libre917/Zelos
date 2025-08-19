@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import SideBar from "../../Components/SideBar/SideBar.jsx";
+import SideBarAdmin from "../../Components/SideBarAdmin/SideBaraAdmin.jsx";
 import { Users, BarChart2, PieChart, TrendingUp, Calendar, Settings, UserPlus, Briefcase, Search, Download, Filter } from "lucide-react";
 
 export default function Admin() {
@@ -54,7 +54,7 @@ export default function Admin() {
 
     return (
         <div className="flex">
-            <SideBar />
+            <SideBarAdmin />
             
             <div className="flex-1 p-6 overflow-auto">
                 {/* Cabeçalho da página */}

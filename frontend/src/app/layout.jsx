@@ -14,9 +14,9 @@ export default function RootLayout({ children }) {
     <html lang="pt-BR" className={inter.className}>
       <body className="min-h-screen bg-gray-50">
         <Header />
-      
+        <main className="animate-fade-in">
           {children}
-       
+        </main>
       </body>
     </html>
   );

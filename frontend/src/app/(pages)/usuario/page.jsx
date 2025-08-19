@@ -1,36 +1,43 @@
 "use client";
 
-import { useState } from "react";
-import SideBar from "../../Components/SideBar/SideBar.jsx";
-import { PlusCircle, FileText, Paperclip } from "lucide-react";
+import { useState, useEffect } from "react";
+import SideBarUsuario from "../../Components/SideBarUsuario/SideBarUsuario.jsx";
+
+import { PlusCircle, FileText, Paperclip, Search, Filter, Calendar } from "lucide-react";
 
 export default function Usuario() {
     const [activeTab, setActiveTab] = useState('criarChamado');
 
     return (
         <div className="flex">
-            <SideBar />
+            <SideBarUsuario />
+
             
             <div className="flex-1 p-6 overflow-auto">
                 {/* Cabeçalho da página */}
-                <div className="mb-8">
-                    <h1 className="text-2xl font-bold text-gray-800">Área do Usuário</h1>
-                    <p className="text-gray-600">Gerencie seus chamados</p>
+                <div className="mb-8 bg-gradient-to-r from-red-50 to-white p-6 rounded-lg shadow-sm">
+                    <h1 className="text-3xl font-bold text-gray-800">Área do Usuário</h1>
+                    <p className="text-gray-600 mt-2 flex items-center">
+                        <Calendar className="h-4 w-4 mr-2" />
+                        {new Date().toLocaleDateString('pt-BR', {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'})}
+                    </p>
                 </div>
 
                 {/* Abas */}
-                <div className="border-b mb-6">
-                    <nav className="flex space-x-8">
+                <div className="mb-6">
+                    <nav className="flex space-x-4">
                         <button 
                             onClick={() => setActiveTab('criarChamado')} 
-                            className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'criarChamado' ? 'border-red-500 text-red-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+                            className={`py-3 px-6 rounded-lg font-medium text-sm flex items-center ${activeTab === 'criarChamado' ? 'bg-red-500 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
                         >
+                            <PlusCircle className="h-4 w-4 mr-2" />
                             Criar Chamado
                         </button>
                         <button 
                             onClick={() => setActiveTab('meusChamados')} 
-                            className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'meusChamados' ? 'border-red-500 text-red-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+                            className={`py-3 px-6 rounded-lg font-medium text-sm flex items-center ${activeTab === 'meusChamados' ? 'bg-red-500 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
                         >
+                            <FileText className="h-4 w-4 mr-2" />
                             Meus Chamados
                         </button>
                     </nav>
@@ -38,8 +45,8 @@ export default function Usuario() {
 
                 {/* Conteúdo das abas */}
                 {activeTab === 'criarChamado' && (
-                    <div className="card p-6">
-                        <h2 className="text-xl font-semibold text-gray-800 mb-6">Criar Novo Chamado</h2>
+                    <div className="bg-white rounded-lg shadow-md p-6 transition-all duration-300 ease-in-out">
+                        <h2 className="text-xl font-semibold text-gray-800 mb-6 border-l-4 border-red-500 pl-3">Criar Novo Chamado</h2>
                         <form>
                             {/* Linha 1 */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -50,7 +57,8 @@ export default function Usuario() {
                                     <input
                                         type="text"
                                         placeholder="Digite o título do chamado"
-                                        className="input-field"
+                                        className="input-field text-gray-700"
+
                                     />
                                 </div>
 
@@ -58,36 +66,12 @@ export default function Usuario() {
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
                                         Categoria
                                     </label>
-                                    <select className="input-field">
+                                    <select className="input-field text-gray-700">
+
                                         <option>Selecione uma categoria</option>
                                         <option>Infraestrutura</option>
                                         <option>Suporte</option>
                                         <option>Desenvolvimento</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            {/* Linha 2 */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Prioridade
-                                    </label>
-                                    <select className="input-field">
-                                        <option>Baixa</option>
-                                        <option>Média</option>
-                                        <option>Alta</option>
-                                    </select>
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Departamento
-                                    </label>
-                                    <select className="input-field">
-                                        <option>TI</option>
-                                        <option>RH</option>
-                                        <option>Financeiro</option>
                                     </select>
                                 </div>
                             </div>
@@ -100,36 +84,17 @@ export default function Usuario() {
                                 <textarea
                                     placeholder="Descreva detalhadamente o problema ou solicitação"
                                     rows={4}
-                                    className="input-field"
+                                    className="input-field text-gray-700"
+
                                 ></textarea>
                             </div>
 
-                            {/* Anexos
-                            <div className="mb-6">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Anexos
-                                </label>
-                                <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
-                                    <div className="space-y-1 text-center">
-                                        <Paperclip className="mx-auto h-12 w-12 text-gray-400" />
-                                        <div className="flex text-sm text-gray-600">
-                                            <label htmlFor="file-upload" className="relative cursor-pointer bg-white rounded-md font-medium text-red-600 hover:text-red-500">
-                                                <span>Carregar um arquivo</span>
-                                                <input id="file-upload" name="file-upload" type="file" className="sr-only" />
-                                            </label>
-                                            <p className="pl-1">ou arraste e solte</p>
-                                        </div>
-                                        <p className="text-xs text-gray-500">PNG, JPG, PDF até 10MB</p>
-                                    </div>
-                                </div>
-                            </div> */}
-
                             {/* Botões */}
                             <div className="flex justify-end space-x-3">
-                                <button type="button" className="btn btn-outline">
+                                <button type="button" className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors">
                                     Cancelar
                                 </button>
-                                <button type="submit" className="btn btn-primary flex items-center space-x-2">
+                                <button type="submit" className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors flex items-center space-x-2">
                                     <PlusCircle className="h-4 w-4" />
                                     <span>Criar Chamado</span>
                                 </button>
@@ -139,32 +104,39 @@ export default function Usuario() {
                 )}
 
                 {activeTab === 'meusChamados' && (
-                    <div className="card p-6">
-                        <h2 className="text-xl font-semibold text-gray-800 mb-6">Meus Chamados</h2>
+                    <div className="bg-white rounded-lg shadow-md p-6 transition-all duration-300 ease-in-out">
+                        <h2 className="text-xl font-semibold text-gray-800 mb-6 border-l-4 border-red-500 pl-3">Meus Chamados</h2>
                         
                         {/* Filtros */}
-                        <div className="flex flex-wrap gap-4 mb-6">
-                            <select className="input-field max-w-xs">
-                                <option>Todos os status</option>
-                                <option>Pendente</option>
-                                <option>Em Progresso</option>
-                                <option>Resolvido</option>
-                            </select>
+                        <div className="flex flex-wrap gap-4 mb-6 bg-gray-50 p-4 rounded-lg">
+                            <div className="relative max-w-xs">
+                                <Filter className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                                <select className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500 max-w-xs text-gray-700">
+                                    <option>Todos os status</option>
+                                    <option>Pendente</option>
+                                    <option>Em Progresso</option>
+                                    <option>Resolvido</option>
+                                </select>
+                            </div>
                             
-                            <select className="input-field max-w-xs">
-                                <option>Todas as categorias</option>
-                                <option>Infraestrutura</option>
-                                <option>Suporte</option>
-                                <option>Desenvolvimento</option>
-                            </select>
+                            <div className="relative max-w-xs">
+                                <Filter className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                                <select className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500 max-w-xs text-gray-700">
+                                    <option>Todas as categorias</option>
+                                    <option>Infraestrutura</option>
+                                    <option>Suporte</option>
+                                    <option>Desenvolvimento</option>
+                                </select>
+                            </div>
                             
-                            <div className="flex-grow">
-                                <input type="text" placeholder="Buscar chamados..." className="input-field" />
+                            <div className="flex-grow relative">
+                                <Search className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                                <input type="text" placeholder="Buscar chamados..." className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500 w-full text-gray-700" />
                             </div>
                         </div>
                         
                         {/* Tabela de chamados */}
-                        <div className="overflow-x-auto">
+                        <div className="overflow-x-auto rounded-lg border border-gray-200">
                             <table className="min-w-full divide-y divide-gray-200">
                                 <thead className="bg-gray-50">
                                     <tr>
@@ -182,8 +154,9 @@ export default function Usuario() {
                         </div>
                         
                         {/* Paginação */}
-                        <div className="flex items-center justify-between mt-6">
-                            <div className="text-sm text-gray-700">
+                        <div className="flex items-center justify-between mt-6 bg-gray-50 p-4 rounded-lg">
+                            <div className="text-sm text-gray-700 flex items-center">
+                                <FileText className="h-4 w-4 mr-2 text-red-500" />
                                 Nenhum chamado encontrado
                             </div>
                         </div>
