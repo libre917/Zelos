@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import SideBar from "../../Components/SideBar/SideBar.jsx";
+import SideBarTecnico from "../../Components/SideBarTecnico/SideBarTecnico.jsx";
+
 import { Clock, CheckCircle, AlertTriangle, Search, Filter, BarChart2, Calendar, FileText } from "lucide-react";
 
 export default function Tecnico() {
@@ -32,7 +33,8 @@ export default function Tecnico() {
 
     return (
         <div className="flex">
-            <SideBar />
+            <SideBarTecnico /> 
+
             
             <div className="flex-1 p-6 overflow-auto">
                 {/* Cabeçalho da página */}
