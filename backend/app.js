@@ -48,7 +48,6 @@ try {
 app.use('/auth', authRotas);
 
 app.use('/ticket', authMiddleware, ticketRotas);
-app.use('/report', authMiddleware, reportRotas);
 app.use('/pool', authMiddleware, poolRotas);
 app.use('/users', userRotas);
 

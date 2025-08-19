@@ -1,4 +1,4 @@
-import { getTickets, getTicket, createTicket, setTechnicianToTicket } from '../services/ticketsService.js';
+import { getTickets, getTicket, createTicket, setTechnicianToTicket, getRecord } from '../services/ticketsService.js';
 import { getRoleUser } from '../services/usersService.js';
 
 export async function getTicketsController(req, res) {
@@ -28,6 +28,25 @@ export async function getTicketController(req, res) {
         const status = err.status || 500;
         const mensagem = err.message || 'Erro interno do servidor';
         res.status(status).json({ mensagem, status });
+    }
+}
+
+export async function getRecordController(req, res) {
+    try {
+        const id = req.params.id;
+        const record = await getRecord(id);
+
+        if (!record) {
+            return res.status(404).json({ message: 'Registro não encontrado' });
+        }
+
+        res.status(200).json(record);
+    } catch (error) {
+        console.error('Erro ao buscar registro:', error);
+        const status = error.status || 500;
+        const mensagem = error.message || 'Erro interno do servidor';
+        res.status(status).json({ mensagem, status });
+        
     }
 }
 

@@ -2,7 +2,8 @@ import { getReport, getReports, createReport } from "../services/reportsService.
 
 export async function getReportsController(req, res) {
     try {
-        const reports = await getReports();
+        const ticketId = req.params.ticket_id;
+        const reports = await getReports(ticketId);
         res.json(reports);
     } catch (err) {
         const status = err.status || 500;
@@ -13,10 +14,8 @@ export async function getReportsController(req, res) {
 
 export async function getReportController(req, res) {
     try {
-        const report = await getReport(req.params.id);
-        if (!report) {
-            return res.status(404).json({ error: 'Apontamento não encontrado' });
-        }
+        const ticketId = req.params.ticket_id;
+        const report = await getReport(ticketId, req.params.id);
         res.json(report);
     } catch (err) {
         const status = err.status || 500;
@@ -27,7 +26,18 @@ export async function getReportController(req, res) {
 
 export async function createReportController(req, res) {
     try {
-        const report = await createReport(req.body);
+        // aaaa-mm-dd hh:mm:ss
+        const {descricao, comeco, fim} = req.body
+        const ticketId = req.params.ticket_id;
+        const id = req.usuarioId;
+        const data = {
+            chamado_id: ticketId,
+            tecnico_id: id,
+            descricao,
+            comeco,
+            fim,
+        }
+        const report = await createReport(data);
         res.status(201).json(report);
     } catch (err) {
         const status = err.status || 500;
