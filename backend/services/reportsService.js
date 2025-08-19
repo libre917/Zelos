@@ -1,42 +1,64 @@
 import { read, readAll, create } from "../config/database.js";
 import { Report } from "../model/Report.js";
 import { getTicket } from "./ticketsService.js";
+import { getRoleUser } from "./usersService.js";
+import erroStatus from "../utils/erroStatus.js";
 
-export async function getReports() {
+// Helpers
+function validarCamposObrigatorios(data, campos) {
+    for (const campo of campos) {
+        if (!data[campo]) {
+            throw erroStatus(`Campo obrigatório ausente: ${campo}`, 400);
+        }
+    }
+}
+
+async function validarRole(userId, roleEsperado) {
+    const role = await getRoleUser(userId);
+    if (role !== roleEsperado) {
+        throw erroStatus(`Apenas usuários com perfil ${roleEsperado} podem executar essa ação`, 403);
+    }
+}
+
+// Services
+export async function getReports(ticket_id) {
     try {
-        return await readAll('apontamentos');
+        return await readAll("apontamentos", `chamado_id = '${ticket_id}'`);
     } catch (err) {
-        console.error('Erro ao obter apontamentos:', err);
+        console.error("Erro ao obter apontamentos:", err);
         throw err;
     }
 }
 
-export async function getReport(id) {
+export async function getReport(ticket_id,id) {
     try {
-        return await read('apontamentos', `id = '${id}'`);
+        return await read("apontamentos", `id = '${id}' AND chamado_id = '${ticket_id}'`);
     } catch (err) {
-        console.error('Erro ao obter apontamento:', err);
+        console.error("Erro ao obter apontamento:", err);
         throw err;
     }
 }
 
 export async function createReport(data) {
     try {
-        if (!data.chamado_id || !data.tecnico_id || !data.descricao || !data.comeco) {
-            throw erroStatus('ID do chamado, ID do técnico, descrição e data de início são obrigatórios', 400);
-        }
+        // Validação de obrigatórios
+        validarCamposObrigatorios(data, ["chamado_id", "tecnico_id", "descricao", "comeco", "fim"]);
+
+        // Verifica se o chamado existe
         const chamadoExistente = await getTicket(data.chamado_id);
         if (!chamadoExistente) {
-            throw erroStatus('Chamado não encontrado', 404);
+            throw erroStatus("Chamado não encontrado", 404);
         }
-        const userRole = await getRoleUser(data.tecnico_id);
-        if (userRole !== 'tecnico') {
-            throw erroStatus('Apenas técnicos podem criar apontamentos', 403);
-        }
-        const report = new Report(data)
-        return await create('apontamentos', report);
+
+        // Verifica se o usuário é técnico
+        await validarRole(data.tecnico_id, "tecnico");
+
+        // Cria o apontamento
+        const report = new Report(data);
+        return await create("apontamentos", report);
+
     } catch (err) {
-        console.error('Erro ao criar apontamento:', err);
+        console.error("Erro ao criar apontamento:", err);
         throw err;
     }
 }
