@@ -102,7 +102,6 @@ export async function getRecord(chamadoId) {
             tecnico: tecnico ? { id: tecnico.id, nome: tecnico.nome, email: tecnico.email } : null,
             apontamentos: (apontamentos || []).map((a) => ({
                 id: a.id,
-                tecnico_id: a.tecnico_id,
                 descricao: a.descricao,
                 comeco: a.comeco,
                 fim: a.fim,

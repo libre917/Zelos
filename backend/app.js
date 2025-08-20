@@ -8,6 +8,8 @@ import userRotas from './routes/userRotas.js';
 import ticketRotas from './routes/ticketRotas.js';
 import poolRotas from './routes/poolRotas.js';
 import authMiddleware from './middlewares/authMiddleware.js';
+import { create, readAll } from './config/database.js';
+import { generateHashedPassword } from './hashPassword.js';
 
 // 2. Configuração básica do Express
 const app = express();
@@ -15,6 +17,12 @@ const porta = process.env.PORT || 8080;
 
 // 3. Middlewares essenciais com tratamento de erros
 try {
+    const existAdmin = await readAll("usuarios", `funcao = 'admin'`)
+    if (!existAdmin) {
+        const senhaHash = generateHashedPassword("admin@123")
+        const adminCriado = await create('usuarios', { nome: "admin", senha: senhaHash, email: "admin@email.com", funcao: "admin" })
+        console.log(adminCriado);
+    }
     app.use(
         cors({
             origin: process.env.FRONTEND_URL || 'http://localhost:3000',
