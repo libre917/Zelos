@@ -17,12 +17,16 @@ const porta = process.env.PORT || 8080;
 
 // 3. Middlewares essenciais com tratamento de erros
 try {
+    (async () =>{
     const existAdmin = await readAll("usuarios", `funcao = 'admin'`)
-    if (!existAdmin) {
-        const senhaHash = generateHashedPassword("admin@123")
+    
+    if (!existAdmin || existAdmin.length === 0) {
+        const senhaHash = await generateHashedPassword("admin@123")
         const adminCriado = await create('usuarios', { nome: "admin", senha: senhaHash, email: "admin@email.com", funcao: "admin" })
-        console.log(adminCriado);
+        console.log("admin criado para funcionamento inicial da aplicação");
     }
+    })();
+
     app.use(
         cors({
             origin: process.env.FRONTEND_URL || 'http://localhost:3000',
