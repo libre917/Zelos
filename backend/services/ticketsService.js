@@ -59,7 +59,7 @@ export async function getTicketsByUser(userId) {
 
 export async function getTicketsByTechnician(technicianId) {
     try {
-        return await read('chamados', `tecnico_id = '${technicianId}'`);
+        return await readAll('chamados', `tecnico_id = '${technicianId}'`);
     } catch (err) {
         console.error('Erro ao obter chamados do técnico:', err);
         throw err;

@@ -1,4 +1,4 @@
-import { getTickets, getTicket, createTicket, setTechnicianToTicket, getRecord } from '../services/ticketsService.js';
+import { getTickets, getTicket, createTicket, setTechnicianToTicket, getRecord, getTicketsByUser, getTicketsByStatus, getTicketsByTechnician } from '../services/ticketsService.js';
 import { getRoleUser } from '../services/usersService.js';
 
 export async function getTicketsController(req, res) {
@@ -29,6 +29,45 @@ export async function getTicketController(req, res) {
         const mensagem = err.message || 'Erro interno do servidor';
         res.status(status).json({ mensagem, status });
     }
+}
+
+export async function getTicketsByUserController(req, res) {
+    try {
+        const userId = req.usuarioId;
+        const tickets = await getTicketsByUser(userId);
+        res.status(200).json(tickets);
+    } catch (err) {
+        console.error('Erro ao buscar chamados do usuário:', err);
+        const status = err.status || 500;
+        const mensagem = err.message || 'Erro interno do servidor';
+        res.status(status).json({ mensagem, status });
+    }
+}
+
+export async function getTicketsByTechnicianController(req, res) {
+    try {
+        const technicianId = req.params.id;
+        const tickets = await getTicketsByTechnician(technicianId);
+        res.status(200).json(tickets);
+    } catch (err) {
+        console.error('Erro ao buscar chamados do técnico:', err);
+        const status = err.status || 500;
+        const mensagem = err.message || 'Erro interno do servidor';
+        res.status(status).json({ mensagem, status });
+    }   
+}
+
+export async function getTicketsByStatusController(req, res) {
+    try{
+        const status = req.params.status;
+        const tickets = await getTicketsByStatus(status);
+        res.status(200).json(tickets);
+    } catch (err) {
+        console.error('Erro ao buscar chamados por status:', err);
+        const status = err.status || 500;
+        const mensagem = err.message || 'Erro interno do servidor';
+        res.status(status).json({ mensagem, status });
+    }       
 }
 
 export async function getRecordController(req, res) {

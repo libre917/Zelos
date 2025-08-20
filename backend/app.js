@@ -5,7 +5,6 @@ import session from 'express-session';
 import authRotas from './routes/authRotas.js';
 import passport from './config/ldap.js';
 import userRotas from './routes/userRotas.js';
-import reportRotas from './routes/reportRotas.js';
 import ticketRotas from './routes/ticketRotas.js';
 import poolRotas from './routes/poolRotas.js';
 import authMiddleware from './middlewares/authMiddleware.js';
