@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import SideBarAdmin from "../../Components/SideBarAdmin/SideBaraAdmin.jsx";
 import { Users, BarChart2, PieChart, TrendingUp, Calendar, Settings, UserPlus, Briefcase, Search, Download, Filter } from "lucide-react";
 
 export default function Admin() {
@@ -36,11 +35,11 @@ export default function Admin() {
 
     // Dados simulados para usuários
     const usuarios = [
-        { id: 1, nome: "João Silva", email: "joao.silva@empresa.com", departamento: "TI", tipo: "Técnico", status: "Ativo" },
-        { id: 2, nome: "Maria Oliveira", email: "maria.oliveira@empresa.com", departamento: "RH", tipo: "Usuário", status: "Ativo" },
-        { id: 3, nome: "Carlos Santos", email: "carlos.santos@empresa.com", departamento: "Financeiro", tipo: "Usuário", status: "Ativo" },
-        { id: 4, nome: "Ana Pereira", email: "ana.pereira@empresa.com", departamento: "Marketing", tipo: "Usuário", status: "Inativo" },
-        { id: 5, nome: "Paulo Mendes", email: "paulo.mendes@empresa.com", departamento: "Comercial", tipo: "Usuário", status: "Ativo" },
+        { id: 1, nome: "João Silva", email: "joao.silva@empresa.com", tipo: "Técnico", status: "Ativo" },
+        { id: 2, nome: "Maria Oliveira", email: "maria.oliveira@empresa.com", tipo: "Usuário", status: "Ativo" },
+        { id: 3, nome: "Carlos Santos", email: "carlos.santos@empresa.com", tipo: "Usuário", status: "Ativo" },
+        { id: 4, nome: "Ana Pereira", email: "ana.pereira@empresa.com", tipo: "Usuário", status: "Inativo" },
+        { id: 5, nome: "Paulo Mendes", email: "paulo.mendes@empresa.com", tipo: "Usuário", status: "Ativo" },
     ];
 
     // Dados simulados para departamentos
@@ -54,7 +53,7 @@ export default function Admin() {
 
     return (
         <div className="flex">
-            <SideBarAdmin />
+            
             
             <div className="flex-1 p-6 overflow-auto">
                 {/* Cabeçalho da página */}
@@ -79,22 +78,10 @@ export default function Admin() {
                             Usuários
                         </button>
                         <button 
-                            onClick={() => setActiveTab('departamentos')} 
-                            className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'departamentos' ? 'border-red-500 text-red-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
-                        >
-                            Departamentos
-                        </button>
-                        <button 
                             onClick={() => setActiveTab('relatorios')} 
                             className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'relatorios' ? 'border-red-500 text-red-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
                         >
                             Relatórios
-                        </button>
-                        <button 
-                            onClick={() => setActiveTab('configuracoes')} 
-                            className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'configuracoes' ? 'border-red-500 text-red-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
-                        >
-                            Configurações
                         </button>
                     </nav>
                 </div>
@@ -257,17 +244,6 @@ export default function Admin() {
                                     className="input-field pl-10"
                                 />
                             </div>
-                            <div className="flex items-center space-x-2">
-                                <Filter className="h-5 w-5 text-gray-500" />
-                                <select className="input-field py-2">
-                                    <option>Todos os departamentos</option>
-                                    <option>TI</option>
-                                    <option>RH</option>
-                                    <option>Financeiro</option>
-                                    <option>Marketing</option>
-                                    <option>Comercial</option>
-                                </select>
-                            </div>
                             <select className="input-field py-2">
                                 <option>Todos os tipos</option>
                                 <option>Usuário</option>
@@ -284,7 +260,6 @@ export default function Admin() {
                                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
                                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
                                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Departamento</th>
                                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
                                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                         <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
@@ -296,7 +271,6 @@ export default function Admin() {
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#{usuario.id}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{usuario.nome}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{usuario.email}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{usuario.departamento}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{usuario.tipo}</td>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <span className={`px-2 py-1 text-xs rounded-full ${usuario.status === 'Ativo' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
@@ -322,47 +296,6 @@ export default function Admin() {
                                 <button className="btn btn-outline py-1 px-3">Anterior</button>
                                 <button className="btn btn-primary py-1 px-3">Próximo</button>
                             </div>
-                        </div>
-                    </div>
-                )}
-
-                {activeTab === 'departamentos' && (
-                    <div>
-                        {/* Cabeçalho com ações */}
-                        <div className="flex flex-wrap justify-between items-center mb-6">
-                            <h2 className="text-xl font-semibold text-gray-800">Gerenciamento de Departamentos</h2>
-                            <button className="btn btn-primary flex items-center space-x-2">
-                                <Briefcase className="h-4 w-4" />
-                                <span>Novo Departamento</span>
-                            </button>
-                        </div>
-
-                        {/* Lista de departamentos */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {departamentos.map((departamento) => (
-                                <div key={departamento.id} className="card p-6 hover:shadow-md transition-shadow">
-                                    <div className="flex justify-between items-start mb-4">
-                                        <h3 className="text-lg font-semibold text-gray-800">{departamento.nome}</h3>
-                                        <button className="text-gray-400 hover:text-gray-600">
-                                            <Settings className="h-5 w-5" />
-                                        </button>
-                                    </div>
-                                    <p className="text-sm text-gray-600 mb-4">Responsável: {departamento.responsavel}</p>
-                                    <div className="flex justify-between text-sm">
-                                        <div>
-                                            <p className="text-gray-500">Usuários</p>
-                                            <p className="font-medium">{departamento.usuarios}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-gray-500">Chamados</p>
-                                            <p className="font-medium">{departamento.chamados}</p>
-                                        </div>
-                                        <div>
-                                            <button className="text-red-600 hover:text-red-800">Editar</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
                         </div>
                     </div>
                 )}
@@ -401,86 +334,7 @@ export default function Admin() {
                     </div>
                 )}
 
-                {activeTab === 'configuracoes' && (
-                    <div className="card p-6">
-                        <h2 className="text-xl font-semibold text-gray-800 mb-6">Configurações do Sistema</h2>
-                        
-                        <div className="space-y-8">
-                            <div>
-                                <h3 className="text-lg font-medium text-gray-800 mb-4">Configurações Gerais</h3>
-                                <div className="space-y-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Nome da Empresa</label>
-                                        <input type="text" className="input-field" value="SENAI" />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Email de Contato</label>
-                                        <input type="email" className="input-field" value="contato@senai.com.br" />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Fuso Horário</label>
-                                        <select className="input-field">
-                                            <option>America/Sao_Paulo (GMT-3)</option>
-                                            <option>America/New_York (GMT-5)</option>
-                                            <option>Europe/London (GMT+0)</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div>
-                                <h3 className="text-lg font-medium text-gray-800 mb-4">Configurações de Chamados</h3>
-                                <div className="space-y-4">
-                                    <div className="flex items-center">
-                                        <input type="checkbox" id="auto_assign" className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded" checked />
-                                        <label htmlFor="auto_assign" className="ml-2 block text-sm text-gray-700">Atribuir chamados automaticamente</label>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Tempo máximo para primeira resposta (horas)</label>
-                                        <input type="number" className="input-field" value="4" />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Categorias de Chamados</label>
-                                        <div className="flex flex-wrap gap-2 mb-2">
-                                            <span className="px-2 py-1 bg-gray-100 text-gray-800 text-sm rounded-full">Hardware</span>
-                                            <span className="px-2 py-1 bg-gray-100 text-gray-800 text-sm rounded-full">Software</span>
-                                            <span className="px-2 py-1 bg-gray-100 text-gray-800 text-sm rounded-full">Rede</span>
-                                            <span className="px-2 py-1 bg-gray-100 text-gray-800 text-sm rounded-full">Acesso</span>
-                                            <span className="px-2 py-1 bg-gray-100 text-gray-800 text-sm rounded-full">Outros</span>
-                                        </div>
-                                        <div className="flex gap-2">
-                                            <input type="text" className="input-field" placeholder="Nova categoria" />
-                                            <button className="btn btn-outline">Adicionar</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div>
-                                <h3 className="text-lg font-medium text-gray-800 mb-4">Notificações</h3>
-                                <div className="space-y-4">
-                                    <div className="flex items-center">
-                                        <input type="checkbox" id="email_notif" className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded" checked />
-                                        <label htmlFor="email_notif" className="ml-2 block text-sm text-gray-700">Notificações por email</label>
-                                    </div>
-                                    <div className="flex items-center">
-                                        <input type="checkbox" id="system_notif" className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded" checked />
-                                        <label htmlFor="system_notif" className="ml-2 block text-sm text-gray-700">Notificações no sistema</label>
-                                    </div>
-                                    <div className="flex items-center">
-                                        <input type="checkbox" id="daily_digest" className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded" />
-                                        <label htmlFor="daily_digest" className="ml-2 block text-sm text-gray-700">Resumo diário de atividades</label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="flex justify-end mt-8 space-x-3">
-                            <button className="btn btn-outline">Cancelar</button>
-                            <button className="btn btn-primary">Salvar Alterações</button>
-                        </div>
-                    </div>
-                )}
+    
             </div>
         </div>
     );

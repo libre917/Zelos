@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import SideBarUsuario from "../../Components/SideBarUsuario/SideBarUsuario.jsx";
 
 import { PlusCircle, FileText, Paperclip, Search, Filter, Calendar } from "lucide-react";
 
@@ -10,7 +9,6 @@ export default function Usuario() {
 
     return (
         <div className="flex">
-            <SideBarUsuario />
 
             
             <div className="flex-1 p-6 overflow-auto">

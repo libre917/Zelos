@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import SideBarTecnico from "../../Components/SideBarTecnico/SideBarTecnico.jsx";
 
 import { Clock, CheckCircle, AlertTriangle, Search, Filter, BarChart2, Calendar, FileText } from "lucide-react";
 
@@ -10,11 +9,11 @@ export default function Tecnico() {
     const [chamadoSelecionado, setChamadoSelecionado] = useState(null);
 
     const chamados = [
-        { id: 1001, titulo: "Problema com impressora", descricao: "A impressora da sala 302 não está funcionando corretamente.", usuario: "João Silva", departamento: "RH", prioridade: "Alta", status: "Pendente", data: "12/06/2023", categoria: "Suporte" },
-        { id: 1002, titulo: "Computador não liga", descricao: "O computador da recepção não está ligando após queda de energia.", usuario: "Maria Oliveira", departamento: "Recepção", prioridade: "Alta", status: "Em Progresso", data: "13/06/2023", categoria: "Hardware" },
-        { id: 1003, titulo: "Acesso ao sistema ERP", descricao: "Preciso de acesso ao módulo financeiro do sistema ERP.", usuario: "Carlos Santos", departamento: "Financeiro", prioridade: "Média", status: "Pendente", data: "14/06/2023", categoria: "Acesso" },
-        { id: 1004, titulo: "Atualização de software", descricao: "Solicito atualização do pacote Office em minha máquina.", usuario: "Ana Pereira", departamento: "Marketing", prioridade: "Baixa", status: "Pendente", data: "15/06/2023", categoria: "Software" },
-        { id: 1005, titulo: "Problema com internet", descricao: "A conexão com a internet está instável na sala de reuniões.", usuario: "Paulo Mendes", departamento: "Comercial", prioridade: "Média", status: "Resolvido", data: "16/06/2023", categoria: "Rede" },
+        { id: 1001, titulo: "Problema com impressora", descricao: "A impressora da sala 302 não está funcionando corretamente.", usuario: "João Silva", departamento: "RH", status: "Pendente", data: "12/06/2023", categoria: "Suporte" },
+        { id: 1002, titulo: "Computador não liga", descricao: "O computador da recepção não está ligando após queda de energia.", usuario: "Maria Oliveira", departamento: "Recepção", status: "Em Progresso", data: "13/06/2023", categoria: "Hardware" },
+        { id: 1003, titulo: "Acesso ao sistema ERP", descricao: "Preciso de acesso ao módulo financeiro do sistema ERP.", usuario: "Carlos Santos", departamento: "Financeiro", status: "Pendente", data: "14/06/2023", categoria: "Acesso" },
+        { id: 1004, titulo: "Atualização de software", descricao: "Solicito atualização do pacote Office em minha máquina.", usuario: "Ana Pereira", departamento: "Marketing", status: "Pendente", data: "15/06/2023", categoria: "Software" },
+        { id: 1005, titulo: "Problema com internet", descricao: "A conexão com a internet está instável na sala de reuniões.", usuario: "Paulo Mendes", departamento: "Comercial", status: "Resolvido", data: "16/06/2023", categoria: "Rede" },
     ];
 
     const handleChamadoClick = (chamado) => {
@@ -33,7 +32,6 @@ export default function Tecnico() {
 
     return (
         <div className="flex">
-            <SideBarTecnico /> 
 
             
             <div className="flex-1 p-6 overflow-auto">
@@ -104,28 +102,6 @@ export default function Tecnico() {
                 <div className="flex flex-col lg:flex-row gap-6">
                     {/* Lista de chamados */}
                     <div className={`${chamadoSelecionado ? 'lg:w-1/2' : 'w-full'} card p-6`}>
-                        {/* Filtros e busca */}
-                        <div className="flex flex-wrap gap-4 mb-6">
-                            <div className="relative flex-grow">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <Search className="h-5 w-5 text-gray-400" />
-                                </div>
-                                <input 
-                                    type="text" 
-                                    placeholder="Buscar chamados..." 
-                                    className="input-field pl-10"
-                                />
-                            </div>
-                            <div className="flex items-center space-x-2">
-                                <Filter className="h-5 w-5 text-gray-500" />
-                                <select className="input-field py-2">
-                                    <option>Todas as prioridades</option>
-                                    <option>Alta</option>
-                                    <option>Média</option>
-                                    <option>Baixa</option>
-                                </select>
-                            </div>
-                        </div>
 
                         {/* Lista de chamados */}
                         <div className="space-y-4">
@@ -148,6 +124,7 @@ export default function Tecnico() {
                                             {chamado.status}
                                         </div>
                                     </div>
+                                    
                                     <p className="text-sm text-gray-600 mb-2 line-clamp-2">{chamado.descricao}</p>
                                     <div className="flex items-center justify-between text-xs text-gray-500">
                                         <div className="flex items-center space-x-4">
@@ -156,9 +133,6 @@ export default function Tecnico() {
                                                 {chamado.data}
                                             </span>
                                             <span>#{chamado.id}</span>
-                                        </div>
-                                        <div className={`px-2 py-1 rounded-full ${chamado.prioridade === 'Alta' ? 'bg-red-100 text-red-800' : chamado.prioridade === 'Média' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'}`}>
-                                            {chamado.prioridade}
                                         </div>
                                     </div>
                                 </div>
@@ -217,10 +191,7 @@ export default function Tecnico() {
                                         <p className="font-medium">{chamadoSelecionado.categoria}</p>
                                     </div>
                                     <div>
-                                        <p className="text-xs text-gray-500">Prioridade</p>
-                                        <p className={`font-medium ${chamadoSelecionado.prioridade === 'Alta' ? 'text-red-600' : chamadoSelecionado.prioridade === 'Média' ? 'text-yellow-600' : 'text-green-600'}`}>
-                                            {chamadoSelecionado.prioridade}
-                                        </p>
+                                        <p className="text-xs text-gray-500"></p>
                                     </div>
                                 </div>
 

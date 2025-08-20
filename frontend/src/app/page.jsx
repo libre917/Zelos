@@ -139,11 +139,6 @@ export default function Home() {
             >
               Entrar
             </button>
-
-            {/* Links para ações adicionais */}
-            <div className="flex justify-between text-sm mt-2">
-              <a href="#" className="text-red-600 hover:text-red-800 transition no-underline hover:no-underline">Criar Conta</a>
-            </div>
           </form>
         </div>
       </section>
