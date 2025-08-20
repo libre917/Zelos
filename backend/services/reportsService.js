@@ -1,24 +1,8 @@
 import { read, readAll, create } from "../config/database.js";
 import { Report } from "../model/Report.js";
 import { getTicket } from "./ticketsService.js";
-import { getRoleUser } from "./usersService.js";
 import erroStatus from "../utils/erroStatus.js";
-
-// Helpers
-function validarCamposObrigatorios(data, campos) {
-    for (const campo of campos) {
-        if (!data[campo]) {
-            throw erroStatus(`Campo obrigatório ausente: ${campo}`, 400);
-        }
-    }
-}
-
-async function validarRole(userId, roleEsperado) {
-    const role = await getRoleUser(userId);
-    if (role !== roleEsperado) {
-        throw erroStatus(`Apenas usuários com perfil ${roleEsperado} podem executar essa ação`, 403);
-    }
-}
+import { validarCamposObrigatorios, validarRole } from "../utils/validar.js";
 
 // Services
 export async function getReports(ticket_id) {

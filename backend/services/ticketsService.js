@@ -2,34 +2,9 @@ import { read, readAll, create, update } from '../config/database.js';
 import { Ticket } from '../model/Ticket.js';
 import erroStatus from '../utils/erroStatus.js';
 import { getPoolTechniciansById } from './poolService.js';
-import { getRoleUser } from './usersService.js';
+import { validarCamposObrigatorios, validarStatus, validarRole } from '../utils/validar.js';
 
-// Constantes
-const STATUS_VALIDOS = ['pendente', 'em_andamento', 'concluido'];
-
-// Helpers
-function validarCamposObrigatorios(data, campos) {
-    for (const campo of campos) {
-        if (!data[campo]) {
-            throw erroStatus(`Campo obrigatório ausente: ${campo}`, 400);
-        }
-    }
-}
-
-function validarStatus(status) {
-    if (status && !STATUS_VALIDOS.includes(status)) {
-        throw erroStatus(`Status inválido. Válidos: ${STATUS_VALIDOS.join(', ')}`, 400);
-    }
-}
-
-async function validarRole(userId, roleEsperado) {
-    const role = await getRoleUser(userId);
-    if (role !== roleEsperado) {
-        throw erroStatus(`Apenas usuários com perfil ${roleEsperado} podem executar essa ação`, 403);
-    }
-}
-
-// Services
+// Busca todos os chamados
 export async function getTickets() {
     try {
         return await readAll('chamados');
@@ -39,6 +14,7 @@ export async function getTickets() {
     }
 }
 
+// Busca um chamado de acordo com o ID enviado
 export async function getTicket(id) {
     try {
         return await read('chamados', `id = '${id}'`);
@@ -48,6 +24,7 @@ export async function getTicket(id) {
     }
 }
 
+// Busca chamados de um usuário 
 export async function getTicketsByUser(userId) {
     try {
         return await readAll('chamados', `usuario_id = '${userId}'`);
@@ -57,6 +34,7 @@ export async function getTicketsByUser(userId) {
     }
 }
 
+// Busca chamados que um tecnico está operando
 export async function getTicketsByTechnician(technicianId) {
     try {
         return await readAll('chamados', `tecnico_id = '${technicianId}'`);
@@ -66,6 +44,7 @@ export async function getTicketsByTechnician(technicianId) {
     }
 }
 
+// Busca chamados de um determinado status
 export async function getTicketsByStatus(status) {
     try {
         return await readAll('chamados', `status = '${status}'`);
@@ -75,6 +54,7 @@ export async function getTicketsByStatus(status) {
     }
 }
 
+// Monta um relátorio com base de dados já existentes
 export async function getRecord(chamadoId) {
     try {
         // busca o chamado
@@ -114,6 +94,7 @@ export async function getRecord(chamadoId) {
     }
 }
 
+// Cria um chamado, e verifica se foi um usuario ou admin que o criou
 export async function createTicket(data) {
     try {
         // Verifica obrigatórios
@@ -125,7 +106,7 @@ export async function createTicket(data) {
         validarStatus(ticketData.status);
 
         // Apenas "usuario" pode criar chamados
-        await validarRole(ticketData.usuario_id, 'usuario');
+        await validarRole(ticketData.usuario_id, ['usuario', 'admin']);
 
         // Se tiver técnico, validar se realmente é técnico
         if (ticketData.tecnico_id) {
@@ -147,6 +128,7 @@ export async function createTicket(data) {
     }
 }
 
+// Atribui um tecnico a um chamado
 export async function setTechnicianToTicket(ticketId, technicianId) {
     try {
         validarCamposObrigatorios({ ticketId, technicianId }, ['ticketId', 'technicianId']);

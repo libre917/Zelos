@@ -1,30 +1,7 @@
 import { read, readAll, create, update } from '../config/database.js';
 import { Pool } from '../model/Pool.js';
 import erroStatus from '../utils/erroStatus.js';
-import { getRoleUser } from './usersService.js';
-
-// Constantes
-const TITULOS_VALIDOS = ['externo', 'manutencao', 'apoio_tecnico', 'limpeza'];
-
-// Helpers
-function validarTitulo(titulo) {
-    if (!TITULOS_VALIDOS.includes(titulo)) {
-        throw erroStatus(
-            'Título deve ser um dos seguintes: ' + TITULOS_VALIDOS.join(', '),
-            400
-        );
-    }
-}
-
-async function validarAdmin(userId) {
-    if (userId === undefined || userId === null) {
-        throw erroStatus('ID do usuário é obrigatório', 400);
-    }
-    const role = await getRoleUser(userId);
-    if (role !== 'admin') {
-        throw erroStatus('Apenas administradores podem executar essa ação', 403);
-    }
-}
+import { validarTitulo, validarRole } from '../utils/validar.js';
 
 // Services
 export async function getPools() {
@@ -91,7 +68,7 @@ export async function createPool(data) {
         if (!data.titulo) throw erroStatus('Título é obrigatório', 400);
 
         validarTitulo(data.titulo);
-        await validarAdmin(data.created_by);
+        await validarRole(data.created_by, "admin");
 
         const tituloExistente = await read('pool', `titulo = '${data.titulo}'`);
         if (tituloExistente) throw erroStatus('Título já cadastrado', 409);
@@ -109,7 +86,7 @@ export async function updatePool(id, data) {
         const poolExistente = await getPool(id);
         if (!poolExistente) throw erroStatus('Pool não encontrado', 404);
 
-        await validarAdmin(data.updated_by);
+        await validarRole(data.updated_by, "admin");
 
         const pool = new Pool(poolExistente);
         pool.updatePool(data);

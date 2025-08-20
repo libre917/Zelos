@@ -3,38 +3,7 @@ import { User } from '../model/User.js';
 import { getPool } from './poolService.js';
 import erroStatus from '../utils/erroStatus.js';
 import { generateHashedPassword } from '../hashPassword.js';
-
-// HELPERS
-
-// Verifica se email é válido
-function validateEmail(email) {
-    if (!email || !email.includes('@')) {
-        throw erroStatus('Email inválido', 400);
-    }
-}
-
-// Verifica se a função é válida
-function validateRole(funcao, funcoesValidas) {
-    if (!funcoesValidas.includes(funcao)) {
-        throw erroStatus('Função inválida', 400);
-    }
-}
-
-// Verifica se email já está cadastrado
-async function checkDuplicateEmail(email) {
-    const emailExistente = await read('usuarios', `email = '${email}'`);
-    if (emailExistente) {
-        throw erroStatus('Email já cadastrado', 409);
-    }
-}
-
-// Hash da senha (se houver)
-async function processPassword(senha) {
-    if (!senha) return null;
-    return await generateHashedPassword(senha);
-}
-
-// SERVICES 
+import { validarEmail, validarRole, checkEmailDuplicado } from '../utils/validar.js';
 
 // Buscar todos os usuários
 export async function getUsers() {
@@ -66,11 +35,11 @@ export async function createUser(id_admin, data) {
 
     const userData = new User(data);
 
-    validateEmail(userData.email);
-    validateRole(userData.funcao, ['admin', 'usuario', 'tecnico']);
-    await checkDuplicateEmail(userData.email);
+    validarEmail(userData.email);
+    validarRole(userData.funcao, ['admin', 'usuario', 'tecnico']);
+    await checkEmailDuplicado(userData.email);
 
-    userData.senha = await processPassword(userData.senha);
+    userData.senha = await generateHashedPassword(userData.senha);
 
     return await create('usuarios', userData);
 }
@@ -91,11 +60,11 @@ export async function createTechnician(id_admin, data, id_pool) {
 
     const userData = new User(data);
 
-    validateEmail(userData.email);
-    validateRole(userData.funcao, ['tecnico']);
-    await checkDuplicateEmail(userData.email);
+    validarEmail(userData.email);
+    validarRole(userData.funcao, ['tecnico']);
+    await checkEmailDuplicado(userData.email);
 
-    userData.senha = await processPassword(userData.senha);
+    userData.senha = await generateHashedPassword(userData.senha);
 
     const tecnicoId = await create('usuarios', userData);
 
@@ -113,16 +82,16 @@ export async function updateUser(id, data) {
     user.updateUser(data);
 
     if (data.email && data.email !== usuarioExistente.email) {
-        validateEmail(data.email);
-        await checkDuplicateEmail(data.email);
+        validarEmail(data.email);
+        await checkEmailDuplicado(data.email);
     }
 
     if (data.senha) {
-        user.senha = await processPassword(data.senha);
+        user.senha = await generateHashedPassword(data.senha);
     }
 
     if (data.funcao) {
-        validateRole(data.funcao, ['admin', 'usuario', 'tecnico']);
+        validarRole(data.funcao, ['admin', 'usuario', 'tecnico']);
     }
 
     return await update('usuarios', user, `id = ${id}`);
