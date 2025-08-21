@@ -27,10 +27,10 @@ const loginController = async (req, res) => {
             expiresIn: '1d',
         });
         res.cookie('token', token, {
-            httpOnly: true,
             sameSite: 'strict',
             maxAge: 3600000,
         });
+ 
 
         res.json({ mensagem: 'Login realizado com sucesso', token });
     } catch (error) {
