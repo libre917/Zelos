@@ -5,6 +5,14 @@ import { Users, BarChart2, PieChart, TrendingUp, Calendar, Settings, UserPlus, B
 
 export default function Admin() {
     const [activeTab, setActiveTab] = useState('dashboard');
+    const [showUserModal, setShowUserModal] = useState(false);
+    const [formData, setFormData] = useState({
+        nome: '',
+        email: '',
+        senha: '',
+        tipo: 'Usuário',
+        status: 'Ativo'
+    });
 
     // Dados simulados para o dashboard
     const estatisticas = {
@@ -42,14 +50,30 @@ export default function Admin() {
         { id: 5, nome: "Paulo Mendes", email: "paulo.mendes@empresa.com", tipo: "Usuário", status: "Ativo" },
     ];
 
-    // Dados simulados para departamentos
-    const departamentos = [
-        { id: 1, nome: "TI", responsavel: "João Silva", usuarios: 15, chamados: 45 },
-        { id: 2, nome: "RH", responsavel: "Fernanda Lima", usuarios: 8, chamados: 23 },
-        { id: 3, nome: "Financeiro", responsavel: "Roberto Alves", usuarios: 12, chamados: 18 },
-        { id: 4, nome: "Marketing", responsavel: "Camila Costa", usuarios: 10, chamados: 12 },
-        { id: 5, nome: "Comercial", responsavel: "Ricardo Gomes", usuarios: 14, chamados: 8 },
-    ];
+    // Função para lidar com mudanças no formulário 
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        console.log('Dados do formulário:', formData);
+        alert(`Usuário ${formData.nome} foi cadastrado com sucesso!`);
+        setShowUserModal(false);
+        setFormData({
+            nome: '',
+            email: '',
+            senha: '',
+            tipo: 'Usuário',
+            status: 'Ativo'
+        });
+
+    };
+
 
     return (
         <div className="flex flex-col h-screen bg-gray-50">
@@ -60,27 +84,27 @@ export default function Admin() {
                     <p className="text-red-100">Gerencie usuários, departamentos e visualize estatísticas</p>
                 </div>
             </header>
-            
+
             <div className="container mx-auto p-6 flex-1 overflow-auto">
                 {/* Menu de navegação principal */}
                 <div className="bg-white rounded-xl shadow-md p-4 mb-8">
                     <nav className="flex flex-wrap gap-4">
-                        <button 
-                            onClick={() => setActiveTab('dashboard')} 
+                        <button
+                            onClick={() => setActiveTab('dashboard')}
                             className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${activeTab === 'dashboard' ? 'bg-red-100 text-red-700 font-medium' : 'hover:bg-gray-100'}`}
                         >
                             <BarChart2 className="h-5 w-5" />
                             <span>Dashboard</span>
                         </button>
-                        <button 
-                            onClick={() => setActiveTab('usuarios')} 
+                        <button
+                            onClick={() => setActiveTab('usuarios')}
                             className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${activeTab === 'usuarios' ? 'bg-yellow-100 text-yellow-700 font-medium' : 'hover:bg-gray-100'}`}
                         >
                             <Users className="h-5 w-5" />
                             <span>Usuários</span>
                         </button>
-                        <button 
-                            onClick={() => setActiveTab('relatorios')} 
+                        <button
+                            onClick={() => setActiveTab('relatorios')}
                             className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${activeTab === 'relatorios' ? 'bg-green-100 text-green-700 font-medium' : 'hover:bg-gray-100'}`}
                         >
                             <PieChart className="h-5 w-5" />
@@ -94,7 +118,7 @@ export default function Admin() {
                     <div>
                         {/* Cards de estatísticas */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                            <div className="card p-6">
+                            <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
                                 <div className="flex items-center justify-between mb-4">
                                     <h3 className="text-lg font-semibold text-gray-800">Usuários</h3>
                                     <div className="rounded-full bg-blue-100 p-3">
@@ -162,8 +186,8 @@ export default function Admin() {
                                 <div className="h-64 flex items-end justify-between">
                                     {chamadosPorDepartamento.map((item, index) => (
                                         <div key={index} className="flex flex-col items-center">
-                                            <div 
-                                                className="w-12 bg-red-500 rounded-t-md" 
+                                            <div
+                                                className="w-12 bg-red-500 rounded-t-md"
                                                 style={{ height: `${(item.quantidade / 45) * 180}px` }}
                                             ></div>
                                             <p className="text-xs text-gray-600 mt-2">{item.departamento}</p>
@@ -194,12 +218,11 @@ export default function Admin() {
                                 <div className="flex flex-wrap justify-center gap-4 mt-4">
                                     {chamadosPorCategoria.map((item, index) => (
                                         <div key={index} className="flex items-center">
-                                            <div className={`h-3 w-3 rounded-full mr-2 ${
-                                                index === 0 ? 'bg-red-500' : 
-                                                index === 1 ? 'bg-blue-500' : 
-                                                index === 2 ? 'bg-yellow-500' : 
-                                                index === 3 ? 'bg-green-500' : 'bg-gray-500'
-                                            }`}></div>
+                                            <div className={`h-3 w-3 rounded-full mr-2 ${index === 0 ? 'bg-red-500' :
+                                                    index === 1 ? 'bg-blue-500' :
+                                                        index === 2 ? 'bg-yellow-500' :
+                                                            index === 3 ? 'bg-green-500' : 'bg-gray-500'
+                                                }`}></div>
                                             <span className="text-xs text-gray-600">{item.categoria}: {item.quantidade}</span>
                                         </div>
                                     ))}
@@ -208,7 +231,7 @@ export default function Admin() {
                         </div>
 
                         {/* Calendário de atividades */}
-                        <div className="card p-6">
+                        <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
                             <div className="flex items-center justify-between mb-4">
                                 <h3 className="text-lg font-semibold text-gray-800">Calendário de Atividades</h3>
                                 <button className="text-sm text-red-600 hover:text-red-800 font-medium">Ver todos</button>
@@ -227,13 +250,13 @@ export default function Admin() {
                             <Users className="h-5 w-5 mr-2 text-yellow-600" />
                             Gerenciamento de Usuários
                         </h2>
-                        
+
                         {/* Filtros e busca */}
                         <div className="flex flex-wrap gap-4 mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
                             <div className="flex-1 min-w-[200px]">
                                 <div className="relative">
-                                    <input 
-                                        type="text" 
+                                    <input
+                                        type="text"
                                         placeholder="Buscar usuários..."
                                         className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-700"
 
@@ -242,12 +265,10 @@ export default function Admin() {
                                 </div>
                             </div>
                             <div className="w-auto flex space-x-3">
-                                <button className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 text-gray-500">
+                                <button
+                                    onClick={() => setShowUserModal(true)}
+                                    className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors cursor-pointer">
 
-                                    <Download className="h-4 w-4 text-gray-500" />
-                                    <span>Exportar</span>
-                                </button>
-                                <button className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">
                                     <UserPlus className="h-4 w-4" />
                                     <span>Novo Usuário</span>
                                 </button>
@@ -256,7 +277,7 @@ export default function Admin() {
 
                         {/* Filtros e busca */}
                         <div className="flex flex-wrap gap-4 mb-6">
-                            <select className="input-field py-2 text-gray-500">
+                            <select className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-500">
 
                                 <option>Todos os tipos</option>
                                 <option>Usuário</option>
@@ -282,8 +303,8 @@ export default function Admin() {
                                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${usuario.tipo === 'Técnico' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>
                                             {usuario.tipo}
                                         </span>
-                                        <div>
-                                            <button className="text-blue-600 hover:text-blue-900 mr-3 text-sm font-medium flex items-center">
+                                        <div className="flex space-x-3">
+                                            <button className="text-blue-600 hover:text-blue-900 text-sm font-medium flex items-center">
                                                 <Settings className="h-3 w-3 mr-1" />
                                                 Editar
                                             </button>
@@ -303,8 +324,8 @@ export default function Admin() {
                                 Mostrando <span className="font-medium">1</span> a <span className="font-medium">5</span> de <span className="font-medium">120</span> resultados
                             </div>
                             <div className="flex space-x-2">
-                                <button className="btn btn-outline py-1 px-3">Anterior</button>
-                                <button className="btn btn-primary py-1 px-3">Próximo</button>
+                                <button className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors">Anterior</button>
+                                <button className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">Próximo</button>
                             </div>
                         </div>
                     </div>
@@ -316,13 +337,13 @@ export default function Admin() {
                             <PieChart className="h-5 w-5 mr-2 text-green-600" />
                             Relatórios e Análises
                         </h2>
-                        
+
                         {/* Filtros e busca */}
                         <div className="flex flex-wrap gap-4 mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
                             <div className="flex-1 min-w-[200px]">
                                 <div className="relative">
-                                    <input 
-                                        type="text" 
+                                    <input
+                                        type="text"
                                         placeholder="Filtrar relatórios..."
                                         className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                                     />
@@ -376,8 +397,109 @@ export default function Admin() {
                     </div>
                 )}
 
-    
             </div>
+            
+            {/* Modal para Novo Usuário */}
+            {showUserModal && (
+                <div className="fixed inset-0 backdrop-blur-xs bg-black/20 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto border border-gray-200">
+                        <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-red-50 to-red-100 rounded-t-xl">
+                            <h2 className="text-xl font-semibold text-gray-800 flex items-center">
+                                <UserPlus className="h-5 w-5 mr-2 text-red-600" />
+                                Novo Usuário
+                            </h2>
+                            <button
+                                onClick={() => setShowUserModal(false)}
+                                className="text-gray-400 hover:text-gray-600 transition-colors p-1 hover:bg-white hover:bg-opacity-50 rounded-full"
+                            >
+                                <span className="text-2xl">&times;</span>
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Nome Completo *
+                                </label>
+                                <input
+                                    type="text"
+                                    name="nome"
+                                    value={formData.nome}
+                                    onChange={handleInputChange}
+                                    required
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all text-gray-700"
+
+                                    placeholder="Digite o nome completo"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Email *
+                                </label>
+                                <input
+                                    type="email"
+                                    name="email"
+                                    value={formData.email}
+                                    onChange={handleInputChange}
+                                    required
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all text-gray-700"
+
+                                    placeholder="usuario@email.com"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Senha *
+                                </label>
+                                <input
+                                    type="password"
+                                    name="senha"
+                                    value={formData.senha}
+                                    onChange={handleInputChange}
+                                    required
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all text-gray-700"
+
+                                    placeholder="Digite a senha"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Tipo de Usuário *
+                                </label>
+                                <select
+                                    name="tipo"
+                                    value={formData.tipo}
+                                    onChange={handleInputChange}
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all text-gray-500"
+
+                                >
+                                    <option value="Usuário">Usuário</option>
+                                    <option value="Técnico">Técnico</option>
+                                </select>
+                            </div>
+
+                            <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowUserModal(false)}
+                                    className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all font-medium"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all font-medium shadow-md hover:shadow-lg"
+                                >
+                                    Criar Usuário
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
