@@ -2,17 +2,17 @@
 
 import { useState } from "react";
 
-import { Clock, CheckCircle, AlertTriangle, Search, Filter, BarChart2, Calendar, FileText } from "lucide-react";
+import { Clock, CheckCircle, AlertTriangle, Search, Filter, BarChart2, Calendar, FileText, Layers, MessageSquare, Settings, User } from "lucide-react";
 
 export default function Tecnico() {
     const [activeTab, setActiveTab] = useState('pool');
     const [chamadoSelecionado, setChamadoSelecionado] = useState(null);
     const [chamados, setChamados] = useState([
-        { id: 1001, titulo: "Problema com impressora", descricao: "A impressora da sala 302 não está funcionando corretamente.", usuario: "João Silva", departamento: "RH", status: "Pendente", data: "12/06/2023", categoria: "Suporte", tecnico: null },
-        { id: 1002, titulo: "Computador não liga", descricao: "O computador da recepção não está ligando após queda de energia.", usuario: "Maria Oliveira", departamento: "Recepção", status: "Em Progresso", data: "13/06/2023", categoria: "Hardware", tecnico: "Técnico 1" },
-        { id: 1003, titulo: "Acesso ao sistema ERP", descricao: "Preciso de acesso ao módulo financeiro do sistema ERP.", usuario: "Carlos Santos", departamento: "Financeiro", status: "Pendente", data: "14/06/2023", categoria: "Acesso", tecnico: null },
-        { id: 1004, titulo: "Atualização de software", descricao: "Solicito atualização do pacote Office em minha máquina.", usuario: "Ana Pereira", departamento: "Marketing", status: "Pendente", data: "15/06/2023", categoria: "Software", tecnico: null },
-        { id: 1005, titulo: "Problema com internet", descricao: "A conexão com a internet está instável na sala de reuniões.", usuario: "Paulo Mendes", departamento: "Comercial", status: "Resolvido", data: "16/06/2023", categoria: "Rede", tecnico: "Técnico 1" },
+        { id: 1001, titulo: "Problema com impressora", descricao: "A impressora da sala 302 não está funcionando corretamente.", usuario: "João Silva", status: "Pendente", data: "12/06/2023", categoria: "Suporte", tecnico: null },
+        { id: 1002, titulo: "Computador não liga", descricao: "O computador da recepção não está ligando após queda de energia.", usuario: "Maria Oliveira", status: "Em Progresso", data: "13/06/2023", categoria: "Hardware", tecnico: "Técnico 1" },
+        { id: 1003, titulo: "Acesso ao sistema ERP", descricao: "Preciso de acesso ao módulo financeiro do sistema ERP.", usuario: "Carlos Santos", status: "Pendente", data: "14/06/2023", categoria: "Acesso", tecnico: null },
+        { id: 1004, titulo: "Atualização de software", descricao: "Solicito atualização do pacote Office em minha máquina.", usuario: "Ana Pereira", status: "Pendente", data: "15/06/2023", categoria: "Software", tecnico: null },
+        { id: 1005, titulo: "Problema com internet", descricao: "A conexão com a internet está instável na sala de reuniões.", usuario: "Paulo Mendes", status: "Resolvido", data: "16/06/2023", categoria: "Rede", tecnico: "Técnico 1" },
     ]);
     const nomeTecnico = "Técnico 1"; // Simulação do nome do técnico logado
 
@@ -43,95 +43,91 @@ export default function Tecnico() {
     };
 
     return (
-        <div className="flex">
-
+        <div className="flex flex-col h-screen bg-gray-50">
+            {/* Cabeçalho da página */}
+            <header className="bg-gradient-to-r from-red-600 to-red-800 text-white p-6 shadow-md">
+                <div className="container mx-auto">
+                    <h1 className="text-3xl font-bold">Área do Técnico</h1>
+                    <p className="text-red-100">Gerencie os chamados técnicos de forma eficiente</p>
+                </div>
+            </header>
             
-            <div className="flex-1 p-6 overflow-auto">
-                {/* Cabeçalho da página */}
-                <div className="mb-8">
-                    <h1 className="text-2xl font-bold text-gray-800">Área do Técnico</h1>
-                    <p className="text-gray-600">Gerencie os chamados técnicos</p>
-                </div>
-
-                {/* Cards de estatísticas */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <div className="card p-6 flex items-center space-x-4 border-l-4 border-red-500">
-                        <div className="rounded-full bg-red-100 p-3">
-                            <AlertTriangle className="h-6 w-6 text-red-500" />
-                        </div>
-                        <div>
-                            <p className="text-sm text-gray-600">Pendentes</p>
-                            <h3 className="text-2xl font-bold text-gray-800">8</h3>
-                        </div>
-                    </div>
-
-                    <div className="card p-6 flex items-center space-x-4 border-l-4 border-yellow-500">
-                        <div className="rounded-full bg-yellow-100 p-3">
-                            <Clock className="h-6 w-6 text-yellow-500" />
-                        </div>
-                        <div>
-                            <p className="text-sm text-gray-600">Em Progresso</p>
-                            <h3 className="text-2xl font-bold text-gray-800">5</h3>
-                        </div>
-                    </div>
-
-                    <div className="card p-6 flex items-center space-x-4 border-l-4 border-green-500">
-                        <div className="rounded-full bg-green-100 p-3">
-                            <CheckCircle className="h-6 w-6 text-green-500" />
-                        </div>
-                        <div>
-                            <p className="text-sm text-gray-600">Resolvidos Hoje</p>
-                            <h3 className="text-2xl font-bold text-gray-800">3</h3>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Abas */}
-                <div className="border-b mb-6">
-                    <nav className="flex space-x-8">
+            <div className="container mx-auto p-6 flex-1 overflow-auto">
+                {/* Menu de navegação principal */}
+                <div className="bg-white rounded-xl shadow-md p-4 mb-8">
+                    <nav className="flex flex-wrap gap-4">
                         <button 
                             onClick={() => setActiveTab('pool')} 
-                            className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'pool' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${activeTab === 'pool' ? 'bg-red-100 text-red-700 font-medium' : 'hover:bg-gray-100'}`}
+
                         >
-                            Pool de Chamados
-                        </button>
-                        <button 
-                            onClick={() => setActiveTab('chamadosPendentes')} 
-                            className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'chamadosPendentes' ? 'border-red-500 text-red-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
-                        >
-                            Chamados Pendentes
+                            <Layers className="h-5 w-5" />
+                            <span>Pool de Chamados</span>
                         </button>
                         <button 
                             onClick={() => setActiveTab('emProgresso')} 
-                            className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'emProgresso' ? 'border-yellow-500 text-yellow-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${activeTab === 'emProgresso' ? 'bg-yellow-100 text-yellow-700 font-medium' : 'hover:bg-gray-100'}`}
+
                         >
-                            Em Progresso
+                            <Clock className="h-5 w-5" />
+                            <span>Em Progresso</span>
                         </button>
                         <button 
                             onClick={() => setActiveTab('resolvidos')} 
-                            className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'resolvidos' ? 'border-green-500 text-green-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${activeTab === 'resolvidos' ? 'bg-green-100 text-green-700 font-medium' : 'hover:bg-gray-100'}`}
+
                         >
-                            Resolvidos
+                            <CheckCircle className="h-5 w-5" />
+                            <span>Resolvidos</span>
                         </button>
                     </nav>
                 </div>
 
-                {/* Conteúdo principal */}
-                <div className="flex flex-col lg:flex-row gap-6">
-                    {/* Lista de chamados */}
-                    <div className={`${chamadoSelecionado ? 'lg:w-1/2' : 'w-full'} card p-6`}>
+                {/* Área de Pool de Chamados, Em Progresso e Resolvidos */}
+                {(activeTab === 'pool' || activeTab === 'emProgresso' || activeTab === 'resolvidos') && (
+                    <div className="bg-white rounded-xl shadow-md p-6 mb-8">
+                        <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
+                            {activeTab === 'pool' && <Layers className="h-5 w-5 mr-2 text-red-600" />}
+                            {activeTab === 'emProgresso' && <Clock className="h-5 w-5 mr-2 text-yellow-600" />}
+                            {activeTab === 'resolvidos' && <CheckCircle className="h-5 w-5 mr-2 text-green-600" />}
+                            {activeTab === 'pool' && 'Pool de Chamados'}
+                            {activeTab === 'emProgresso' && 'Chamados Em Progresso'}
+                            {activeTab === 'resolvidos' && 'Chamados Resolvidos'}
+                        </h2>
+                        
+                        {/* Filtros e busca */}
+                        <div className="flex flex-wrap gap-4 mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                            <div className="flex-1 min-w-[200px]">
+                                <div className="relative">
+                                    <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                                    <select className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                                        <option value="">Todas as categorias</option>
+                                        <option value="Hardware">Hardware</option>
+                                        <option value="Software">Software</option>
+                                        <option value="Rede">Rede</option>
+                                        <option value="Acesso">Acesso</option>
+                                        <option value="Suporte">Suporte</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {/* Conteúdo principal */}
+                        <div className="flex flex-col lg:flex-row gap-6">
+                            {/* Lista de chamados */}
+                            <div className={`${chamadoSelecionado ? 'lg:w-1/2' : 'w-full'} bg-white rounded-lg border border-gray-200`}>
 
-                        {/* Lista de chamados */}
-                        <div className="space-y-4">
-                            {chamados
-                                .filter(chamado => {
-                                    if (activeTab === 'pool') return chamado.status === 'Pendente' && !chamado.tecnico;
-                                    if (activeTab === 'chamadosPendentes') return chamado.status === 'Pendente' && chamado.tecnico === nomeTecnico;
-                                    if (activeTab === 'emProgresso') return chamado.status === 'Em Progresso' && chamado.tecnico === nomeTecnico;
-                                    if (activeTab === 'resolvidos') return chamado.status === 'Resolvido' && chamado.tecnico === nomeTecnico;
-                                    return true;
-                                })
-                                .map(chamado => (
+                                {/* Lista de chamados */}
+                                <div className="space-y-4 p-4">
+                                    {chamados
+                                        .filter(chamado => {
+                                            if (activeTab === 'pool') return chamado.status === 'Pendente' && !chamado.tecnico;
+                                            if (activeTab === 'chamadosPendentes') return chamado.status === 'Pendente' && chamado.tecnico === nomeTecnico;
+                                            if (activeTab === 'emProgresso') return chamado.status === 'Em Progresso' && chamado.tecnico === nomeTecnico;
+                                            if (activeTab === 'resolvidos') return chamado.status === 'Resolvido' && chamado.tecnico === nomeTecnico;
+                                            return true;
+                                        })
+                                        .map(chamado => (
                                 <div 
                                     key={chamado.id} 
                                     className={`p-4 border rounded-lg cursor-pointer transition-all ${chamadoSelecionado?.id === chamado.id ? 'border-red-500 bg-red-50' : 'border-gray-200 hover:border-red-300 hover:bg-gray-50'}`}
@@ -155,13 +151,13 @@ export default function Tecnico() {
                                         </div>
                                     </div>
                                 </div>
-                            ))}
-                        </div>
-                    </div>
+                                    ))}
+                                </div>
+                            </div>
 
-                    {/* Detalhes do chamado */}
-                    {chamadoSelecionado && (
-                        <div className="lg:w-1/2 card p-6">
+                            {/* Detalhes do chamado */}
+                            {chamadoSelecionado && (
+                                <div className="lg:w-1/2 bg-white rounded-lg border border-gray-200 p-6">
                             <div className="flex justify-between items-center mb-6">
                                 <h2 className="text-xl font-semibold text-gray-800">Detalhes do Chamado</h2>
                                 <button 
@@ -199,15 +195,12 @@ export default function Tecnico() {
                                 <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
                                     <div>
                                         <p className="text-xs text-gray-500">Solicitante</p>
-                                        <p className="font-medium">{chamadoSelecionado.usuario}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-gray-500">Departamento</p>
-                                        <p className="font-medium">{chamadoSelecionado.departamento}</p>
+                                        <p className="font-medium text-gray-700">{chamadoSelecionado.usuario}</p>
+
                                     </div>
                                     <div>
                                         <p className="text-xs text-gray-500">Categoria</p>
-                                        <p className="font-medium">{chamadoSelecionado.categoria}</p>
+                                        <p className="font-medium text-gray-700">{chamadoSelecionado.categoria}</p>
                                     </div>
                                     <div>
                                         <p className="text-xs text-gray-500"></p>
@@ -269,9 +262,11 @@ export default function Tecnico() {
                                     </div>
                                 </div>
                             </div>
+                                </div>
+                            )}
                         </div>
-                    )}
-                </div>
+                    </div>
+                )}
             </div>
         </div>
     );

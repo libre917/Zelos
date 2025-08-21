@@ -2,49 +2,57 @@
 
 import { useState, useEffect } from "react";
 
-import { PlusCircle, FileText, Paperclip, Search, Filter, Calendar } from "lucide-react";
+import { PlusCircle, FileText, Paperclip, Search, Filter, Calendar, Layers, MessageSquare, Settings, User, CheckCircle, Clock } from "lucide-react";
 
 export default function Usuario() {
     const [activeTab, setActiveTab] = useState('criarChamado');
 
     return (
-        <div className="flex">
-
-            
-            <div className="flex-1 p-6 overflow-auto">
-                {/* Cabeçalho da página */}
-                <div className="mb-8 bg-gradient-to-r from-red-50 to-white p-6 rounded-lg shadow-sm">
-                    <h1 className="text-3xl font-bold text-gray-800">Área do Usuário</h1>
-                    <p className="text-gray-600 mt-2 flex items-center">
-                        <Calendar className="h-4 w-4 mr-2" />
-                        {new Date().toLocaleDateString('pt-BR', {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'})}
-                    </p>
+        <div className="flex flex-col h-screen bg-gray-50">
+            {/* Cabeçalho da página */}
+            <header className="bg-gradient-to-r from-red-600 to-red-800 text-white p-6 shadow-md">
+                <div className="container mx-auto">
+                    <h1 className="text-3xl font-bold">Área do Usuário</h1>
+                    <p className="text-red-100">Gerencie seus chamados de suporte técnico</p>
                 </div>
-
-                {/* Abas */}
-                <div className="mb-6">
-                    <nav className="flex space-x-4">
+            </header>
+            
+            <div className="container mx-auto p-6 flex-1 overflow-auto">
+                {/* Menu de navegação principal */}
+                <div className="bg-white rounded-xl shadow-md p-4 mb-8">
+                    <nav className="flex flex-wrap gap-4">
                         <button 
                             onClick={() => setActiveTab('criarChamado')} 
-                            className={`py-3 px-6 rounded-lg font-medium text-sm flex items-center ${activeTab === 'criarChamado' ? 'bg-red-500 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${activeTab === 'criarChamado' ? 'bg-red-100 text-red-700 font-medium' : 'hover:bg-gray-100'}`}
                         >
-                            <PlusCircle className="h-4 w-4 mr-2" />
-                            Criar Chamado
+                            <PlusCircle className="h-5 w-5" />
+                            <span>Criar Chamado</span>
                         </button>
                         <button 
                             onClick={() => setActiveTab('meusChamados')} 
-                            className={`py-3 px-6 rounded-lg font-medium text-sm flex items-center ${activeTab === 'meusChamados' ? 'bg-red-500 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${activeTab === 'meusChamados' ? 'bg-yellow-100 text-yellow-700 font-medium' : 'hover:bg-gray-100'}`}
                         >
-                            <FileText className="h-4 w-4 mr-2" />
-                            Meus Chamados
+                            <FileText className="h-5 w-5" />
+                            <span>Meus Chamados</span>
                         </button>
                     </nav>
                 </div>
 
                 {/* Conteúdo das abas */}
                 {activeTab === 'criarChamado' && (
-                    <div className="bg-white rounded-lg shadow-md p-6 transition-all duration-300 ease-in-out">
-                        <h2 className="text-xl font-semibold text-gray-800 mb-6 border-l-4 border-red-500 pl-3">Criar Novo Chamado</h2>
+                    <div className="bg-white rounded-xl shadow-md p-6 mb-8">
+                        <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
+                            <PlusCircle className="h-5 w-5 mr-2 text-red-600" />
+                            Criar Novo Chamado
+                        </h2>
+                        
+                        {/* Filtros e busca */}
+                        <div className="flex flex-wrap gap-4 mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                            <div className="flex-1 min-w-[200px]">
+                                <p className="text-sm font-medium text-gray-700 mb-2">Preencha os dados abaixo para criar um novo chamado</p>
+                            </div>
+                        </div>
+                        
                         <form>
                             {/* Linha 1 */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -92,7 +100,7 @@ export default function Usuario() {
                                 <button type="button" className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors">
                                     Cancelar
                                 </button>
-                                <button type="submit" className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors flex items-center space-x-2">
+                                <button type="submit" className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors flex items-center space-x-2">
                                     <PlusCircle className="h-4 w-4" />
                                     <span>Criar Chamado</span>
                                 </button>
@@ -102,11 +110,14 @@ export default function Usuario() {
                 )}
 
                 {activeTab === 'meusChamados' && (
-                    <div className="bg-white rounded-lg shadow-md p-6 transition-all duration-300 ease-in-out">
-                        <h2 className="text-xl font-semibold text-gray-800 mb-6 border-l-4 border-red-500 pl-3">Meus Chamados</h2>
+                    <div className="bg-white rounded-xl shadow-md p-6 mb-8">
+                        <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
+                            <FileText className="h-5 w-5 mr-2 text-yellow-600" />
+                            Meus Chamados
+                        </h2>
                         
-                        {/* Filtros */}
-                        <div className="flex flex-wrap gap-4 mb-6 bg-gray-50 p-4 rounded-lg">
+                        {/* Filtros e busca */}
+                        <div className="flex flex-wrap gap-4 mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
                             <div className="relative max-w-xs">
                                 <Filter className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                                 <select className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500 max-w-xs text-gray-700">
@@ -128,22 +139,8 @@ export default function Usuario() {
                             </div>
                         </div>
                         
-                        {/* Tabela de chamados */}
-                        <div className="overflow-x-auto rounded-lg border border-gray-200">
-                            <table className="min-w-full divide-y divide-gray-200">
-                                <thead className="bg-gray-50">
-                                    <tr>
-                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Título</th>
-                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Categoria</th>
-                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
-                                    {/* Tabela vazia - nenhum chamado encontrado */}
-                                </tbody>
-                            </table>
+                        {/* Lista de chamados */}
+                        <div className="space-y-4">
                         </div>
                         
                         {/* Paginação */}

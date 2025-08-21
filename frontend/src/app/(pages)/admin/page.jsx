@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Users, BarChart2, PieChart, TrendingUp, Calendar, Settings, UserPlus, Briefcase, Search, Download, Filter } from "lucide-react";
+import { Users, BarChart2, PieChart, TrendingUp, Calendar, Settings, UserPlus, Briefcase, Search, Download, Filter, Layers, MessageSquare, CheckCircle, Clock, User } from "lucide-react";
 
 export default function Admin() {
     const [activeTab, setActiveTab] = useState('dashboard');
@@ -52,36 +52,39 @@ export default function Admin() {
     ];
 
     return (
-        <div className="flex">
-            
-            
-            <div className="flex-1 p-6 overflow-auto">
-                {/* Cabeçalho da página */}
-                <div className="mb-8">
-                    <h1 className="text-2xl font-bold text-gray-800">Painel Administrativo</h1>
-                    <p className="text-gray-600">Gerencie usuários, departamentos e visualize estatísticas</p>
+        <div className="flex flex-col h-screen bg-gray-50">
+            {/* Cabeçalho da página */}
+            <header className="bg-gradient-to-r from-red-600 to-red-800 text-white p-6 shadow-md">
+                <div className="container mx-auto">
+                    <h1 className="text-3xl font-bold">Painel Administrativo</h1>
+                    <p className="text-red-100">Gerencie usuários, departamentos e visualize estatísticas</p>
                 </div>
-
-                {/* Abas */}
-                <div className="border-b mb-6">
-                    <nav className="flex space-x-8">
+            </header>
+            
+            <div className="container mx-auto p-6 flex-1 overflow-auto">
+                {/* Menu de navegação principal */}
+                <div className="bg-white rounded-xl shadow-md p-4 mb-8">
+                    <nav className="flex flex-wrap gap-4">
                         <button 
                             onClick={() => setActiveTab('dashboard')} 
-                            className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'dashboard' ? 'border-red-500 text-red-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${activeTab === 'dashboard' ? 'bg-red-100 text-red-700 font-medium' : 'hover:bg-gray-100'}`}
                         >
-                            Dashboard
+                            <BarChart2 className="h-5 w-5" />
+                            <span>Dashboard</span>
                         </button>
                         <button 
                             onClick={() => setActiveTab('usuarios')} 
-                            className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'usuarios' ? 'border-red-500 text-red-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${activeTab === 'usuarios' ? 'bg-yellow-100 text-yellow-700 font-medium' : 'hover:bg-gray-100'}`}
                         >
-                            Usuários
+                            <Users className="h-5 w-5" />
+                            <span>Usuários</span>
                         </button>
                         <button 
                             onClick={() => setActiveTab('relatorios')} 
-                            className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'relatorios' ? 'border-red-500 text-red-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${activeTab === 'relatorios' ? 'bg-green-100 text-green-700 font-medium' : 'hover:bg-gray-100'}`}
                         >
-                            Relatórios
+                            <PieChart className="h-5 w-5" />
+                            <span>Relatórios</span>
                         </button>
                     </nav>
                 </div>
@@ -110,7 +113,7 @@ export default function Admin() {
                                 </div>
                             </div>
 
-                            <div className="card p-6">
+                            <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
                                 <div className="flex items-center justify-between mb-4">
                                     <h3 className="text-lg font-semibold text-gray-800">Chamados</h3>
                                     <div className="rounded-full bg-red-100 p-3">
@@ -129,7 +132,7 @@ export default function Admin() {
                                 </div>
                             </div>
 
-                            <div className="card p-6">
+                            <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
                                 <div className="flex items-center justify-between mb-4">
                                     <h3 className="text-lg font-semibold text-gray-800">Desempenho</h3>
                                     <div className="rounded-full bg-green-100 p-3">
@@ -151,8 +154,11 @@ export default function Admin() {
 
                         {/* Gráficos */}
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                            <div className="card p-6">
-                                <h3 className="text-lg font-semibold text-gray-800 mb-4">Chamados por Departamento</h3>
+                            <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+                                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                                    <BarChart2 className="h-5 w-5 mr-2 text-blue-600" />
+                                    Chamados por Departamento
+                                </h3>
                                 <div className="h-64 flex items-end justify-between">
                                     {chamadosPorDepartamento.map((item, index) => (
                                         <div key={index} className="flex flex-col items-center">
@@ -167,7 +173,7 @@ export default function Admin() {
                                 </div>
                             </div>
 
-                            <div className="card p-6">
+                            <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
                                 <h3 className="text-lg font-semibold text-gray-800 mb-4">Chamados por Categoria</h3>
                                 <div className="h-64 flex items-center justify-center">
                                     <div className="relative h-40 w-40 rounded-full border-8 border-gray-100 flex items-center justify-center">
@@ -216,16 +222,32 @@ export default function Admin() {
                 )}
 
                 {activeTab === 'usuarios' && (
-                    <div>
-                        {/* Cabeçalho com ações */}
-                        <div className="flex flex-wrap justify-between items-center mb-6">
-                            <h2 className="text-xl font-semibold text-gray-800">Gerenciamento de Usuários</h2>
-                            <div className="flex space-x-3">
-                                <button className="btn btn-outline flex items-center space-x-2">
-                                    <Download className="h-4 w-4" />
+                    <div className="bg-white rounded-xl shadow-md p-6 mb-8">
+                        <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
+                            <Users className="h-5 w-5 mr-2 text-yellow-600" />
+                            Gerenciamento de Usuários
+                        </h2>
+                        
+                        {/* Filtros e busca */}
+                        <div className="flex flex-wrap gap-4 mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                            <div className="flex-1 min-w-[200px]">
+                                <div className="relative">
+                                    <input 
+                                        type="text" 
+                                        placeholder="Buscar usuários..."
+                                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-700"
+
+                                    />
+                                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                                </div>
+                            </div>
+                            <div className="w-auto flex space-x-3">
+                                <button className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 text-gray-500">
+
+                                    <Download className="h-4 w-4 text-gray-500" />
                                     <span>Exportar</span>
                                 </button>
-                                <button className="btn btn-primary flex items-center space-x-2">
+                                <button className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">
                                     <UserPlus className="h-4 w-4" />
                                     <span>Novo Usuário</span>
                                 </button>
@@ -234,17 +256,8 @@ export default function Admin() {
 
                         {/* Filtros e busca */}
                         <div className="flex flex-wrap gap-4 mb-6">
-                            <div className="relative flex-grow">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <Search className="h-5 w-5 text-gray-400" />
-                                </div>
-                                <input 
-                                    type="text" 
-                                    placeholder="Buscar usuários..." 
-                                    className="input-field pl-10"
-                                />
-                            </div>
-                            <select className="input-field py-2">
+                            <select className="input-field py-2 text-gray-500">
+
                                 <option>Todos os tipos</option>
                                 <option>Usuário</option>
                                 <option>Técnico</option>
@@ -252,39 +265,36 @@ export default function Admin() {
                             </select>
                         </div>
 
-                        {/* Tabela de usuários */}
-                        <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-gray-200">
-                                <thead className="bg-gray-50">
-                                    <tr>
-                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
-                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
-                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                        <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
-                                    {usuarios.map((usuario) => (
-                                        <tr key={usuario.id} className="hover:bg-gray-50">
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#{usuario.id}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{usuario.nome}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{usuario.email}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{usuario.tipo}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <span className={`px-2 py-1 text-xs rounded-full ${usuario.status === 'Ativo' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                                                    {usuario.status}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                <button className="text-red-600 hover:text-red-900 mr-3">Editar</button>
-                                                <button className="text-gray-600 hover:text-gray-900">Desativar</button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                        {/* Lista de usuários */}
+                        <div className="space-y-4">
+                            {usuarios.map((usuario) => (
+                                <div key={usuario.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-all cursor-pointer">
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <h3 className="font-medium text-gray-800">{usuario.nome}</h3>
+                                            <p className="text-sm text-gray-500 mt-1">{usuario.email}</p>
+                                        </div>
+                                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${usuario.status === 'Ativo' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                            {usuario.status}
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between items-center mt-4">
+                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${usuario.tipo === 'Técnico' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>
+                                            {usuario.tipo}
+                                        </span>
+                                        <div>
+                                            <button className="text-blue-600 hover:text-blue-900 mr-3 text-sm font-medium flex items-center">
+                                                <Settings className="h-3 w-3 mr-1" />
+                                                Editar
+                                            </button>
+                                            <button className="text-red-600 hover:text-red-900 text-sm font-medium flex items-center">
+                                                <User className="h-3 w-3 mr-1" />
+                                                Desativar
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
 
                         {/* Paginação */}
@@ -301,34 +311,66 @@ export default function Admin() {
                 )}
 
                 {activeTab === 'relatorios' && (
-                    <div className="card p-6">
-                        <h2 className="text-xl font-semibold text-gray-800 mb-6">Relatórios</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="bg-white rounded-xl shadow-md p-6 mb-8">
+                        <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
+                            <PieChart className="h-5 w-5 mr-2 text-green-600" />
+                            Relatórios e Análises
+                        </h2>
+                        
+                        {/* Filtros e busca */}
+                        <div className="flex flex-wrap gap-4 mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                            <div className="flex-1 min-w-[200px]">
+                                <div className="relative">
+                                    <input 
+                                        type="text" 
+                                        placeholder="Filtrar relatórios..."
+                                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                    />
+                                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                                </div>
+                            </div>
+                            <div className="w-auto">
+                                <button className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">
+                                    <Download className="h-4 w-4 text-gray-500" />
+                                    <span>Exportar</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="border rounded-lg p-6 hover:shadow-md transition-shadow">
                                 <div className="flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4 mx-auto">
                                     <BarChart2 className="h-8 w-8 text-red-500" />
                                 </div>
-                                <h3 className="text-lg font-medium text-center mb-2">Chamados por Período</h3>
-                                <p className="text-sm text-gray-600 text-center mb-4">Visualize a quantidade de chamados abertos e fechados por período.</p>
-                                <button className="w-full btn btn-outline">Gerar Relatório</button>
+                                <h3 className="text-lg font-medium text-center mb-2">Chamados por Status</h3>
+                                <p className="text-sm text-gray-600 text-center mb-4">Visualize a distribuição de chamados por status atual.</p>
+                                <button className="w-full py-2 px-4 border border-green-500 text-green-600 rounded-md hover:bg-green-50 transition-colors">Gerar Relatório</button>
                             </div>
 
                             <div className="border rounded-lg p-6 hover:shadow-md transition-shadow">
                                 <div className="flex items-center justify-center h-16 w-16 rounded-full bg-blue-100 mb-4 mx-auto">
-                                    <PieChart className="h-8 w-8 text-blue-500" />
+                                    <Clock className="h-8 w-8 text-blue-500" />
                                 </div>
-                                <h3 className="text-lg font-medium text-center mb-2">Chamados por Categoria</h3>
-                                <p className="text-sm text-gray-600 text-center mb-4">Analise a distribuição de chamados por categoria e tipo.</p>
-                                <button className="w-full btn btn-outline">Gerar Relatório</button>
+                                <h3 className="text-lg font-medium text-center mb-2">Tempo Médio de Resolução</h3>
+                                <p className="text-sm text-gray-600 text-center mb-4">Analise o tempo médio de resolução por categoria e técnico.</p>
+                                <button className="w-full py-2 px-4 border border-green-500 text-green-600 rounded-md hover:bg-green-50 transition-colors">Gerar Relatório</button>
+                            </div>
+
+                            <div className="border rounded-lg p-6 hover:shadow-md transition-shadow">
+                                <div className="flex items-center justify-center h-16 w-16 rounded-full bg-yellow-100 mb-4 mx-auto">
+                                    <Users className="h-8 w-8 text-yellow-500" />
+                                </div>
+                                <h3 className="text-lg font-medium text-center mb-2">Chamados por Técnico</h3>
+                                <p className="text-sm text-gray-600 text-center mb-4">Compare o desempenho e volume de chamados por técnico.</p>
+                                <button className="w-full py-2 px-4 border border-green-500 text-green-600 rounded-md hover:bg-green-50 transition-colors">Gerar Relatório</button>
                             </div>
 
                             <div className="border rounded-lg p-6 hover:shadow-md transition-shadow">
                                 <div className="flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-4 mx-auto">
-                                    <TrendingUp className="h-8 w-8 text-green-500" />
+                                    <PieChart className="h-8 w-8 text-green-500" />
                                 </div>
-                                <h3 className="text-lg font-medium text-center mb-2">Desempenho da Equipe</h3>
-                                <p className="text-sm text-gray-600 text-center mb-4">Avalie o desempenho da equipe técnica e tempos de resolução.</p>
-                                <button className="w-full btn btn-outline">Gerar Relatório</button>
+                                <h3 className="text-lg font-medium text-center mb-2">Chamados por Categoria</h3>
+                                <p className="text-sm text-gray-600 text-center mb-4">Analise a distribuição de chamados por categoria e tipo.</p>
+                                <button className="w-full py-2 px-4 border border-green-500 text-green-600 rounded-md hover:bg-green-50 transition-colors">Gerar Relatório</button>
                             </div>
                         </div>
                     </div>
