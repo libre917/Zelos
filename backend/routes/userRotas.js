@@ -1,13 +1,16 @@
 import express from 'express';
-import { createUserController, getUserController, getUsersController, updateUserController, createTechnicianController, setStatusUserController, getRoleController } from '../controllers/UsersController.js';
+import { createUserController, getUserController, getUsersController, updateUserController, createTechnicianController, setStatusUserController, getRoleController, getMeController } from '../controllers/UsersController.js';
 import authMiddleware from '../middlewares/authMiddleware.js';
 const router = express.Router();
 
 //rota para obter usuarios;
 router.get('/', authMiddleware,  getUsersController);
 
-//rota para obter um usuarios
+//rota para obter um usuario
 router.get('/:id', authMiddleware, getUserController)
+
+//rota para obter informações de um usuario
+router.get('/me/info', authMiddleware, getMeController);
 
 //rota para obter a role do usuario
 router.get('/me/role', authMiddleware, getRoleController);

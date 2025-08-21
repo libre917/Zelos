@@ -1,4 +1,12 @@
-import { getUser, getUsers, createUser, updateUser, createTechnician, setStatusUser, getRoleUser } from '../services/usersService.js';
+import {
+    getUser,
+    getUsers,
+    createUser,
+    updateUser,
+    createTechnician,
+    setStatusUser,
+    getRoleUser,
+} from '../services/usersService.js';
 
 export async function getUsersController(req, res) {
     try {
@@ -17,6 +25,18 @@ export async function getUserController(req, res) {
         const id = req.params.id;
         const user = await getUser(id);
         res.status(200).json(user);
+    } catch (err) {
+        console.error('Erro:', err);
+        const status = err.status || 500;
+        const mensagem = err.message || 'Erro interno do servidor';
+        res.status(status).json({ mensagem });
+    }
+}
+
+export async function getMeController(req, res) {
+    try {
+        const { nome, email, funcao } = await getUser(req.usuarioId);
+        res.status(200).json({ nome, email, funcao });
     } catch (err) {
         console.error('Erro:', err);
         const status = err.status || 500;

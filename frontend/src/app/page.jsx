@@ -16,7 +16,8 @@ export default function Home() {
     useEffect(() => {
         const token = document.cookie
             .split('; ')
-            .find(row => row.startsWith('token='))?.split('=')[1];
+            .find((row) => row.startsWith('token='))
+            ?.split('=')[1];
 
         if (!token) return; // Se não tiver token, não faz nada
 
@@ -28,8 +29,8 @@ export default function Home() {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    }
+                        Authorization: `Bearer ${token}`,
+                    },
                 });
 
                 if (!response.ok) {
@@ -38,10 +39,11 @@ export default function Home() {
                 }
 
                 const data = await response.json();
-                console.log('Role:', data.role);
+                console.log(typeof(data));
+                
+                console.log(data);
                 router.push(`/${data.role}`); // Redireciona para a página da role do usuário
                 setState(true);
-
             } catch (err) {
                 console.error('Erro na requisição:', err);
             }
@@ -76,7 +78,6 @@ export default function Home() {
 
         setEmailErro('');
     };
-
 
     return (
         <main className="flex min-h-screen bg-gradient-to-br from-red-100 via-white to-blue-100">
@@ -120,9 +121,13 @@ export default function Home() {
                     <p className="text-gray-600 text-center">Faça Seu Login e Conheça Suas Novidades</p>
 
                     {/* Formulário de Login */}
-                    <form className="space-y-5" onSubmit={(e) => {
-                        handleSubmit(e);
-                    }} autoComplete="off">
+                    <form
+                        className="space-y-5"
+                        onSubmit={(e) => {
+                            handleSubmit(e);
+                        }}
+                        autoComplete="off"
+                    >
                         {/* Espaço para o usuário digitar o email */}
                         <div>
                             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">

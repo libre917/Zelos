@@ -7,7 +7,12 @@ import { validarEmail, validarRole, checkEmailDuplicado } from '../utils/validar
 
 // Buscar todos os usuários
 export async function getUsers() {
-    return await readAll('usuarios');
+    const users = await readAll('usuarios');
+    for (const user of users) {
+        user.senha = undefined;
+        user.id = undefined; 
+    }
+    return users;
 }
 
 // Buscar usuário pelo ID

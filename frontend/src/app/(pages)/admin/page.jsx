@@ -1,11 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Users, BarChart2, PieChart, TrendingUp, Calendar, Settings, UserPlus, Briefcase, Search, Download, Filter, Layers, MessageSquare, CheckCircle, Clock, User } from "lucide-react";
 
 export default function Admin() {
+    const router = useRouter();
     const [activeTab, setActiveTab] = useState('dashboard');
     const [showUserModal, setShowUserModal] = useState(false);
+    const [usuarios, setUsuarios] = useState([]);
     const [formData, setFormData] = useState({
         nome: '',
         email: '',
@@ -14,10 +17,43 @@ export default function Admin() {
         status: 'Ativo'
     });
 
+        useEffect(() => {
+        const token = document.cookie
+            .split('; ')
+            .find((row) => row.startsWith('token='))
+            ?.split('=')[1];
+
+        if (!token) router.push('/'); // Se não tiver token, não faz nada
+
+        console.log('Token encontrado:', token);
+
+        (async () => {
+            try {
+                const response = await fetch('http://localhost:8081/users', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+
+                if (!response.ok) {
+                    console.error('Erro ao buscar usuarios:', response.status);
+                    return;
+                }
+
+                const data = await response.json();
+                console.log(data);
+                setUsuarios(data);
+            } catch (err) {
+                console.error('Erro na requisição:', err);
+            }
+        })();
+    }, []);
     // Dados simulados para o dashboard
     const estatisticas = {
-        totalUsuarios: 120,
-        totalTecnicos: 15,
+        totalUsuarios: usuarios.length,
+        totalTecnicos: usuarios.filter(user => user.funcao === "tecnico").length,
         chamadosAbertos: 42,
         chamadosFechados: 156,
         tempoMedioResolucao: "4h 30min",
@@ -41,14 +77,7 @@ export default function Admin() {
         { categoria: "Outros", quantidade: 8 }
     ];
 
-    // Dados simulados para usuários
-    const usuarios = [
-        { id: 1, nome: "João Silva", email: "joao.silva@empresa.com", tipo: "Técnico", status: "Ativo" },
-        { id: 2, nome: "Maria Oliveira", email: "maria.oliveira@empresa.com", tipo: "Usuário", status: "Ativo" },
-        { id: 3, nome: "Carlos Santos", email: "carlos.santos@empresa.com", tipo: "Usuário", status: "Ativo" },
-        { id: 4, nome: "Ana Pereira", email: "ana.pereira@empresa.com", tipo: "Usuário", status: "Inativo" },
-        { id: 5, nome: "Paulo Mendes", email: "paulo.mendes@empresa.com", tipo: "Usuário", status: "Ativo" },
-    ];
+
 
     // Função para lidar com mudanças no formulário 
     const handleInputChange = (e) => {
@@ -68,7 +97,7 @@ export default function Admin() {
             nome: '',
             email: '',
             senha: '',
-            tipo: 'Usuário',
+            tipo: 'usuario',
             status: 'Ativo'
         });
 
@@ -295,13 +324,13 @@ export default function Admin() {
                                             <h3 className="font-medium text-gray-800">{usuario.nome}</h3>
                                             <p className="text-sm text-gray-500 mt-1">{usuario.email}</p>
                                         </div>
-                                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${usuario.status === 'Ativo' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${usuario.status === 'ativo' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                                             {usuario.status}
                                         </span>
                                     </div>
                                     <div className="flex justify-between items-center mt-4">
-                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${usuario.tipo === 'Técnico' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>
-                                            {usuario.tipo}
+                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${usuario.funcao === 'tecnico' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>
+                                            {usuario.funcao}
                                         </span>
                                         <div className="flex space-x-3">
                                             <button className="text-blue-600 hover:text-blue-900 text-sm font-medium flex items-center">
@@ -471,7 +500,7 @@ export default function Admin() {
                                 </label>
                                 <select
                                     name="tipo"
-                                    value={formData.tipo}
+                                    value={formData.funcao}
                                     onChange={handleInputChange}
                                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all text-gray-500"
 
