@@ -117,7 +117,7 @@ export default function Usuario() {
                                 </select>
                             </div>
                             
-                            <div className="relative max-w-xs">
+                            <div className="relative max-w-xs ml-10">
                                 <Filter className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                                 <select className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500 max-w-xs text-gray-700">
                                     <option>Todas as categorias</option>
@@ -125,11 +125,6 @@ export default function Usuario() {
                                     <option>Suporte</option>
                                     <option>Desenvolvimento</option>
                                 </select>
-                            </div>
-                            
-                            <div className="flex-grow relative">
-                                <Search className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                                <input type="text" placeholder="Buscar chamados..." className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500 w-full text-gray-700" />
                             </div>
                         </div>
                         

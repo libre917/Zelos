@@ -5,16 +5,16 @@ import { useState } from "react";
 import { Clock, CheckCircle, AlertTriangle, Search, Filter, BarChart2, Calendar, FileText } from "lucide-react";
 
 export default function Tecnico() {
-    const [activeTab, setActiveTab] = useState('chamadosPendentes');
+    const [activeTab, setActiveTab] = useState('pool');
     const [chamadoSelecionado, setChamadoSelecionado] = useState(null);
-
-    const chamados = [
-        { id: 1001, titulo: "Problema com impressora", descricao: "A impressora da sala 302 não está funcionando corretamente.", usuario: "João Silva", departamento: "RH", status: "Pendente", data: "12/06/2023", categoria: "Suporte" },
-        { id: 1002, titulo: "Computador não liga", descricao: "O computador da recepção não está ligando após queda de energia.", usuario: "Maria Oliveira", departamento: "Recepção", status: "Em Progresso", data: "13/06/2023", categoria: "Hardware" },
-        { id: 1003, titulo: "Acesso ao sistema ERP", descricao: "Preciso de acesso ao módulo financeiro do sistema ERP.", usuario: "Carlos Santos", departamento: "Financeiro", status: "Pendente", data: "14/06/2023", categoria: "Acesso" },
-        { id: 1004, titulo: "Atualização de software", descricao: "Solicito atualização do pacote Office em minha máquina.", usuario: "Ana Pereira", departamento: "Marketing", status: "Pendente", data: "15/06/2023", categoria: "Software" },
-        { id: 1005, titulo: "Problema com internet", descricao: "A conexão com a internet está instável na sala de reuniões.", usuario: "Paulo Mendes", departamento: "Comercial", status: "Resolvido", data: "16/06/2023", categoria: "Rede" },
-    ];
+    const [chamados, setChamados] = useState([
+        { id: 1001, titulo: "Problema com impressora", descricao: "A impressora da sala 302 não está funcionando corretamente.", usuario: "João Silva", departamento: "RH", status: "Pendente", data: "12/06/2023", categoria: "Suporte", tecnico: null },
+        { id: 1002, titulo: "Computador não liga", descricao: "O computador da recepção não está ligando após queda de energia.", usuario: "Maria Oliveira", departamento: "Recepção", status: "Em Progresso", data: "13/06/2023", categoria: "Hardware", tecnico: "Técnico 1" },
+        { id: 1003, titulo: "Acesso ao sistema ERP", descricao: "Preciso de acesso ao módulo financeiro do sistema ERP.", usuario: "Carlos Santos", departamento: "Financeiro", status: "Pendente", data: "14/06/2023", categoria: "Acesso", tecnico: null },
+        { id: 1004, titulo: "Atualização de software", descricao: "Solicito atualização do pacote Office em minha máquina.", usuario: "Ana Pereira", departamento: "Marketing", status: "Pendente", data: "15/06/2023", categoria: "Software", tecnico: null },
+        { id: 1005, titulo: "Problema com internet", descricao: "A conexão com a internet está instável na sala de reuniões.", usuario: "Paulo Mendes", departamento: "Comercial", status: "Resolvido", data: "16/06/2023", categoria: "Rede", tecnico: "Técnico 1" },
+    ]);
+    const nomeTecnico = "Técnico 1"; // Simulação do nome do técnico logado
 
     const handleChamadoClick = (chamado) => {
         setChamadoSelecionado(chamado);
@@ -24,10 +24,22 @@ export default function Tecnico() {
         setChamadoSelecionado(null);
     };
 
+
     const handleAtualizarStatus = (novoStatus) => {
-        // Aqui seria implementada a lógica para atualizar o status no backend
-        console.log(`Atualizando chamado ${chamadoSelecionado.id} para status: ${novoStatus}`);
+        // Atualiza o status do chamado selecionado
+        setChamados(prev => prev.map(c =>
+            c.id === chamadoSelecionado.id ? { ...c, status: novoStatus } : c
+        ));
         setChamadoSelecionado({...chamadoSelecionado, status: novoStatus});
+    };
+
+    // Candidatar-se ao chamado
+    const handleCandidatar = () => {
+        setChamados(prev => prev.map(c =>
+            c.id === chamadoSelecionado.id ? { ...c, status: "Em Progresso", tecnico: nomeTecnico } : c
+        ));
+        setChamadoSelecionado({...chamadoSelecionado, status: "Em Progresso", tecnico: nomeTecnico });
+        setActiveTab('emProgresso');
     };
 
     return (
@@ -78,6 +90,12 @@ export default function Tecnico() {
                 <div className="border-b mb-6">
                     <nav className="flex space-x-8">
                         <button 
+                            onClick={() => setActiveTab('pool')} 
+                            className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'pool' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+                        >
+                            Pool de Chamados
+                        </button>
+                        <button 
                             onClick={() => setActiveTab('chamadosPendentes')} 
                             className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'chamadosPendentes' ? 'border-red-500 text-red-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
                         >
@@ -85,13 +103,13 @@ export default function Tecnico() {
                         </button>
                         <button 
                             onClick={() => setActiveTab('emProgresso')} 
-                            className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'emProgresso' ? 'border-red-500 text-red-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+                            className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'emProgresso' ? 'border-yellow-500 text-yellow-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
                         >
                             Em Progresso
                         </button>
                         <button 
                             onClick={() => setActiveTab('resolvidos')} 
-                            className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'resolvidos' ? 'border-red-500 text-red-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+                            className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'resolvidos' ? 'border-green-500 text-green-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
                         >
                             Resolvidos
                         </button>
@@ -107,9 +125,10 @@ export default function Tecnico() {
                         <div className="space-y-4">
                             {chamados
                                 .filter(chamado => {
-                                    if (activeTab === 'chamadosPendentes') return chamado.status === 'Pendente';
-                                    if (activeTab === 'emProgresso') return chamado.status === 'Em Progresso';
-                                    if (activeTab === 'resolvidos') return chamado.status === 'Resolvido';
+                                    if (activeTab === 'pool') return chamado.status === 'Pendente' && !chamado.tecnico;
+                                    if (activeTab === 'chamadosPendentes') return chamado.status === 'Pendente' && chamado.tecnico === nomeTecnico;
+                                    if (activeTab === 'emProgresso') return chamado.status === 'Em Progresso' && chamado.tecnico === nomeTecnico;
+                                    if (activeTab === 'resolvidos') return chamado.status === 'Resolvido' && chamado.tecnico === nomeTecnico;
                                     return true;
                                 })
                                 .map(chamado => (
@@ -203,27 +222,38 @@ export default function Tecnico() {
 
                                 {/* Ações */}
                                 <div>
-                                    <h4 className="text-sm font-medium text-gray-700 mb-2">Atualizar Status</h4>
-                                    <div className="flex space-x-3">
+                                    {activeTab === 'pool' && chamadoSelecionado.status === 'Pendente' && !chamadoSelecionado.tecnico ? (
                                         <button 
-                                            onClick={() => handleAtualizarStatus('Pendente')} 
-                                            className={`px-3 py-2 rounded-md text-sm font-medium ${chamadoSelecionado.status === 'Pendente' ? 'bg-red-100 text-red-700 ring-1 ring-red-700' : 'text-red-700 hover:bg-red-50'}`}
+                                            onClick={handleCandidatar}
+                                            className="px-4 py-2 rounded-md bg-blue-600 text-white font-medium hover:bg-blue-700 transition"
                                         >
-                                            Pendente
+                                            Candidatar-se ao Chamado
                                         </button>
-                                        <button 
-                                            onClick={() => handleAtualizarStatus('Em Progresso')} 
-                                            className={`px-3 py-2 rounded-md text-sm font-medium ${chamadoSelecionado.status === 'Em Progresso' ? 'bg-yellow-100 text-yellow-700 ring-1 ring-yellow-700' : 'text-yellow-700 hover:bg-yellow-50'}`}
-                                        >
-                                            Em Progresso
-                                        </button>
-                                        <button 
-                                            onClick={() => handleAtualizarStatus('Resolvido')} 
-                                            className={`px-3 py-2 rounded-md text-sm font-medium ${chamadoSelecionado.status === 'Resolvido' ? 'bg-green-100 text-green-700 ring-1 ring-green-700' : 'text-green-700 hover:bg-green-50'}`}
-                                        >
-                                            Resolvido
-                                        </button>
-                                    </div>
+                                    ) : (
+                                        <>
+                                            <h4 className="text-sm font-medium text-gray-700 mb-2">Atualizar Status</h4>
+                                            <div className="flex space-x-3">
+                                                <button 
+                                                    onClick={() => handleAtualizarStatus('Pendente')} 
+                                                    className={`px-3 py-2 rounded-md text-sm font-medium ${chamadoSelecionado.status === 'Pendente' ? 'bg-red-100 text-red-700 ring-1 ring-red-700' : 'text-red-700 hover:bg-red-50'}`}
+                                                >
+                                                    Pendente
+                                                </button>
+                                                <button 
+                                                    onClick={() => handleAtualizarStatus('Em Progresso')} 
+                                                    className={`px-3 py-2 rounded-md text-sm font-medium ${chamadoSelecionado.status === 'Em Progresso' ? 'bg-yellow-100 text-yellow-700 ring-1 ring-yellow-700' : 'text-yellow-700 hover:bg-yellow-50'}`}
+                                                >
+                                                    Em Progresso
+                                                </button>
+                                                <button 
+                                                    onClick={() => handleAtualizarStatus('Resolvido')} 
+                                                    className={`px-3 py-2 rounded-md text-sm font-medium ${chamadoSelecionado.status === 'Resolvido' ? 'bg-green-100 text-green-700 ring-1 ring-green-700' : 'text-green-700 hover:bg-green-50'}`}
+                                                >
+                                                    Resolvido
+                                                </button>
+                                            </div>
+                                        </>
+                                    )}
                                 </div>
 
                                 {/* Adicionar comentário */}

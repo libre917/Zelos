@@ -2,13 +2,51 @@
 
 import Image from 'next/image';
 import { Eye, EyeClosed } from 'lucide-react'; // Importando Icons do lucide-react para ícone de visibilidade
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
     const [showSenha, setShowSenha] = useState(false);
     const [emailErro, setEmailErro] = useState('');
+    const [state, setState] = useState(false);
+    const router = useRouter();
+
+    useEffect(() => {
+        const token = document.cookie
+            .split('; ')
+            .find(row => row.startsWith('token='))?.split('=')[1];
+
+        if (!token) return; // Se não tiver token, não faz nada
+
+        console.log('Token encontrado:', token);
+
+        (async () => {
+            try {
+                const response = await fetch('http://localhost:8081/users/me/role', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    console.error('Erro ao buscar a role:', response.status);
+                    return;
+                }
+
+                const data = await response.json();
+                console.log('Role:', data.role);
+                router.push(`/${data.role}`); // Redireciona para a página da role do usuário
+                setState(true);
+
+            } catch (err) {
+                console.error('Erro na requisição:', err);
+            }
+        })();
+    }, [state]);
 
     function emailValido(email) {
         return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);
@@ -21,22 +59,24 @@ export default function Home() {
             setEmailErro('Digite um email válido.');
             return;
         }
-        
-           const autenticacao = await fetch('http://localhost:8081/auth/login ', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email, senha }),
-                credentials: 'include', 
-            });
-            if (autenticacao.status !== 200) {
-              console.log('Erro ao fazer login:', autenticacao.statusText);
-            }
-            // Foi parado aqui ----------------------------------------------------------------------
-            
+
+        const autenticacao = await fetch('http://localhost:8081/auth/login ', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, senha }),
+            credentials: 'include',
+        });
+        if (autenticacao.status !== 200) {
+            console.log('Erro ao fazer login:', autenticacao.statusText);
+        }
+
+        setState(true);
+
         setEmailErro('');
     };
+
 
     return (
         <main className="flex min-h-screen bg-gradient-to-br from-red-100 via-white to-blue-100">
