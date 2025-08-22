@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { read, compare } from '../config/database.js';
 
-const loginController = async (req, res) => {
+export const loginController = async (req, res) => {
     const { email, senha } = req.body;
 
     try {
@@ -39,4 +39,13 @@ const loginController = async (req, res) => {
     }
 };
 
-export { loginController };
+export const logoutController = async (req, res) => {
+    try {
+        // Remover o token do cookie
+        res.clearCookie('token');
+        res.json({ mensagem: 'Logout realizado com sucesso' });
+    } catch (error) {
+        console.error('Erro ao fazer logout:', error);
+        res.status(500).json({ mensagem: 'Erro ao fazer logout' });
+    }
+};

@@ -1,31 +1,49 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { Users, BarChart2, PieChart, TrendingUp, Calendar, Settings, UserPlus, Briefcase, Search, Download, Filter, Layers, MessageSquare, CheckCircle, Clock, User } from "lucide-react";
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import {
+    Users,
+    BarChart2,
+    PieChart,
+    TrendingUp,
+    Calendar,
+    Settings,
+    UserPlus,
+    Briefcase,
+    Search,
+    Download,
+    Filter,
+    Layers,
+    MessageSquare,
+    CheckCircle,
+    Clock,
+    User,
+} from 'lucide-react';
 
 export default function Admin() {
     const router = useRouter();
     const [activeTab, setActiveTab] = useState('dashboard');
     const [showUserModal, setShowUserModal] = useState(false);
+    const [reload, setReload] = useState(false);
     const [usuarios, setUsuarios] = useState([]);
     const [formData, setFormData] = useState({
         nome: '',
         email: '',
         senha: '',
         tipo: 'Usuário',
-        status: 'Ativo'
+        status: 'Ativo',
     });
+    const [canCreate, setCanCreate] = useState(false);
 
-        useEffect(() => {
+    //busca os usuários
+    useEffect(() => {
         const token = document.cookie
             .split('; ')
             .find((row) => row.startsWith('token='))
             ?.split('=')[1];
 
         if (!token) router.push('/'); // Se não tiver token, não faz nada
-
-        console.log('Token encontrado:', token);
 
         (async () => {
             try {
@@ -43,66 +61,108 @@ export default function Admin() {
                 }
 
                 const data = await response.json();
-                console.log(data);
                 setUsuarios(data);
             } catch (err) {
                 console.error('Erro na requisição:', err);
             }
         })();
-    }, []);
+    }, [reload]);
+    // função para criar usuário
+    async function createUser() {
+        const token = document.cookie
+            .split('; ')
+            .find((row) => row.startsWith('token='))
+            ?.split('=')[1];
+
+        if (!token) router.push('/'); // Se não tiver token, não faz nada
+          setCanCreate(false);
+
+        try {
+
+            
+            const response = await fetch('http://localhost:8081/users', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                ContentType: 'application/json',
+                body: JSON.stringify({
+                    nome: formData.nome,
+                    email: formData.email,
+                    senha: formData.senha,
+                    funcao: formData.tipo,
+                    status: formData.status,
+                }),
+            });
+
+            if (!response.ok) {
+                console.error('Erro ao cadastrar usuário:', response.status);
+                return;
+            }
+
+            const data = await response.json();
+            setReload(!reload); // Atualiza a lista de usuários
+            setUsuarios((prev) => [...prev, data]);
+                  setFormData({
+            nome: '',
+            email: '',
+            senha: '',
+            tipo: 'usuario',
+            status: 'Ativo',
+        });
+          
+        } catch (err) {
+            console.error('Erro na requisição:', err);
+        }
+    }
+    // aciona função se canCreate for verdadeiro
+    if (canCreate === true) {
+        createUser();
+    }
     // Dados simulados para o dashboard
     const estatisticas = {
         totalUsuarios: usuarios.length,
-        totalTecnicos: usuarios.filter(user => user.funcao === "tecnico").length,
+        totalTecnicos: usuarios.filter((user) => user.funcao === 'tecnico').length,
         chamadosAbertos: 42,
         chamadosFechados: 156,
-        tempoMedioResolucao: "4h 30min",
-        satisfacaoMedia: 4.7
+        tempoMedioResolucao: '4h 30min',
+        satisfacaoMedia: 4.7,
     };
 
     // Dados simulados para gráficos
     const chamadosPorDepartamento = [
-        { departamento: "TI", quantidade: 45 },
-        { departamento: "RH", quantidade: 23 },
-        { departamento: "Financeiro", quantidade: 18 },
-        { departamento: "Marketing", quantidade: 12 },
-        { departamento: "Comercial", quantidade: 8 }
+        { departamento: 'TI', quantidade: 45 },
+        { departamento: 'RH', quantidade: 23 },
+        { departamento: 'Financeiro', quantidade: 18 },
+        { departamento: 'Marketing', quantidade: 12 },
+        { departamento: 'Comercial', quantidade: 8 },
     ];
 
     const chamadosPorCategoria = [
-        { categoria: "Hardware", quantidade: 38 },
-        { categoria: "Software", quantidade: 52 },
-        { categoria: "Rede", quantidade: 27 },
-        { categoria: "Acesso", quantidade: 31 },
-        { categoria: "Outros", quantidade: 8 }
+        { categoria: 'Hardware', quantidade: 38 },
+        { categoria: 'Software', quantidade: 52 },
+        { categoria: 'Rede', quantidade: 27 },
+        { categoria: 'Acesso', quantidade: 31 },
+        { categoria: 'Outros', quantidade: 8 },
     ];
 
-
-
-    // Função para lidar com mudanças no formulário 
+    // Função para lidar com mudanças no formulário
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({
+
+        setFormData((prev) => ({
             ...prev,
-            [name]: value
+            [name]: value,
         }));
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log('Dados do formulário:', formData);
+        setCanCreate(true);
         alert(`Usuário ${formData.nome} foi cadastrado com sucesso!`);
         setShowUserModal(false);
-        setFormData({
-            nome: '',
-            email: '',
-            senha: '',
-            tipo: 'usuario',
-            status: 'Ativo'
-        });
-
     };
-
 
     return (
         <div className="flex flex-col h-screen bg-gray-50">
@@ -114,27 +174,37 @@ export default function Admin() {
                 </div>
             </header>
 
-            <div className="container mx-auto p-6 flex-1 overflow-auto">
+            <div className="container mx-auto p-6 flex-1">
                 {/* Menu de navegação principal */}
                 <div className="bg-white rounded-xl shadow-md p-4 mb-8">
                     <nav className="flex flex-wrap gap-4">
                         <button
                             onClick={() => setActiveTab('dashboard')}
-                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${activeTab === 'dashboard' ? 'bg-red-100 text-red-700 font-medium' : 'hover:bg-gray-100'}`}
+                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${
+                                activeTab === 'dashboard' ? 'bg-red-100 text-red-700 font-medium' : 'hover:bg-gray-100'
+                            }`}
                         >
                             <BarChart2 className="h-5 w-5" />
                             <span>Dashboard</span>
                         </button>
                         <button
                             onClick={() => setActiveTab('usuarios')}
-                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${activeTab === 'usuarios' ? 'bg-yellow-100 text-yellow-700 font-medium' : 'hover:bg-gray-100'}`}
+                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${
+                                activeTab === 'usuarios'
+                                    ? 'bg-yellow-100 text-yellow-700 font-medium'
+                                    : 'hover:bg-gray-100'
+                            }`}
                         >
                             <Users className="h-5 w-5" />
                             <span>Usuários</span>
                         </button>
                         <button
                             onClick={() => setActiveTab('relatorios')}
-                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${activeTab === 'relatorios' ? 'bg-green-100 text-green-700 font-medium' : 'hover:bg-gray-100'}`}
+                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${
+                                activeTab === 'relatorios'
+                                    ? 'bg-green-100 text-green-700 font-medium'
+                                    : 'hover:bg-gray-100'
+                            }`}
                         >
                             <PieChart className="h-5 w-5" />
                             <span>Relatórios</span>
@@ -176,11 +246,15 @@ export default function Admin() {
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <p className="text-sm text-gray-500">Abertos</p>
-                                        <p className="text-2xl font-bold text-gray-800">{estatisticas.chamadosAbertos}</p>
+                                        <p className="text-2xl font-bold text-gray-800">
+                                            {estatisticas.chamadosAbertos}
+                                        </p>
                                     </div>
                                     <div>
                                         <p className="text-sm text-gray-500">Fechados</p>
-                                        <p className="text-2xl font-bold text-gray-800">{estatisticas.chamadosFechados}</p>
+                                        <p className="text-2xl font-bold text-gray-800">
+                                            {estatisticas.chamadosFechados}
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -195,11 +269,15 @@ export default function Admin() {
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <p className="text-sm text-gray-500">Tempo Médio</p>
-                                        <p className="text-2xl font-bold text-gray-800">{estatisticas.tempoMedioResolucao}</p>
+                                        <p className="text-2xl font-bold text-gray-800">
+                                            {estatisticas.tempoMedioResolucao}
+                                        </p>
                                     </div>
                                     <div>
                                         <p className="text-sm text-gray-500">Satisfação</p>
-                                        <p className="text-2xl font-bold text-gray-800">{estatisticas.satisfacaoMedia}/5</p>
+                                        <p className="text-2xl font-bold text-gray-800">
+                                            {estatisticas.satisfacaoMedia}/5
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -247,12 +325,22 @@ export default function Admin() {
                                 <div className="flex flex-wrap justify-center gap-4 mt-4">
                                     {chamadosPorCategoria.map((item, index) => (
                                         <div key={index} className="flex items-center">
-                                            <div className={`h-3 w-3 rounded-full mr-2 ${index === 0 ? 'bg-red-500' :
-                                                    index === 1 ? 'bg-blue-500' :
-                                                        index === 2 ? 'bg-yellow-500' :
-                                                            index === 3 ? 'bg-green-500' : 'bg-gray-500'
-                                                }`}></div>
-                                            <span className="text-xs text-gray-600">{item.categoria}: {item.quantidade}</span>
+                                            <div
+                                                className={`h-3 w-3 rounded-full mr-2 ${
+                                                    index === 0
+                                                        ? 'bg-red-500'
+                                                        : index === 1
+                                                        ? 'bg-blue-500'
+                                                        : index === 2
+                                                        ? 'bg-yellow-500'
+                                                        : index === 3
+                                                        ? 'bg-green-500'
+                                                        : 'bg-gray-500'
+                                                }`}
+                                            ></div>
+                                            <span className="text-xs text-gray-600">
+                                                {item.categoria}: {item.quantidade}
+                                            </span>
                                         </div>
                                     ))}
                                 </div>
@@ -263,11 +351,15 @@ export default function Admin() {
                         <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
                             <div className="flex items-center justify-between mb-4">
                                 <h3 className="text-lg font-semibold text-gray-800">Calendário de Atividades</h3>
-                                <button className="text-sm text-red-600 hover:text-red-800 font-medium">Ver todos</button>
+                                <button className="text-sm text-red-600 hover:text-red-800 font-medium">
+                                    Ver todos
+                                </button>
                             </div>
                             <div className="flex items-center justify-center p-4 bg-gray-50 rounded-lg">
                                 <Calendar className="h-16 w-16 text-gray-400" />
-                                <p className="text-gray-500 ml-4">O calendário de atividades estará disponível em breve.</p>
+                                <p className="text-gray-500 ml-4">
+                                    O calendário de atividades estará disponível em breve.
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -288,7 +380,6 @@ export default function Admin() {
                                         type="text"
                                         placeholder="Buscar usuários..."
                                         className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-700"
-
                                     />
                                     <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
                                 </div>
@@ -296,8 +387,8 @@ export default function Admin() {
                             <div className="w-auto flex space-x-3">
                                 <button
                                     onClick={() => setShowUserModal(true)}
-                                    className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors cursor-pointer">
-
+                                    className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors cursor-pointer"
+                                >
                                     <UserPlus className="h-4 w-4" />
                                     <span>Novo Usuário</span>
                                 </button>
@@ -307,7 +398,6 @@ export default function Admin() {
                         {/* Filtros e busca */}
                         <div className="flex flex-wrap gap-4 mb-6">
                             <select className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-500">
-
                                 <option>Todos os tipos</option>
                                 <option>Usuário</option>
                                 <option>Técnico</option>
@@ -318,18 +408,33 @@ export default function Admin() {
                         {/* Lista de usuários */}
                         <div className="space-y-4">
                             {usuarios.map((usuario) => (
-                                <div key={usuario.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-all cursor-pointer">
+                                <div
+                                    key={usuario.id}
+                                    className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-all cursor-pointer"
+                                >
                                     <div className="flex justify-between items-start">
                                         <div>
                                             <h3 className="font-medium text-gray-800">{usuario.nome}</h3>
                                             <p className="text-sm text-gray-500 mt-1">{usuario.email}</p>
                                         </div>
-                                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${usuario.status === 'ativo' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                        <span
+                                            className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                                usuario.status === 'ativo'
+                                                    ? 'bg-green-100 text-green-800'
+                                                    : 'bg-red-100 text-red-800'
+                                            }`}
+                                        >
                                             {usuario.status}
                                         </span>
                                     </div>
                                     <div className="flex justify-between items-center mt-4">
-                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${usuario.funcao === 'tecnico' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>
+                                        <span
+                                            className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                                usuario.funcao === 'tecnico'
+                                                    ? 'bg-blue-100 text-blue-800'
+                                                    : 'bg-green-100 text-green-800'
+                                            }`}
+                                        >
                                             {usuario.funcao}
                                         </span>
                                         <div className="flex space-x-3">
@@ -350,11 +455,17 @@ export default function Admin() {
                         {/* Paginação */}
                         <div className="flex items-center justify-between mt-6">
                             <div className="text-sm text-gray-700">
-                                Mostrando <span className="font-medium">1</span> a <span className="font-medium">5</span> de <span className="font-medium">120</span> resultados
+                                Mostrando <span className="font-medium">1</span> a{' '}
+                                <span className="font-medium">5</span> de <span className="font-medium">120</span>{' '}
+                                resultados
                             </div>
                             <div className="flex space-x-2">
-                                <button className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors">Anterior</button>
-                                <button className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">Próximo</button>
+                                <button className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors">
+                                    Anterior
+                                </button>
+                                <button className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">
+                                    Próximo
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -392,8 +503,12 @@ export default function Admin() {
                                     <BarChart2 className="h-8 w-8 text-red-500" />
                                 </div>
                                 <h3 className="text-lg font-medium text-center mb-2">Chamados por Status</h3>
-                                <p className="text-sm text-gray-600 text-center mb-4">Visualize a distribuição de chamados por status atual.</p>
-                                <button className="w-full py-2 px-4 border border-green-500 text-green-600 rounded-md hover:bg-green-50 transition-colors">Gerar Relatório</button>
+                                <p className="text-sm text-gray-600 text-center mb-4">
+                                    Visualize a distribuição de chamados por status atual.
+                                </p>
+                                <button className="w-full py-2 px-4 border border-green-500 text-green-600 rounded-md hover:bg-green-50 transition-colors">
+                                    Gerar Relatório
+                                </button>
                             </div>
 
                             <div className="border rounded-lg p-6 hover:shadow-md transition-shadow">
@@ -401,8 +516,12 @@ export default function Admin() {
                                     <Clock className="h-8 w-8 text-blue-500" />
                                 </div>
                                 <h3 className="text-lg font-medium text-center mb-2">Tempo Médio de Resolução</h3>
-                                <p className="text-sm text-gray-600 text-center mb-4">Analise o tempo médio de resolução por categoria e técnico.</p>
-                                <button className="w-full py-2 px-4 border border-green-500 text-green-600 rounded-md hover:bg-green-50 transition-colors">Gerar Relatório</button>
+                                <p className="text-sm text-gray-600 text-center mb-4">
+                                    Analise o tempo médio de resolução por categoria e técnico.
+                                </p>
+                                <button className="w-full py-2 px-4 border border-green-500 text-green-600 rounded-md hover:bg-green-50 transition-colors">
+                                    Gerar Relatório
+                                </button>
                             </div>
 
                             <div className="border rounded-lg p-6 hover:shadow-md transition-shadow">
@@ -410,8 +529,12 @@ export default function Admin() {
                                     <Users className="h-8 w-8 text-yellow-500" />
                                 </div>
                                 <h3 className="text-lg font-medium text-center mb-2">Chamados por Técnico</h3>
-                                <p className="text-sm text-gray-600 text-center mb-4">Compare o desempenho e volume de chamados por técnico.</p>
-                                <button className="w-full py-2 px-4 border border-green-500 text-green-600 rounded-md hover:bg-green-50 transition-colors">Gerar Relatório</button>
+                                <p className="text-sm text-gray-600 text-center mb-4">
+                                    Compare o desempenho e volume de chamados por técnico.
+                                </p>
+                                <button className="w-full py-2 px-4 border border-green-500 text-green-600 rounded-md hover:bg-green-50 transition-colors">
+                                    Gerar Relatório
+                                </button>
                             </div>
 
                             <div className="border rounded-lg p-6 hover:shadow-md transition-shadow">
@@ -419,15 +542,18 @@ export default function Admin() {
                                     <PieChart className="h-8 w-8 text-green-500" />
                                 </div>
                                 <h3 className="text-lg font-medium text-center mb-2">Chamados por Categoria</h3>
-                                <p className="text-sm text-gray-600 text-center mb-4">Analise a distribuição de chamados por categoria e tipo.</p>
-                                <button className="w-full py-2 px-4 border border-green-500 text-green-600 rounded-md hover:bg-green-50 transition-colors">Gerar Relatório</button>
+                                <p className="text-sm text-gray-600 text-center mb-4">
+                                    Analise a distribuição de chamados por categoria e tipo.
+                                </p>
+                                <button className="w-full py-2 px-4 border border-green-500 text-green-600 rounded-md hover:bg-green-50 transition-colors">
+                                    Gerar Relatório
+                                </button>
                             </div>
                         </div>
                     </div>
                 )}
-
             </div>
-            
+
             {/* Modal para Novo Usuário */}
             {showUserModal && (
                 <div className="fixed inset-0 backdrop-blur-xs bg-black/20 flex items-center justify-center z-50 p-4">
@@ -447,9 +573,7 @@ export default function Admin() {
 
                         <form onSubmit={handleSubmit} className="p-6 space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Nome Completo *
-                                </label>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Nome Completo *</label>
                                 <input
                                     type="text"
                                     name="nome"
@@ -457,15 +581,12 @@ export default function Admin() {
                                     onChange={handleInputChange}
                                     required
                                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all text-gray-700"
-
                                     placeholder="Digite o nome completo"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Email *
-                                </label>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Email *</label>
                                 <input
                                     type="email"
                                     name="email"
@@ -473,15 +594,12 @@ export default function Admin() {
                                     onChange={handleInputChange}
                                     required
                                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all text-gray-700"
-
                                     placeholder="usuario@email.com"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Senha *
-                                </label>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Senha *</label>
                                 <input
                                     type="password"
                                     name="senha"
@@ -489,7 +607,6 @@ export default function Admin() {
                                     onChange={handleInputChange}
                                     required
                                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all text-gray-700"
-
                                     placeholder="Digite a senha"
                                 />
                             </div>
@@ -503,10 +620,10 @@ export default function Admin() {
                                     value={formData.funcao}
                                     onChange={handleInputChange}
                                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all text-gray-500"
-
                                 >
-                                    <option value="Usuário">Usuário</option>
-                                    <option value="Técnico">Técnico</option>
+                                    <option value="usuario">Usuário</option>
+                                    <option value="tecnico">Técnico</option>
+                                    <option value="admin">Admin</option>
                                 </select>
                             </div>
 

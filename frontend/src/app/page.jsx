@@ -10,7 +10,7 @@ export default function Home() {
     const [senha, setSenha] = useState('');
     const [showSenha, setShowSenha] = useState(false);
     const [emailErro, setEmailErro] = useState('');
-    const [state, setState] = useState(false);
+    const [reload, setReload] = useState(false);
     const router = useRouter();
 
     useEffect(() => {
@@ -39,16 +39,15 @@ export default function Home() {
                 }
 
                 const data = await response.json();
-                console.log(typeof(data));
-                
+                console.log(typeof data);
+
                 console.log(data);
                 router.push(`/${data.role}`); // Redireciona para a página da role do usuário
-                setState(true);
             } catch (err) {
                 console.error('Erro na requisição:', err);
             }
         })();
-    }, [state]);
+    }, [reload]);
 
     function emailValido(email) {
         return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);
@@ -71,11 +70,10 @@ export default function Home() {
             credentials: 'include',
         });
         if (autenticacao.status !== 200) {
+            alert('Email ou senha incorretos. Tente novamente.');
             console.log('Erro ao fazer login:', autenticacao.statusText);
         }
-
-        setState(true);
-
+        setReload(!reload);
         setEmailErro('');
     };
 
@@ -97,7 +95,7 @@ export default function Home() {
                     {/* Essa div tem a parte superior da Coluna Central */}
                     <div className="flex flex-col items-center space-y-2">
                         {/* Texto Simples de Bem-vindo */}
-                        <h2 className="text-base font-semibold text-gray-500 tracking-widest">Bem-Vindo Ao</h2>
+                        <h2 className="text-base font-semibold text-gray-500 tracking-widest">Bem-Vindo ao</h2>
 
                         <div className="flex flex-col items-center">
                             {/* Título do Sistema */}

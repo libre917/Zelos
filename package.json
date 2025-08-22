@@ -1,7 +1,8 @@
 {
     "scripts": {
         "install": "cd backend && npm install && cd .. && cd frontend && npm install",
-        "start": "node --watch backend/app.js"
+        "startBack": "node --watch backend/app.js",
+        "startFront": "cd ./frontend && npm run dev"
     },
     "devDependencies": {
         "autoprefixer": "^10.4.21",
