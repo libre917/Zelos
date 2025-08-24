@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { Eye, EyeClosed } from 'lucide-react'; // Importando Icons do lucide-react para ícone de visibilidade
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { API } from '../config/routes';
 
 export default function Home() {
     const [email, setEmail] = useState('');
@@ -25,7 +26,7 @@ export default function Home() {
 
         (async () => {
             try {
-                const response = await fetch('http://localhost:8081/users/me/role', {
+                const response = await fetch(API.GET_USER_ROLE, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -61,7 +62,7 @@ export default function Home() {
             return;
         }
 
-        const autenticacao = await fetch('http://localhost:8081/auth/login ', {
+        const autenticacao = await fetch(API.LOGIN, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -70,8 +71,9 @@ export default function Home() {
             credentials: 'include',
         });
         if (autenticacao.status !== 200) {
-            alert('Email ou senha incorretos. Tente novamente.');
-            console.log('Erro ao fazer login:', autenticacao.statusText);
+            const { mensagem } = await autenticacao.json();
+            alert(mensagem);
+            console.log('Erro ao fazer login:', mensagem);
         }
         setReload(!reload);
         setEmailErro('');

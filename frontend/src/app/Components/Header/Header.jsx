@@ -4,6 +4,7 @@ import { Bell, User } from 'lucide-react';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import { API } from '../../../config/routes';
 
 export default function Header() {
   const pathname = usePathname();
@@ -39,7 +40,7 @@ export default function Header() {
 
     (async () => {
       try {
-        const response = await fetch('http://localhost:8081/users/me/info', {
+        const response = await fetch(API.GET_USER_INFO, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -64,7 +65,7 @@ export default function Header() {
     if (!token) return;
 
     try {
-      const response = await fetch('http://localhost:8081/auth/logout', {
+      const response = await fetch(API.LOGOUT, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -11,7 +11,6 @@ export async function getUsers() {
         const users = await readAll('usuarios');
         for (const user of users) {
             user.senha = undefined;
-            user.id = undefined;
         }
         return users;
     } catch (err) {

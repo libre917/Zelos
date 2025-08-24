@@ -20,6 +20,7 @@ import {
     Clock,
     User,
 } from 'lucide-react';
+import { API } from '../../../config/routes';
 
 export default function Admin() {
     const router = useRouter();
@@ -47,7 +48,7 @@ export default function Admin() {
 
         (async () => {
             try {
-                const response = await fetch('http://localhost:8081/users', {
+                const response = await fetch(API.USERS, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -75,12 +76,10 @@ export default function Admin() {
             ?.split('=')[1];
 
         if (!token) router.push('/'); // Se não tiver token, não faz nada
-          setCanCreate(false);
+        setCanCreate(false);
 
         try {
-
-            
-            const response = await fetch('http://localhost:8081/users', {
+            const response = await fetch(API.USERS, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -104,14 +103,13 @@ export default function Admin() {
             const data = await response.json();
             setReload(!reload); // Atualiza a lista de usuários
             setUsuarios((prev) => [...prev, data]);
-                  setFormData({
-            nome: '',
-            email: '',
-            senha: '',
-            tipo: 'usuario',
-            status: 'Ativo',
-        });
-          
+            setFormData({
+                nome: '',
+                email: '',
+                senha: '',
+                tipo: 'usuario',
+                status: 'Ativo',
+            });
         } catch (err) {
             console.error('Erro na requisição:', err);
         }
@@ -120,6 +118,38 @@ export default function Admin() {
     if (canCreate === true) {
         createUser();
     }
+
+    async function updataStatus(id, newStatus) {
+        const token = document.cookie
+            .split('; ')
+            .find((row) => row.startsWith('token='))
+            ?.split('=')[1];
+
+        if (!token) router.push('/'); // Se não tiver token, não faz nada
+        setCanCreate(false);
+
+        try {
+            console.log(id, newStatus);
+            
+             const response = await fetch(API.CHANGE_STATUS_USER(id), {
+                 method: 'PUT',
+                 headers: {
+                     'Content-Type': 'application/json',
+                     Authorization: `Bearer ${token}`,
+                 },
+                 body: JSON.stringify({ status: newStatus }),
+                })
+             if (!response.ok) {
+                 console.error('Erro ao cadastrar usuário:', response.status);
+                 return;
+             }
+             setReload(!reload);
+        } catch (err) {
+        console.error("Erro na requisição:", err);
+            
+        }
+    }
+
     // Dados simulados para o dashboard
     const estatisticas = {
         totalUsuarios: usuarios.length,
@@ -442,7 +472,7 @@ export default function Admin() {
                                                 <Settings className="h-3 w-3 mr-1" />
                                                 Editar
                                             </button>
-                                            <button className="text-red-600 hover:text-red-900 text-sm font-medium flex items-center">
+                                            <button className="text-red-600 hover:text-red-900 text-sm font-medium flex items-center" onClick={() => updataStatus(usuario.id, "inativo")} >
                                                 <User className="h-3 w-3 mr-1" />
                                                 Desativar
                                             </button>

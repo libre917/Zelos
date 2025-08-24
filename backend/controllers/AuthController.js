@@ -19,7 +19,7 @@ export const loginController = async (req, res) => {
         const senhaCorreta = await compare(senha, usuario.senha);
 
         if (!senhaCorreta) {
-            return res.status(401).json({ mensagem: 'Senha incorreta' });
+            return res.status(401).json({ mensagem: 'Senha ou email incorretos' });
         }
 
         // Gerar o token JWT

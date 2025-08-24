@@ -1,8 +1,9 @@
 {
     "scripts": {
         "install": "cd backend && npm install && cd .. && cd frontend && npm install",
-        "startBack": "node --watch backend/app.js",
-        "startFront": "cd ./frontend && npm run dev"
+        "startBack": "cd ./backend && node --watch app.js",
+        "startFront": "cd ./frontend && npm run dev",
+        "startDocker": "cd bd && docker run -d --name zelos-db -e MYSQL_ROOT_PASSWORD='senai@123' -e MYSQL_DATABASE=zelos -e MYSQL_USER=zelos_user -e MYSQL_PASSWORD='senai@123' -p 3306:3306 zelos-mysql"
     },
     "devDependencies": {
         "autoprefixer": "^10.4.21",
