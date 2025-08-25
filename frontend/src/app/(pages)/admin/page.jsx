@@ -130,23 +130,22 @@ export default function Admin() {
 
         try {
             console.log(id, newStatus);
-            
-             const response = await fetch(API.CHANGE_STATUS_USER(id), {
-                 method: 'PUT',
-                 headers: {
-                     'Content-Type': 'application/json',
-                     Authorization: `Bearer ${token}`,
-                 },
-                 body: JSON.stringify({ status: newStatus }),
-                })
-             if (!response.ok) {
-                 console.error('Erro ao cadastrar usuário:', response.status);
-                 return;
-             }
-             setReload(!reload);
+
+            const response = await fetch(API.CHANGE_STATUS_USER(id), {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ status: newStatus }),
+            });
+            if (!response.ok) {
+                console.error('Erro ao cadastrar usuário:', response.status);
+                return;
+            }
+            setReload(!reload);
         } catch (err) {
-        console.error("Erro na requisição:", err);
-            
+            console.error('Erro na requisição:', err);
         }
     }
 
@@ -472,10 +471,24 @@ export default function Admin() {
                                                 <Settings className="h-3 w-3 mr-1" />
                                                 Editar
                                             </button>
-                                            <button className="text-red-600 hover:text-red-900 text-sm font-medium flex items-center" onClick={() => updataStatus(usuario.id, "inativo")} >
-                                                <User className="h-3 w-3 mr-1" />
-                                                Desativar
-                                            </button>
+                                            {usuario.status === 'ativo' && (
+                                                <button
+                                                    className="text-red-600 hover:text-red-900 text-sm font-medium flex items-center"
+                                                    onClick={() => updataStatus(usuario.id, 'inativo')}
+                                                >
+                                                    <User className="h-3 w-3 mr-1" />
+                                                    Desativar
+                                                </button>
+                                            )}
+                                            {usuario.status === 'inativo' && (
+                                                <button
+                                                    className="text-red-600 hover:text-red-900 text-sm font-medium flex items-center"
+                                                    onClick={() => updataStatus(usuario.id, 'ativo')}
+                                                >
+                                                    <User className="h-3 w-3 mr-1" />
+                                                    Ativar
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
                                 </div>

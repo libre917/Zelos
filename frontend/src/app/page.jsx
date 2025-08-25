@@ -43,7 +43,7 @@ export default function Home() {
                 console.log(typeof data);
 
                 console.log(data);
-                router.push(`/${data.role}`); // Redireciona para a página da role do usuário
+                router.push(`/${data.role.toLowerCase().normalize("NFD").replace(/\p{M}/gu, "")}`); // Redireciona para a página da role do usuário
             } catch (err) {
                 console.error('Erro na requisição:', err);
             }

@@ -19,4 +19,7 @@ export const API = {
 
     //caminho para buscar informações necessárias do usuário
     GET_USER_INFO: `${process.env.NEXT_PUBLIC_API_URL}/users/me/info`,
+
+    //caminho para busca ou criação de categorias
+    POOL: `${process.env.NEXT_PUBLIC_API_URL}/pool`
 };
