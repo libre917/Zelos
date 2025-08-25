@@ -16,15 +16,15 @@ import {
     CheckCircle,
     Clock,
 } from 'lucide-react';
-import {useRouter} from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { API } from '../../../config/routes';
 
 export default function Usuario() {
-    const router = useRouter()
+    const router = useRouter();
     const [activeTab, setActiveTab] = useState('criarChamado');
-    const [categorias, setCategorias] = useState([])
+    const [categorias, setCategorias] = useState([]);
     const [formData, setFormData] = useState([]);
-    const [reload, setReload] = useState(false)
+    const [reload, setReload] = useState(false);
     useEffect(() => {
         const token = document.cookie
             .split('; ')
@@ -35,30 +35,27 @@ export default function Usuario() {
         (async () => {
             try {
                 const response = await fetch(API.POOL, {
-                    method: "GET",
+                    method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
-                        Authorization: `Bearer ${token}`
-                    }
-                })
-                if(response.ok){
-                       console.error('Erro ao buscar categorias:', response.status);
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                if (!response.ok) {
+                    console.error('Erro ao buscar categorias:', response.status);
                     return;
                 }
 
                 const categorias = await response.json();
-                
-                setCategorias(categorias)
-                console.log(response);
-                
 
+                setCategorias(categorias);
+                console.log(response);
             } catch (err) {
                 console.error('Erro na requisição:', err);
-                
             }
-        })
-    });
-console.log(categorias);
+        })();
+    }, [reload]);
+    console.log(categorias);
 
     return (
         <div className="flex flex-col h-screen bg-gray-50">
@@ -133,10 +130,9 @@ console.log(categorias);
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
                                     <select className="input-field text-gray-700">
-                                        <option>Selecione uma categoria</option>
-                                        <option>Infraestrutura</option>
-                                        <option>Suporte</option>
-                                        <option>Desenvolvimento</option>
+                                        {categorias.map((categoria)=>(
+                                            <option key={categoria.id}>{categoria.titulo}</option>
+                                        ))}
                                     </select>
                                 </div>
                             </div>
@@ -202,7 +198,8 @@ console.log(categorias);
                         </div>
 
                         {/* Lista de chamados */}
-                        <div className="space-y-4"></div>
+                        <div className="space-y-4">
+                        </div>
 
                         {/* Paginação */}
                         <div className="flex items-center justify-between mt-6 bg-gray-50 p-4 rounded-lg">
