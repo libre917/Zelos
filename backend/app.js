@@ -58,7 +58,7 @@ try {
 // 5. Rotas
 app.use('/auth', authRotas);
 
-app.use('/ticket', authMiddleware, ticketRotas);
+app.use('/ticket',  ticketRotas);
 app.use('/pool', authMiddleware, poolRotas);
 app.use('/users', userRotas);
 

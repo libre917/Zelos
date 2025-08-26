@@ -35,6 +35,19 @@ export default function Admin() {
     const [categoriaDescricao, setCategoriaDescricao] = useState('');
     const [canMake, setCanMake] = useState(false);
 
+    // Estados para a lista de usuários e filtros
+    const [usuarios, setUsuarios] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filterType, setFilterType] = useState('Todos'); // 'Todos', 'Usuário', 'Técnico', 'Administrador'
+    const [formData, setFormData] = useState({
+        nome: '',
+        email: '',
+        senha: '',
+        tipo: 'Usuário',
+        status: 'Ativo',
+    });
+    const [canCreate, setCanCreate] = useState(false);
+
     // carrega categorias
     useEffect(() => {
         const token = document.cookie
@@ -42,7 +55,7 @@ export default function Admin() {
             .find((row) => row.startsWith('token='))
             ?.split('=')[1];
 
-        if (!token) router.push('/'); // Se não tiver token, não faz nada
+        if (!token) router.push('/');
         (async () => {
             try {
                 const response = await fetch(API.POOL, {
@@ -60,22 +73,12 @@ export default function Admin() {
                 const categorias = await response.json();
 
                 setCategorias(categorias);
-                console.log(response);
             } catch (err) {
                 console.error('Erro na requisição:', err);
             }
         })();
     }, [reload]);
-    const [usuarios, setUsuarios] = useState([]);
-    const [formData, setFormData] = useState({
-        nome: '',
-        email: '',
-        senha: '',
-        tipo: 'Usuário',
-        status: 'Ativo',
-    });
-    const [canCreate, setCanCreate] = useState(false);
-
+    
     //busca os usuários
     useEffect(() => {
         const token = document.cookie
@@ -83,7 +86,7 @@ export default function Admin() {
             .find((row) => row.startsWith('token='))
             ?.split('=')[1];
 
-        if (!token) router.push('/'); // Se não tiver token, não faz nada
+        if (!token) router.push('/');
 
         (async () => {
             try {
@@ -107,6 +110,7 @@ export default function Admin() {
             }
         })();
     }, [reload]);
+    
     // função para criar usuário
     async function createUser() {
         const token = document.cookie
@@ -114,7 +118,7 @@ export default function Admin() {
             .find((row) => row.startsWith('token='))
             ?.split('=')[1];
 
-        if (!token) router.push('/'); // Se não tiver token, não faz nada
+        if (!token) router.push('/');
         setCanCreate(false);
 
         try {
@@ -139,7 +143,7 @@ export default function Admin() {
             }
 
             const data = await response.json();
-            setReload(!reload); // Atualiza a lista de usuários
+            setReload(!reload);
             setUsuarios((prev) => [...prev, data]);
             setFormData({
                 nome: '',
@@ -187,11 +191,10 @@ export default function Admin() {
             if (!response.ok) {
                 const errorData = await response.json();
                 console.error('Erro ao criar categoria:', response.status, errorData);
-                alert(`Erro ao criar categoria: ${errorData.message}`);
+                alert(`Erro ao criar categoria: ${errorData.mensagem}`);
                 return;
             }
 
-            // Limpa os campos do formulário e recarrega a lista
             setCategoriaNome('');
             setCategoriaDescricao('');
             setReload(!reload);
@@ -208,12 +211,10 @@ export default function Admin() {
             .find((row) => row.startsWith('token='))
             ?.split('=')[1];
 
-        if (!token) router.push('/'); // Se não tiver token, não faz nada
+        if (!token) router.push('/');
         setCanCreate(false);
 
         try {
-            console.log(id, newStatus);
-
             const response = await fetch(API.CHANGE_STATUS_USER(id), {
                 method: 'PUT',
                 headers: {
@@ -259,6 +260,13 @@ export default function Admin() {
         { categoria: 'Outros', quantidade: 8 },
     ];
 
+    // Lógica de filtragem dos usuários
+    const filteredUsers = usuarios.filter((usuario) => {
+        const nameMatch = usuario.nome.toLowerCase().includes(searchTerm.toLowerCase());
+        const typeMatch = filterType === 'Todos' || usuario.funcao.toLowerCase() === filterType.toLowerCase();
+        return nameMatch && typeMatch;
+    });
+
     // Função para lidar com mudanças no formulário
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -271,8 +279,6 @@ export default function Admin() {
     const handleInputChangeCategoria = (e) => {
         const { name, value } = e.target;
         if (name === 'categoriaNome') setCategoriaNome(value);
-        console.log(categoriaNome, categoriaDescricao);
-
         if (name === 'categoriaDescricao') setCategoriaDescricao(value);
     };
 
@@ -355,7 +361,7 @@ export default function Admin() {
                 {activeTab === 'dashboard' && (
                     <div>
                         {/* Cards de estatísticas */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mb-8">
                             <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
                                 <div className="flex items-center justify-between mb-4">
                                     <h3 className="text-lg font-semibold text-gray-800">Usuários</h3>
@@ -393,29 +399,6 @@ export default function Admin() {
                                         <p className="text-sm text-gray-500">Fechados</p>
                                         <p className="text-2xl font-bold text-gray-800">
                                             {estatisticas.chamadosFechados}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-                                <div className="flex items-center justify-between mb-4">
-                                    <h3 className="text-lg font-semibold text-gray-800">Desempenho</h3>
-                                    <div className="rounded-full bg-green-100 p-3">
-                                        <TrendingUp className="h-6 w-6 text-green-500" />
-                                    </div>
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <p className="text-sm text-gray-500">Tempo Médio</p>
-                                        <p className="text-2xl font-bold text-gray-800">
-                                            {estatisticas.tempoMedioResolucao}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-gray-500">Satisfação</p>
-                                        <p className="text-2xl font-bold text-gray-800">
-                                            {estatisticas.satisfacaoMedia}/5
                                         </p>
                                     </div>
                                 </div>
@@ -485,22 +468,6 @@ export default function Admin() {
                                 </div>
                             </div>
                         </div>
-
-                        {/* Calendário de atividades */}
-                        <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-                            <div className="flex items-center justify-between mb-4">
-                                <h3 className="text-lg font-semibold text-gray-800">Calendário de Atividades</h3>
-                                <button className="text-sm text-red-600 hover:text-red-800 font-medium">
-                                    Ver todos
-                                </button>
-                            </div>
-                            <div className="flex items-center justify-center p-4 bg-gray-50 rounded-lg">
-                                <Calendar className="h-16 w-16 text-gray-400" />
-                                <p className="text-gray-500 ml-4">
-                                    O calendário de atividades estará disponível em breve.
-                                </p>
-                            </div>
-                        </div>
                     </div>
                 )}
 
@@ -519,6 +486,8 @@ export default function Admin() {
                                         type="text"
                                         placeholder="Buscar usuários..."
                                         className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-700"
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
                                     />
                                     <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
                                 </div>
@@ -534,19 +503,23 @@ export default function Admin() {
                             </div>
                         </div>
 
-                        {/* Filtros e busca */}
+                        {/* Filtros de Tipo */}
                         <div className="flex flex-wrap gap-4 mb-6">
-                            <select className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-500">
-                                <option>Todos os tipos</option>
-                                <option>Usuário</option>
-                                <option>Técnico</option>
-                                <option>Administrador</option>
+                            <select
+                                className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-500"
+                                value={filterType}
+                                onChange={(e) => setFilterType(e.target.value)}
+                            >
+                                <option>Todos</option>
+                                <option value={'usuario'}>Usuário</option>
+                                <option value={'tecnico'}>Técnico</option>
+                                <option value={'admin'}>Administrador</option>
                             </select>
                         </div>
 
                         {/* Lista de usuários */}
                         <div className="space-y-4">
-                            {usuarios.map((usuario) => (
+                            {filteredUsers.map((usuario) => (
                                 <div
                                     key={usuario.id}
                                     className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-all cursor-pointer"
@@ -604,27 +577,9 @@ export default function Admin() {
                                 </div>
                             ))}
                         </div>
-
-                        {/* Paginação */}
-                        <div className="flex items-center justify-between mt-6">
-                            <div className="text-sm text-gray-700">
-                                Mostrando <span className="font-medium">1</span> a{' '}
-                                <span className="font-medium">5</span> de <span className="font-medium">120</span>{' '}
-                                resultados
-                            </div>
-                            <div className="flex space-x-2">
-                                <button className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors">
-                                    Anterior
-                                </button>
-                                <button className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">
-                                    Próximo
-                                </button>
-                            </div>
-                        </div>
                     </div>
                 )}
-
-                {activeTab === 'relatorios' && (
+           {activeTab === 'relatorios' && (
                     <div className="bg-white rounded-xl shadow-md p-6 mb-8">
                         <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
                             <PieChart className="h-5 w-5 mr-2 text-green-600" />

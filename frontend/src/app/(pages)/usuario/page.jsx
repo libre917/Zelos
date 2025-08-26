@@ -49,13 +49,11 @@ export default function Usuario() {
                 const categorias = await response.json();
 
                 setCategorias(categorias);
-                console.log(response);
             } catch (err) {
                 console.error('Erro na requisição:', err);
             }
         })();
     }, [reload]);
-    console.log(categorias);
 
     return (
         <div className="flex flex-col h-screen bg-gray-50">
