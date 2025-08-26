@@ -31,8 +31,11 @@ export default function Admin() {
     const [categorias, setCategorias] = useState([]);
 
     // Estados para formulário de categoria
-    const [categoriaNome, setCategoriaNome] = useState("");
-    const [categoriaDescricao, setCategoriaDescricao] = useState("");
+    const [categoriaNome, setCategoriaNome] = useState('');
+    const [categoriaDescricao, setCategoriaDescricao] = useState('');
+    const [canMake, setCanMake] = useState(false);
+
+    // carrega categorias
     useEffect(() => {
         const token = document.cookie
             .split('; ')
@@ -65,7 +68,6 @@ export default function Admin() {
     }, [reload]);
     const [usuarios, setUsuarios] = useState([]);
     const [formData, setFormData] = useState({
-        
         nome: '',
         email: '',
         senha: '',
@@ -122,7 +124,6 @@ export default function Admin() {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`,
                 },
-                ContentType: 'application/json',
                 body: JSON.stringify({
                     nome: formData.nome,
                     email: formData.email,
@@ -154,6 +155,51 @@ export default function Admin() {
     // aciona função se canCreate for verdadeiro
     if (canCreate === true) {
         createUser();
+    }
+
+    if (canMake === true) {
+        criarCategoria();
+    }
+    async function criarCategoria() {
+        const token = document.cookie
+            .split('; ')
+            .find((row) => row.startsWith('token='))
+            ?.split('=')[1];
+
+        if (!token) {
+            router.push('/');
+            return;
+        }
+
+        try {
+            const response = await fetch(API.POOL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    titulo: categoriaNome,
+                    descricao: categoriaDescricao,
+                }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error('Erro ao criar categoria:', response.status, errorData);
+                alert(`Erro ao criar categoria: ${errorData.message}`);
+                return;
+            }
+
+            // Limpa os campos do formulário e recarrega a lista
+            setCategoriaNome('');
+            setCategoriaDescricao('');
+            setReload(!reload);
+            alert('Categoria criada com sucesso!');
+        } catch (err) {
+            console.error('Erro na requisição:', err);
+            alert('Erro na requisição, por favor, tente novamente.');
+        }
     }
 
     async function updataStatus(id, newStatus) {
@@ -222,10 +268,17 @@ export default function Admin() {
             [name]: value,
         }));
     };
+    const handleInputChangeCategoria = (e) => {
+        const { name, value } = e.target;
+        if (name === 'categoriaNome') setCategoriaNome(value);
+        console.log(categoriaNome, categoriaDescricao);
+
+        if (name === 'categoriaDescricao') setCategoriaDescricao(value);
+    };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        setCanCreate(true);
+        setCanMake(true);
         alert(`Usuário ${formData.nome} foi cadastrado com sucesso!`);
         setShowUserModal(false);
     };
@@ -278,9 +331,7 @@ export default function Admin() {
                         <button
                             onClick={() => setActiveTab('chamados')}
                             className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${
-                                activeTab === 'chamados'
-                                    ? 'bg-blue-100 text-blue-700 font-medium'
-                                    : 'hover:bg-gray-100'
+                                activeTab === 'chamados' ? 'bg-blue-100 text-blue-700 font-medium' : 'hover:bg-gray-100'
                             }`}
                         >
                             <PieChart className="h-5 w-5" />
@@ -662,115 +713,156 @@ export default function Admin() {
                             Chamados
                         </h2>
                         <div className="bg-white rounded-xl shadow-md p-6 mb-8">
+                            <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
+                                <PlusCircle className="h-5 w-5 mr-2 text-red-600" />
+                                Criar Novo Chamado
+                            </h2>
+
+                            {/* Filtros e busca */}
+                            <div className="flex flex-wrap gap-4 mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                <div className="flex-1 min-w-[200px]">
+                                    <p className="text-sm font-medium text-gray-700 mb-2">
+                                        Preencha os dados abaixo para criar um novo chamado
+                                    </p>
+                                </div>
+                            </div>
+
+                            <form>
+                                {/* Linha 1 */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Título do Chamado
+                                        </label>
+                                        <input
+                                            type="text"
+                                            placeholder="Digite o título do chamado"
+                                            className="input-field text-gray-700"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Categoria
+                                        </label>
+                                        <select className="input-field text-gray-700">
+                                            {categorias.map((categoria) => (
+                                                <option key={categoria.id}>{categoria.titulo}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                {/* Descrição */}
+                                <div className="mb-6">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
+                                    <textarea
+                                        placeholder="Descreva detalhadamente o problema ou solicitação"
+                                        rows={4}
+                                        className="input-field text-gray-700"
+                                    ></textarea>
+                                </div>
+
+                                {/* Botões */}
+                                <div className="flex justify-end space-x-3">
+                                    <button
+                                        type="button"
+                                        className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+                                    >
+                                        Cancelar
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors flex items-center space-x-2"
+                                    >
+                                        <PlusCircle className="h-4 w-4" />
+                                        <span>Criar Chamado</span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
+
+                {activeTab === 'categorias' && (
+                    <div className="bg-white rounded-xl shadow-md p-6 mb-8">
                         <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
-                            <PlusCircle className="h-5 w-5 mr-2 text-red-600" />
-                            Criar Novo Chamado
+                            <PieChart className="h-5 w-5 mr-2 text-pink-600" />
+                            Gerenciamento de Categorias
                         </h2>
 
-                        {/* Filtros e busca */}
-                        <div className="flex flex-wrap gap-4 mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                            <div className="flex-1 min-w-[200px]">
-                                <p className="text-sm font-medium text-gray-700 mb-2">
-                                    Preencha os dados abaixo para criar um novo chamado
-                                </p>
-                            </div>
-                        </div>
-
-                        <form>
-                            {/* Linha 1 */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Título do Chamado
+                        {/* Formulário de criação de categoria */}
+                        <form
+                            onSubmit={(e) => {
+                                e.preventDefault();
+                                criarCategoria();
+                            }}
+                            className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200"
+                        >
+                            <h3 className="text-lg text-black font-semibold mb-4">Criar Nova Categoria</h3>
+                            <div className="flex flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-4">
+                                <div className="flex-1">
+                                    <label htmlFor="categoriaNome" className="block text-sm font-medium text-gray-700">
+                                        Nome
                                     </label>
                                     <input
                                         type="text"
-                                        placeholder="Digite o título do chamado"
-                                        className="input-field text-gray-700"
+                                        id="categoriaNome"
+                                        name="categoriaNome"
+                                        value={categoriaNome}
+                                        onChange={handleInputChangeCategoria}
+                                        className="mt-1 block w-full border border-gray-300 text-gray-700 rounded-md shadow-sm p-2 focus:ring-red-500 focus:border-red-500"
+                                        placeholder="Ex: Hardware"
+                                        required
                                     />
                                 </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
-                                    <select className="input-field text-gray-700">
-                                        {categorias.map((categoria)=>(
-                                            <option key={categoria.id}>{categoria.titulo}</option>
-                                        ))}
-                                    </select>
+                                <div className="flex-1">
+                                    <label
+                                        htmlFor="categoriaDescricao"
+                                        className="block text-sm font-medium text-gray-700"
+                                    >
+                                        Descrição
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="categoriaDescricao"
+                                        name="categoriaDescricao"
+                                        value={categoriaDescricao}
+                                        onChange={handleInputChangeCategoria}
+                                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-gray-700 focus:ring-red-500 focus:border-red-500"
+                                        placeholder="Ex: Problemas com computadores e periféricos"
+                                        required
+                                    />
                                 </div>
                             </div>
-
-                            {/* Descrição */}
-                            <div className="mb-6">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
-                                <textarea
-                                    placeholder="Descreva detalhadamente o problema ou solicitação"
-                                    rows={4}
-                                    className="input-field text-gray-700"
-                                ></textarea>
-                            </div>
-
-                            {/* Botões */}
-                            <div className="flex justify-end space-x-3">
-                                <button
-                                    type="button"
-                                    className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
-                                >
-                                    Cancelar
-                                </button>
+                            <div className="mt-6 flex justify-end">
                                 <button
                                     type="submit"
-                                    className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors flex items-center space-x-2"
+                                    className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
                                 >
                                     <PlusCircle className="h-4 w-4" />
-                                    <span>Criar Chamado</span>
+                                    <span>Criar Categoria</span>
                                 </button>
                             </div>
                         </form>
-                    </div>
-                    </div>
-                    
-                )}
-                
-                {activeTab === 'categorias' && (
-                    <div className="bg-white rounded-xl shadow-md p-6 mb-8 flex flex-col w-full justify-center items-center">
-                        <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
-                            <PieChart className="h-5 w-5 mr-2 text-pink-600" />
-                            Categorias
-                        </h2>
-                        {/* Formulário de criação de categoria (apenas visual) */}
-                        <form className="space-y-6 max-w-lg justify-center items-center w-full">
-                            <div className='w-150'>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Nome da Categoria *</label>
-                                <input
-                                    type="text"
-                                    required
-                                    value={categoriaNome}
-                                    onChange={e => setCategoriaNome(e.target.value)}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all text-gray-700"
-                                    placeholder="Digite o nome da categoria"
-                                />
+
+                        {/* Lista de categorias */}
+                        <h3 className="text-lg font-semibold text-gray-800 mb-4">Categorias Existentes</h3>
+                        {categorias.length > 0 ? (
+                            <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
+                                {categorias.map((categoria) => (
+                                    <div
+                                        key={categoria.id}
+                                        className="bg-gray-100 p-4 rounded-lg border border-gray-200"
+                                    >
+                                        <h4 className="font-medium text-gray-800">{categoria.titulo}</h4>
+                                        <p className="text-sm text-gray-600 mt-1">{categoria.descricao}</p>
+                                    </div>
+                                ))}
                             </div>
-                            <div className='w-150'>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Descrição da Categoria</label>
-                                <textarea
-                                    value={categoriaDescricao}
-                                    onChange={e => setCategoriaDescricao(e.target.value)}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all text-gray-700"
-                                    placeholder="Digite uma descrição para a categoria"
-                                    rows={3}
-                                />
-                            </div>
-                            <div className="flex justify-center">
-                                <button
-                                    type="button"
-                                    className="px-6 py-3 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-all font-medium shadow-md hover:shadow-lg"
-                                    disabled
-                                >
-                                    Criar Categoria
-                                </button>
-                            </div>
-                        </form>
+                        ) : (
+                            <p className="text-gray-500 text-center py-8">Nenhuma categoria encontrada.</p>
+                        )}
                     </div>
                 )}
             </div>
