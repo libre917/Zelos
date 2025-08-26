@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
     Users,
+    PlusCircle,
     BarChart2,
     PieChart,
     TrendingUp,
@@ -27,8 +28,44 @@ export default function Admin() {
     const [activeTab, setActiveTab] = useState('dashboard');
     const [showUserModal, setShowUserModal] = useState(false);
     const [reload, setReload] = useState(false);
+    const [categorias, setCategorias] = useState([]);
+
+    // Estados para formulário de categoria
+    const [categoriaNome, setCategoriaNome] = useState("");
+    const [categoriaDescricao, setCategoriaDescricao] = useState("");
+    useEffect(() => {
+        const token = document.cookie
+            .split('; ')
+            .find((row) => row.startsWith('token='))
+            ?.split('=')[1];
+
+        if (!token) router.push('/'); // Se não tiver token, não faz nada
+        (async () => {
+            try {
+                const response = await fetch(API.POOL, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                if (!response.ok) {
+                    console.error('Erro ao buscar categorias:', response.status);
+                    return;
+                }
+
+                const categorias = await response.json();
+
+                setCategorias(categorias);
+                console.log(response);
+            } catch (err) {
+                console.error('Erro na requisição:', err);
+            }
+        })();
+    }, [reload]);
     const [usuarios, setUsuarios] = useState([]);
     const [formData, setFormData] = useState({
+        
         nome: '',
         email: '',
         senha: '',
@@ -237,6 +274,28 @@ export default function Admin() {
                         >
                             <PieChart className="h-5 w-5" />
                             <span>Relatórios</span>
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('chamados')}
+                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${
+                                activeTab === 'chamados'
+                                    ? 'bg-blue-100 text-blue-700 font-medium'
+                                    : 'hover:bg-gray-100'
+                            }`}
+                        >
+                            <PieChart className="h-5 w-5" />
+                            <span>Chamados</span>
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('categorias')}
+                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${
+                                activeTab === 'categorias'
+                                    ? 'bg-pink-100 text-pink-700 font-medium'
+                                    : 'hover:bg-gray-100'
+                            }`}
+                        >
+                            <PieChart className="h-5 w-5" />
+                            <span>Categorias</span>
                         </button>
                     </nav>
                 </div>
@@ -593,6 +652,125 @@ export default function Admin() {
                                 </button>
                             </div>
                         </div>
+                    </div>
+                )}
+
+                {activeTab === 'chamados' && (
+                    <div className="bg-white rounded-xl shadow-md p-6 mb-8">
+                        <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
+                            <PieChart className="h-5 w-5 mr-2 text-blue-600" />
+                            Chamados
+                        </h2>
+                        <div className="bg-white rounded-xl shadow-md p-6 mb-8">
+                        <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
+                            <PlusCircle className="h-5 w-5 mr-2 text-red-600" />
+                            Criar Novo Chamado
+                        </h2>
+
+                        {/* Filtros e busca */}
+                        <div className="flex flex-wrap gap-4 mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                            <div className="flex-1 min-w-[200px]">
+                                <p className="text-sm font-medium text-gray-700 mb-2">
+                                    Preencha os dados abaixo para criar um novo chamado
+                                </p>
+                            </div>
+                        </div>
+
+                        <form>
+                            {/* Linha 1 */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Título do Chamado
+                                    </label>
+                                    <input
+                                        type="text"
+                                        placeholder="Digite o título do chamado"
+                                        className="input-field text-gray-700"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
+                                    <select className="input-field text-gray-700">
+                                        {categorias.map((categoria)=>(
+                                            <option key={categoria.id}>{categoria.titulo}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+
+                            {/* Descrição */}
+                            <div className="mb-6">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
+                                <textarea
+                                    placeholder="Descreva detalhadamente o problema ou solicitação"
+                                    rows={4}
+                                    className="input-field text-gray-700"
+                                ></textarea>
+                            </div>
+
+                            {/* Botões */}
+                            <div className="flex justify-end space-x-3">
+                                <button
+                                    type="button"
+                                    className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors flex items-center space-x-2"
+                                >
+                                    <PlusCircle className="h-4 w-4" />
+                                    <span>Criar Chamado</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    </div>
+                    
+                )}
+                
+                {activeTab === 'categorias' && (
+                    <div className="bg-white rounded-xl shadow-md p-6 mb-8 flex flex-col w-full justify-center items-center">
+                        <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
+                            <PieChart className="h-5 w-5 mr-2 text-pink-600" />
+                            Categorias
+                        </h2>
+                        {/* Formulário de criação de categoria (apenas visual) */}
+                        <form className="space-y-6 max-w-lg justify-center items-center w-full">
+                            <div className='w-150'>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Nome da Categoria *</label>
+                                <input
+                                    type="text"
+                                    required
+                                    value={categoriaNome}
+                                    onChange={e => setCategoriaNome(e.target.value)}
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all text-gray-700"
+                                    placeholder="Digite o nome da categoria"
+                                />
+                            </div>
+                            <div className='w-150'>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Descrição da Categoria</label>
+                                <textarea
+                                    value={categoriaDescricao}
+                                    onChange={e => setCategoriaDescricao(e.target.value)}
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all text-gray-700"
+                                    placeholder="Digite uma descrição para a categoria"
+                                    rows={3}
+                                />
+                            </div>
+                            <div className="flex justify-center">
+                                <button
+                                    type="button"
+                                    className="px-6 py-3 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-all font-medium shadow-md hover:shadow-lg"
+                                    disabled
+                                >
+                                    Criar Categoria
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 )}
             </div>
