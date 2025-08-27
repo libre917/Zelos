@@ -17,14 +17,19 @@ const porta = process.env.PORT || 8080;
 
 // 3. Middlewares essenciais com tratamento de erros
 try {
-    (async () =>{
-    const existAdmin = await readAll("usuarios", `funcao = 'admin'`)
-    
-    if (!existAdmin || existAdmin.length === 0) {
-        const senhaHash = await generateHashedPassword("admin@123")
-        const adminCriado = await create('usuarios', { nome: "admin", senha: senhaHash, email: "admin@email.com", funcao: "admin" })
-        console.log("admin criado para funcionamento inicial da aplicação");
-    }
+    (async () => {
+        const existAdmin = await readAll('usuarios', `funcao = 'admin'`);
+
+        if (!existAdmin || existAdmin.length === 0) {
+            const senhaHash = await generateHashedPassword('admin@123');
+            const adminCriado = await create('usuarios', {
+                nome: 'admin',
+                senha: senhaHash,
+                email: 'admin@email.com',
+                funcao: 'admin',
+            });
+            console.log('admin criado para funcionamento inicial da aplicação');
+        }
     })();
 
     app.use(
@@ -58,7 +63,7 @@ try {
 // 5. Rotas
 app.use('/auth', authRotas);
 
-app.use('/ticket',  ticketRotas);
+app.use('/ticket', authMiddleware, ticketRotas);
 app.use('/pool', authMiddleware, poolRotas);
 app.use('/users', userRotas);
 
@@ -77,10 +82,8 @@ process.on('uncaughtException', (err) => {
 });
 
 // 7. Inicialização do servidor com verificação
-app
-    .listen(porta, () => {
-        console.log(`Servidor rodando na porta ${porta}`);
-    })
-    .on('error', (err) => {
-        console.error('Erro ao iniciar:', err);
-    });
+app.listen(porta, () => {
+    console.log(`Servidor rodando na porta ${porta}`);
+}).on('error', (err) => {
+    console.error('Erro ao iniciar:', err);
+});

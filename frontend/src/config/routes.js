@@ -21,5 +21,11 @@ export const API = {
     GET_USER_INFO: `${process.env.NEXT_PUBLIC_API_URL}/users/me/info`,
 
     //caminho para busca ou criação de categorias
-    POOL: `${process.env.NEXT_PUBLIC_API_URL}/pool`
+    POOL: `${process.env.NEXT_PUBLIC_API_URL}/pool`,
+
+    //caminho para busca ou criação de chamados
+    TICKET: `${process.env.NEXT_PUBLIC_API_URL}/ticket`,
+
+    //caminho para buscar chamados do usuário
+    GET_USER_TICKETS: `${process.env.NEXT_PUBLIC_API_URL}/ticket/info/user`,
 };

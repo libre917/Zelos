@@ -1,4 +1,4 @@
-    -- Criação da tabela `usuarios`
+   -- Criação da tabela `usuarios`
     CREATE TABLE usuarios (
         id INT AUTO_INCREMENT PRIMARY KEY,
         nome VARCHAR(255) NOT NULL,
@@ -13,7 +13,7 @@
     -- Criação da tabela `pool`
     CREATE TABLE pool (
         id INT AUTO_INCREMENT PRIMARY KEY,
-        titulo ENUM('externo', 'manutencao', 'apoio_tecnico', 'limpeza') NOT NULL,
+        titulo varchar(50) NOT NULL,
         descricao TEXT,
         status ENUM('ativo', 'inativo') DEFAULT 'ativo',
         criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -47,7 +47,7 @@
         tecnico_id INT,
         descricao TEXT,
         comeco TIMESTAMP NOT NULL,
-        fim TIMESTAMP NOT NULL,
+        fim TIMESTAMP NULL,
         duracao INT AS (TIMESTAMPDIFF(SECOND, comeco, fim)) STORED, -- Calcula a duração em segundos
         criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (chamado_id) REFERENCES chamados(id),
