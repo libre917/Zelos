@@ -77,17 +77,10 @@ process.on('uncaughtException', (err) => {
 });
 
 // 7. Inicialização do servidor com verificação
-const server = app
+app
     .listen(porta, () => {
         console.log(`Servidor rodando na porta ${porta}`);
     })
     .on('error', (err) => {
         console.error('Erro ao iniciar:', err);
     });
-
-// 8. Encerramento elegante
-process.on('SIGTERM', () => {
-    server.close(() => {
-        console.log('Servidor encerrado');
-    });
-});

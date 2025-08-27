@@ -48,13 +48,3 @@ export async function checkEmailDuplicado(email) {
         throw erroStatus('Email já cadastrado', 409);
     }
 }
-
-// Verifica se o título está entre os válidos
-export function validarTitulo(titulo) {
-    if (!TITULOS_VALIDOS.includes(titulo)) {
-        throw erroStatus(
-            'Título deve ser um dos seguintes: ' + TITULOS_VALIDOS.join(', '),
-            400
-        );
-    }
-}
