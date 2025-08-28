@@ -26,6 +26,7 @@ export default function Tecnico() {
     const [chamadoSelecionado, setChamadoSelecionado] = useState(null);
     const [chamados, setChamados] = useState([]);
 
+    // busca chamados do tecnico
     useEffect(() => {
         const token = document.cookie
             .split('; ')
@@ -35,7 +36,7 @@ export default function Tecnico() {
         if (!token) router.push('/');
         (async () => {
             try {
-                const response = await fetch(API.TICKET, {
+                const response = await fetch(API.GET_TECHNICIAN_TICKETS, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -53,6 +54,41 @@ export default function Tecnico() {
             }
         })();
     }, [router]);
+
+    // seta o tecnico ao chamado
+    useEffect(() => {
+        const token = document.cookie
+            .split('; ')
+            .find((row) => row.startsWith('token='))
+            ?.split('=')[1];
+
+        if (!token) router.push('/');
+        (async () => {
+            try {
+                const response = await fetch(API.SET_TECHNICIAN(id), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({
+                        chamadoId: chamadoSelecionado.id,
+                        tecnicoId: token,
+                    }),
+                });
+                if (!response.ok) {
+                    console.error('Erro ao setar técnico:', response.status);
+                    return;
+                }
+                const data = await response.json();
+                setChamados((prev) =>
+                    prev.map((c) => (c.id === chamadoSelecionado.id ? { ...c, tecnico_id: data.tecnico_id } : c))
+                );
+            } catch (err) {
+                console.error('Erro na requisição:', err);
+            }
+        })();
+    }, [chamadoSelecionado, router]);
 
     const handleChamadoClick = (chamado) => {
         setChamadoSelecionado(chamado);
@@ -262,8 +298,7 @@ export default function Tecnico() {
                                                 </span>
                                             </div>
                                             <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500">
-                                                <span className="flex items-center">
-                                                </span>
+                                                <span className="flex items-center"></span>
                                                 <span className="flex items-center">
                                                     <Calendar className="h-4 w-4 mr-1" />
                                                     {new Date(chamadoSelecionado.criado_em).toLocaleString('pt-BR')}
@@ -276,7 +311,7 @@ export default function Tecnico() {
                                             <div>
                                                 <p className="text-xs text-gray-500">Solicitante</p>
                                                 <p className="font-medium text-gray-700">
-                                                    {chamadoSelecionado.usuario_id}
+                                                    {chamadoSelecionado.solicitante}
                                                 </p>
                                             </div>
                                             <div>

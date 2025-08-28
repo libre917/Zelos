@@ -62,6 +62,15 @@ export async function getPoolbyTitle(title) {
     }
 }
 
+export async function getPoolTechnicians(id_tecnico) {
+    try {
+        return await readAll('pool_tecnico', `id_tecnico = '${id_tecnico}'`);
+    } catch (err) {
+        console.error('Erro ao obter técnicos da pool:', err);
+        throw err;
+    }
+}
+
 export async function getPoolTechniciansById(id_pool, technicianId) {
     try {
         return await readAll('pool_tecnico', `id_pool = '${id_pool}' AND id_tecnico = '${technicianId}'`);

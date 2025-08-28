@@ -1,4 +1,14 @@
-import { getTickets, getTicket, createTicket, setTechnicianToTicket, getRecord, getTicketsByUser, getTicketsByStatus, getTicketsByTechnician } from '../services/ticketsService.js';
+import {
+    getTickets,
+    getTicket,
+    createTicket,
+    setTechnicianToTicket,
+    getRecord,
+    getTicketsByUser,
+    getTicketsByStatus,
+    getTicketsByTechnician,
+    getTicketsThatTechnicianIsPermited,
+} from '../services/ticketsService.js';
 import { getRoleUser } from '../services/usersService.js';
 
 export async function getTicketsController(req, res) {
@@ -44,6 +54,19 @@ export async function getTicketsByUserController(req, res) {
     }
 }
 
+export async function getTicketsThatTechnicianIsPermitedController(req, res) {
+    try {
+        const technicianId = req.usuarioId;
+        const tickets = await getTicketsThatTechnicianIsPermited(technicianId);
+        res.status(200).json(tickets);
+    } catch (err) {
+        console.error('Erro ao buscar chamados do técnico:', err);
+        const status = err.status || 500;
+        const mensagem = err.message || 'Erro interno do servidor';
+        res.status(status).json({ mensagem, status });
+    }
+}
+
 export async function getTicketsByTechnicianController(req, res) {
     try {
         const technicianId = req.params.id;
@@ -54,11 +77,11 @@ export async function getTicketsByTechnicianController(req, res) {
         const status = err.status || 500;
         const mensagem = err.message || 'Erro interno do servidor';
         res.status(status).json({ mensagem, status });
-    }   
+    }
 }
 
 export async function getTicketsByStatusController(req, res) {
-    try{
+    try {
         const status = req.params.status;
         const tickets = await getTicketsByStatus(status);
         res.status(200).json(tickets);
@@ -67,7 +90,7 @@ export async function getTicketsByStatusController(req, res) {
         const status = err.status || 500;
         const mensagem = err.message || 'Erro interno do servidor';
         res.status(status).json({ mensagem, status });
-    }       
+    }
 }
 
 export async function getRecordController(req, res) {
@@ -85,7 +108,6 @@ export async function getRecordController(req, res) {
         const status = error.status || 500;
         const mensagem = error.message || 'Erro interno do servidor';
         res.status(status).json({ mensagem, status });
-        
     }
 }
 
@@ -95,10 +117,9 @@ export async function createTicketController(req, res) {
         const data = {
             titulo,
             descricao,
-            tipo_id: tipo_id ,
+            tipo_id: tipo_id,
             usuario_id: req.usuarioId, // Usa o ID do usuário logado
         };
-        
 
         const createdTicket = await createTicket(data);
         res.status(201).json({

@@ -84,8 +84,6 @@ export default function Usuario() {
             return;
         }
         try {
-            console.log(formData);
-
             const response = await fetch(API.TICKET, {
                 method: 'POST',
                 headers: {
