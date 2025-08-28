@@ -22,6 +22,7 @@ import {
     Clock,
     User,
     FileText,
+    Send
 } from 'lucide-react';
 import { API } from '../../../config/routes';
 
@@ -1338,20 +1339,29 @@ export default function Admin() {
                                             </select>
                                         </div>
 
-                                        {/* Adicionar comentário */}
-                                        <div>
-                                            <h4 className="text-sm font-medium text-gray-700 mb-2">
-                                                Adicionar Comentário
-                                            </h4>
-                                            <textarea
-                                                className="input-field"
-                                                rows="3"
-                                                placeholder="Digite seu comentário ou solução..."
-                                            ></textarea>
-                                            <div className="flex justify-end mt-2">
-                                                <button className="btn btn-primary">Enviar</button>
-                                            </div>
+                                        <div className="flex justify-end mt-2">
+                                            <button
+                                                type="button"
+                                                disabled={loading}
+                                                className={`flex items-center gap-2 px-4 py-2 rounded-2xl transition cursor-pointer
+
+                                                    ${loading
+                                                        ? "bg-gray-300 cursor-not-allowed text-gray-600"
+                                                        : "bg-red-600 hover:bg-red-500 text-white"
+                                                    }`}
+                                            >
+                                                {loading ? (
+                                                    <span className="animate-pulse">Enviando...</span>
+                                                ) : (
+                                                    <>
+                                                        <Send size={14} />
+                                                        Enviar
+                                                    </>
+                                                )}
+                                            </button>
                                         </div>
+
+
                                     </div>
                                 </div>
                             )}
