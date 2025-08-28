@@ -1,4 +1,4 @@
-import { read, readAll, create, update } from '../config/database.js';
+import { read, readAll, create, update, deleteRecord } from '../config/database.js';
 import { Pool } from '../model/Pool.js';
 import erroStatus from '../utils/erroStatus.js';
 import { validarRole } from '../utils/validar.js';
@@ -127,9 +127,9 @@ export async function updatePool(id, data) {
     }
 }
 
-export async function deletePool(id) {
+export async function deletePool(id){
     try {
-        
+        return await deleteRecord('pool', `id = '${id}'`);
     } catch (err) {
         console.error('Erro ao atualizar pool:', err);
         throw err;

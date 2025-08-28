@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import {
     Users,
     PlusCircle,
@@ -128,7 +128,7 @@ export default function Admin() {
         (async () => {
             try {
                 const response = await fetch(API.GET_POOL_WITH_TICKETS, {
-                    method: 'GET',  
+                    method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
                         Authorization: `Bearer ${token}`,
@@ -145,7 +145,7 @@ export default function Admin() {
                 alert('Erro na requisição, por favor, tente novamente.');
             }
         })();
-    });
+    }, [reload]);
 
     // função para criar usuário
     async function createUser() {
@@ -279,14 +279,16 @@ export default function Admin() {
 
     function GraficoDeChamados({ data }) {
         return (
-            <BarChart width={500} height={300} data={data}>
-                <CartesianGrid strokeDasharray="4 4" />
-                <XAxis dataKey="categoria" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="quantidade" fill="#8884d8" />
-            </BarChart>
+            <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={data}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="categoria" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="quantidade" fill="#d88484ff" />
+                </BarChart>
+            </ResponsiveContainer>
         );
     }
 
@@ -363,7 +365,7 @@ export default function Admin() {
                 alert('Erro na requisição, por favor, tente novamente.');
             }
         })();
-    });
+    }, [reload]);
 
     const handleChamadoClick = (chamado) => {
         setChamadoSelecionado(chamado);
@@ -650,7 +652,7 @@ export default function Admin() {
                             >
                                 <option>Todos</option>
                                 <option value={'usuario'}>Usuário</option>
-                                <option value={'admin'}>Técnico</option>
+                                <option value={'tecnico'}>Técnico</option>
                                 <option value={'admin'}>Administrador</option>
                             </select>
                         </div>
@@ -774,7 +776,7 @@ export default function Admin() {
                                                                         required
                                                                     >
                                                                         <option value="usuario">Usuário</option>
-                                                                        <option value="admin">Técnico</option>
+                                                                        <option value="tecnico">Técnico</option>
                                                                         <option value="admin">Admin</option>
                                                                     </select>
                                                                 </div>
@@ -1396,13 +1398,13 @@ export default function Admin() {
                                 >
                                     <option value="">Selecione</option>
                                     <option value="usuario">Usuário</option>
-                                    <option value="admin">Técnico</option>
+                                    <option value="tecnico">Técnico</option>
                                     <option value="admin">Admin</option>
                                 </select>
                             </div>
 
                             {/* Mostrar categorias se for técnico */}
-                            {formData.funcao === 'admin' && (
+                            {formData.funcao === 'tecnico' && (
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">Categoria</label>
                                     <select

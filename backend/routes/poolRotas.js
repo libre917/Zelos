@@ -1,5 +1,5 @@
 import express from 'express';
-import { createPoolController, getPoolController, getPoolsController, getPoolsWithTicketsController, getTicketsByPoolIdController, updatePoolController } from '../controllers/PoolController.js';
+import { createPoolController, deletePoolController, getPoolController, getPoolsController, getPoolsWithTicketsController, getTicketsByPoolIdController, updatePoolController } from '../controllers/PoolController.js';
 
 const router = express.Router();
 
@@ -20,5 +20,8 @@ router.post('/',  createPoolController);
 
 // Rota para atualizar um pool
 router.put('/:id',  updatePoolController);
+
+// Rota para deletar um pool
+router.delete('/:id', deletePoolController); 
 
 export default router;
