@@ -1029,7 +1029,7 @@ export default function Admin() {
                                 <div className="mb-6">
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
                                     <textarea
-                                        name='descrição'
+                                        name='descricao'
                                         value={formChamadoData.descricao}
                                         onChange={handleChange}
                                         placeholder="Descreva detalhadamente o problema ou solicitação"
