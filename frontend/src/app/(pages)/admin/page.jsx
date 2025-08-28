@@ -35,6 +35,11 @@ export default function Admin() {
     const [loadingUsers, setLoadingUsers] = useState(true);
     const [chamadoSelecionado, setChamadoSelecionado] = useState(null);
     const [chamados, setChamados] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [success, setSuccess] = useState(false);
+    const [error, setError] = useState('');
+    const [statusFiltro, setStatusFiltro] = useState('');
+    const [categoriaFiltro, setCategoriaFiltro] = useState('');
 
     // Estados para formulário de categoria
     const [categoriaNome, setCategoriaNome] = useState('');
@@ -51,6 +56,12 @@ export default function Admin() {
         funcao: '',
         status: 'Ativo',
     });
+    const [formChamadoData, setFormChamadoData] = useState({
+        equipamentoId: '',
+        categoria: '',
+        descricao: '',
+    });
+
     const [canCreate, setCanCreate] = useState(false);
 
     // carrega categorias
@@ -446,6 +457,59 @@ export default function Admin() {
         }
     }
 
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormChamadoData((prev) => ({ ...prev, [name]: value }));
+    };
+
+    // formulario de chamado admin
+    const handleSubmitAdmin = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setError('');
+        setSuccess(false);
+        const token = document.cookie
+            .split('; ')
+            .find((row) => row.startsWith('token='))
+            ?.split('=')[1];
+        if (!token) {
+            setError('Admin não autenticado.');
+            setLoading(false);
+            return;
+        }
+        try {
+            console.log(formChamadoData);
+
+            const response = await fetch(API.TICKET, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    titulo: formChamadoData.equipamentoId,
+                    descricao: formChamadoData.descricao,
+                    tipo_id: formChamadoData.categoria,
+                }),
+            });
+            console.log('Enviando Dados', formChamadoData);
+
+            if (!response.ok) {
+                setError('Erro ao criar chamado.');
+                setLoading(false);
+                return;
+            }
+            setReload(!reload);
+            setSuccess(true);
+            setFormData({ equipamentoId: '', categoria: '', descricao: '' });
+        } catch (err) {
+            setError('Erro na requisição.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
     return (
         <div className="flex flex-col h-screen bg-gray-50">
             {/* Cabeçalho da página */}
@@ -462,85 +526,57 @@ export default function Admin() {
                     <nav className="flex flex-wrap gap-4">
                         <button
                             onClick={() => setActiveTab('dashboard')}
-                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${
-                                activeTab === 'dashboard' ? 'bg-red-100 text-red-700 font-medium' : 'hover:bg-gray-100'
-                            }`}
+                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${activeTab === 'dashboard' ? 'bg-red-100 text-red-700 font-medium' : 'hover:bg-gray-100'
+                                }`}
                         >
                             <BarChart2 className="h-5 w-5" />
                             <span>Dashboard</span>
                         </button>
                         <button
                             onClick={() => setActiveTab('usuarios')}
-                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${
-                                activeTab === 'usuarios'
-                                    ? 'bg-yellow-100 text-yellow-700 font-medium'
-                                    : 'hover:bg-gray-100'
-                            }`}
+                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${activeTab === 'usuarios'
+                                ? 'bg-yellow-100 text-yellow-700 font-medium'
+                                : 'hover:bg-gray-100'
+                                }`}
                         >
                             <Users className="h-5 w-5" />
                             <span>Usuários</span>
                         </button>
                         <button
                             onClick={() => setActiveTab('relatorios')}
-                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${
-                                activeTab === 'relatorios'
-                                    ? 'bg-green-100 text-green-700 font-medium'
-                                    : 'hover:bg-gray-100'
-                            }`}
+                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${activeTab === 'relatorios'
+                                ? 'bg-green-100 text-green-700 font-medium'
+                                : 'hover:bg-gray-100'
+                                }`}
                         >
                             <PieChart className="h-5 w-5" />
                             <span>Relatórios</span>
                         </button>
                         <button
                             onClick={() => setActiveTab('chamados')}
-                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${
-                                activeTab === 'chamados' ? 'bg-blue-100 text-blue-700 font-medium' : 'hover:bg-gray-100'
-                            }`}
+                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${activeTab === 'chamados' ? 'bg-blue-100 text-blue-700 font-medium' : 'hover:bg-gray-100'
+                                }`}
                         >
                             <PieChart className="h-5 w-5" />
                             <span>Chamados</span>
                         </button>
                         <button
                             onClick={() => setActiveTab('categorias')}
-                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${
-                                activeTab === 'categorias'
-                                    ? 'bg-pink-100 text-pink-700 font-medium'
-                                    : 'hover:bg-gray-100'
-                            }`}
+                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${activeTab === 'categorias'
+                                ? 'bg-pink-100 text-pink-700 font-medium'
+                                : 'hover:bg-gray-100'
+                                }`}
                         >
                             <PieChart className="h-5 w-5" />
                             <span>Categorias</span>
                         </button>
                         <button
                             onClick={() => setActiveTab('pool')}
-                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${
-                                activeTab === 'pool' ? 'bg-red-100 text-red-700 font-medium' : 'hover:bg-gray-100'
-                            }`}
+                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${activeTab === 'pool' ? 'bg-red-100 text-red-700 font-medium' : 'hover:bg-gray-100'
+                                }`}
                         >
                             <Layers className="h-5 w-5" />
                             <span>Pool de Chamados</span>
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('emProgresso')}
-                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${
-                                activeTab === 'emProgresso'
-                                    ? 'bg-yellow-100 text-yellow-700 font-medium'
-                                    : 'hover:bg-gray-100'
-                            }`}
-                        >
-                            <Clock className="h-5 w-5" />
-                            <span>Em Progresso</span>
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('resolvidos')}
-                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${
-                                activeTab === 'resolvidos'
-                                    ? 'bg-green-100 text-green-700 font-medium'
-                                    : 'hover:bg-gray-100'
-                            }`}
-                        >
-                            <CheckCircle className="h-5 w-5" />
-                            <span>Resolvidos</span>
                         </button>
                     </nav>
                 </div>
@@ -675,22 +711,20 @@ export default function Admin() {
                                                 <p className="text-sm text-gray-500 mt-1">{usuario.email}</p>
                                             </div>
                                             <span
-                                                className={`px-3 py-1 rounded-full text-xs font-medium ${
-                                                    usuario.status === 'ativo'
-                                                        ? 'bg-green-100 text-green-800'
-                                                        : 'bg-red-100 text-red-800'
-                                                }`}
+                                                className={`px-3 py-1 rounded-full text-xs font-medium ${usuario.status === 'ativo'
+                                                    ? 'bg-green-100 text-green-800'
+                                                    : 'bg-red-100 text-red-800'
+                                                    }`}
                                             >
                                                 {usuario.status}
                                             </span>
                                         </div>
                                         <div className="flex justify-between items-center mt-4">
                                             <span
-                                                className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                                    usuario.funcao === 'admin'
-                                                        ? 'bg-blue-100 text-blue-800'
-                                                        : 'bg-green-100 text-green-800'
-                                                }`}
+                                                className={`px-2 py-1 rounded-full text-xs font-medium ${usuario.funcao === 'admin'
+                                                    ? 'bg-blue-100 text-blue-800'
+                                                    : 'bg-green-100 text-green-800'
+                                                    }`}
                                             >
                                                 {usuario.funcao}
                                             </span>
@@ -849,6 +883,7 @@ export default function Admin() {
                         )}
                     </div>
                 )}
+
                 {activeTab === 'relatorios' && (
                     <div className="bg-white rounded-xl shadow-md p-6 mb-8">
                         <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
@@ -952,16 +987,19 @@ export default function Admin() {
                                 </div>
                             </div>
 
-                            <form>
+                            <form className='space-y-6' onSubmit={handleSubmitAdmin}>
                                 {/* Linha 1 */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Título do Chamado
+                                            Id do equipamento
                                         </label>
                                         <input
                                             type="text"
-                                            placeholder="Digite o título do chamado"
+                                            name="equipamentoId"
+                                            value={formChamadoData.equipamentoId}
+                                            onChange={handleChange}
+                                            placeholder="Digite o Id do equipamento"
                                             className="input-field text-gray-700"
                                         />
                                     </div>
@@ -970,9 +1008,17 @@ export default function Admin() {
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
                                             Categoria
                                         </label>
-                                        <select className="input-field text-gray-700">
+                                        <select
+                                            name='categoria'
+                                            value={formChamadoData.categoria}
+                                            onChange={handleChange}
+                                            className='input-field text-gray-700'
+                                        >
+                                            <option value="">Selecione uma categoria</option>
                                             {categorias.map((categoria) => (
-                                                <option key={categoria.id}>{categoria.titulo}</option>
+                                                <option key={categoria.id} value={categoria.id}>
+                                                    {categoria.titulo}
+                                                </option>
                                             ))}
                                         </select>
                                     </div>
@@ -982,6 +1028,9 @@ export default function Admin() {
                                 <div className="mb-6">
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
                                     <textarea
+                                        name='descrição'
+                                        value={formChamadoData.descricao}
+                                        onChange={handleChange}
                                         placeholder="Descreva detalhadamente o problema ou solicitação"
                                         rows={4}
                                         className="input-field text-gray-700"
@@ -998,11 +1047,16 @@ export default function Admin() {
                                     </button>
                                     <button
                                         type="submit"
+                                        disabled={loading}
                                         className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors flex items-center space-x-2"
                                     >
                                         <PlusCircle className="h-4 w-4" />
-                                        <span>Criar Chamado</span>
+                                        <span>{loading ? 'Criando...' : 'Criar Chamado'}</span>
                                     </button>
+                                    {success && (
+                                        <div className='text-green-600 font-medium self-center'>Chamado criado com sucesso!</div>
+                                    )}
+                                    {error && <div className='text-red-600 font-medium self-center'>{error}</div>}
                                 </div>
                             </form>
                         </div>
@@ -1091,32 +1145,44 @@ export default function Admin() {
                     </div>
                 )}
 
-                {/* Área de Pool de Chamados, Em Progresso e Resolvidos */}
-                {(activeTab === 'pool' || activeTab === 'emProgresso' || activeTab === 'resolvidos') && (
+                {/* Área de Pool de Chamados */}
+                {(activeTab === 'pool') && (
                     <div className="bg-white rounded-xl shadow-md p-6 mb-8">
                         <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
                             {activeTab === 'pool' && <Layers className="h-5 w-5 mr-2 text-red-600" />}
-                            {activeTab === 'emProgresso' && <Clock className="h-5 w-5 mr-2 text-yellow-600" />}
-                            {activeTab === 'resolvidos' && <CheckCircle className="h-5 w-5 mr-2 text-green-600" />}
                             {activeTab === 'pool' && 'Pool de Chamados'}
-                            {activeTab === 'emProgresso' && 'Chamados Em Progresso'}
-                            {activeTab === 'resolvidos' && 'Chamados Resolvidos'}
                         </h2>
 
                         {/* Filtros e busca */}
                         <div className="flex flex-wrap gap-4 mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                            <div className="flex-1 min-w-[200px]">
-                                <div className="relative">
-                                    <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                                    <select className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-700">
-                                        <option value="">Todas as categorias</option>
-                                        <option value="Hardware">Hardware</option>
-                                        <option value="Software">Software</option>
-                                        <option value="Rede">Rede</option>
-                                        <option value="Acesso">Acesso</option>
-                                        <option value="Suporte">Suporte</option>
-                                    </select>
-                                </div>
+                            <div className="relative max-w-xs">
+                                <Filter className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                                <select
+                                    className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500 max-w-xs text-gray-700"
+                                    value={statusFiltro}
+                                    onChange={(e) => setStatusFiltro(e.target.value)}
+                                >
+                                    <option value="">Todos os status</option>
+                                    <option value="pendente">Pendente</option>
+                                    <option value="em progresso">Em Progresso</option>
+                                    <option value="concluído">Concluído</option>
+                                </select>
+                            </div>
+
+                            <div className="relative max-w-xs ml-10">
+                                <Filter className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                                <select
+                                    className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500 max-w-xs text-gray-700"
+                                    value={categoriaFiltro}
+                                    onChange={(e) => setCategoriaFiltro(e.target.value)}
+                                >
+                                    <option value="">Todas as categorias</option>
+                                    {categorias.map((categoria) => (
+                                        <option key={categoria.id} value={categoria.id}>
+                                            {categoria.titulo}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
                         </div>
 
@@ -1124,32 +1190,29 @@ export default function Admin() {
                         <div className="flex flex-col lg:flex-row gap-6">
                             {/* Lista de chamados */}
                             <div
-                                className={`${
-                                    chamadoSelecionado ? 'lg:w-1/2' : 'w-full'
-                                } bg-white rounded-lg border border-gray-200`}
+                                className={`${chamadoSelecionado ? 'lg:w-1/2' : 'w-full'
+                                    } bg-white rounded-lg border border-gray-200`}
                             >
                                 {/* Lista de chamados */}
                                 <div className="space-y-4 p-4">
                                     {chamados.map((chamado) => (
                                         <div
                                             key={chamado.id}
-                                            className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                                                chamadoSelecionado?.id === chamado.id
-                                                    ? 'border-red-500 bg-red-50'
-                                                    : 'border-gray-200 hover:border-red-300 hover:bg-gray-50'
-                                            }`}
+                                            className={`p-4 border rounded-lg cursor-pointer transition-all ${chamadoSelecionado?.id === chamado.id
+                                                ? 'border-red-500 bg-red-50'
+                                                : 'border-gray-200 hover:border-red-300 hover:bg-gray-50'
+                                                }`}
                                             onClick={() => handleChamadoClick(chamado)}
                                         >
                                             <div className="flex justify-between items-start mb-2">
                                                 <h3 className="font-medium text-gray-800">{chamado.titulo}</h3>
                                                 <div
-                                                    className={`px-2 py-1 text-xs rounded-full ${
-                                                        chamado.status === 'Pendente'
-                                                            ? 'bg-red-100 text-red-800'
-                                                            : chamado.status === 'Em Progresso'
+                                                    className={`px-2 py-1 text-xs rounded-full ${chamado.status === 'Pendente'
+                                                        ? 'bg-red-100 text-red-800'
+                                                        : chamado.status === 'Em Progresso'
                                                             ? 'bg-yellow-100 text-yellow-800'
                                                             : 'bg-green-100 text-green-800'
-                                                    }`}
+                                                        }`}
                                                 >
                                                     {chamado.status}
                                                 </div>
@@ -1206,13 +1269,12 @@ export default function Admin() {
                                                     {chamadoSelecionado.titulo}
                                                 </h3>
                                                 <span
-                                                    className={`px-2 py-1 text-xs rounded-full ${
-                                                        chamadoSelecionado.status === 'Pendente'
-                                                            ? 'bg-red-100 text-red-800'
-                                                            : chamadoSelecionado.status === 'Em Progresso'
+                                                    className={`px-2 py-1 text-xs rounded-full ${chamadoSelecionado.status === 'Pendente'
+                                                        ? 'bg-red-100 text-red-800'
+                                                        : chamadoSelecionado.status === 'Em Progresso'
                                                             ? 'bg-yellow-100 text-yellow-800'
                                                             : 'bg-green-100 text-green-800'
-                                                    }`}
+                                                        }`}
                                                 >
                                                     {chamadoSelecionado.status}
                                                 </span>
@@ -1255,56 +1317,25 @@ export default function Admin() {
                                             </p>
                                         </div>
 
-                                        {/* Ações */}
                                         <div>
-                                            {activeTab === 'pool' &&
-                                            chamadoSelecionado.status === 'Pendente' &&
-                                            !chamadoSelecionado.admin ? (
-                                                <button
-                                                    onClick={handleCandidatar}
-                                                    className="px-4 py-2 rounded-md bg-blue-600 text-white font-medium hover:bg-blue-700 transition"
-                                                >
-                                                    Candidatar-se ao Chamado
-                                                </button>
-                                            ) : (
-                                                <>
-                                                    <h4 className="text-sm font-medium text-gray-700 mb-2">
-                                                        Atualizar Status
-                                                    </h4>
-                                                    <div className="flex space-x-3">
-                                                        <button
-                                                            onClick={() => handleAtualizarStatus('Pendente')}
-                                                            className={`px-3 py-2 rounded-md text-sm font-medium ${
-                                                                chamadoSelecionado.status === 'Pendente'
-                                                                    ? 'bg-red-100 text-red-700 ring-1 ring-red-700'
-                                                                    : 'text-red-700 hover:bg-red-50'
-                                                            }`}
-                                                        >
-                                                            Pendente
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleAtualizarStatus('Em Progresso')}
-                                                            className={`px-3 py-2 rounded-md text-sm font-medium ${
-                                                                chamadoSelecionado.status === 'Em Progresso'
-                                                                    ? 'bg-yellow-100 text-yellow-700 ring-1 ring-yellow-700'
-                                                                    : 'text-yellow-700 hover:bg-yellow-50'
-                                                            }`}
-                                                        >
-                                                            Em Progresso
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleAtualizarStatus('Resolvido')}
-                                                            className={`px-3 py-2 rounded-md text-sm font-medium ${
-                                                                chamadoSelecionado.status === 'Resolvido'
-                                                                    ? 'bg-green-100 text-green-700 ring-1 ring-green-700'
-                                                                    : 'text-green-700 hover:bg-green-50'
-                                                            }`}
-                                                        >
-                                                            Resolvido
-                                                        </button>
-                                                    </div>
-                                                </>
-                                            )}
+                                            <label htmlFor="atribuir" className="block text-sm font-medium text-gray-700">
+                                                Atribuir a um técnico
+                                            </label>
+                                            <select
+                                                id="atribuir"
+                                                className="mt-1 block w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-red-400 focus:border-red-400 transition outline-none bg-gray-50 shadow-sm text-black"
+                                            >
+                                                <option value="">Selecione um técnico</option>
+                                                {usuarios
+                                                    .filter((user) => user.funcao === 'tecnico' && user.status === 'ativo')
+                                                    .map((tecnico) => (
+                                                        <option key={tecnico.id} value={tecnico.id}>
+                                                            {tecnico.nome} ({tecnico.email})
+                                                        </option>
+                                                    ))}
+
+
+                                            </select>
                                         </div>
 
                                         {/* Adicionar comentário */}
@@ -1444,4 +1475,5 @@ export default function Admin() {
             )}
         </div>
     );
+
 }
