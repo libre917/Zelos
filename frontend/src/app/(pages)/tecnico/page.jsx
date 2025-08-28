@@ -356,7 +356,7 @@ export default function Tecnico() {
                                                 Adicionar Comentário
                                             </h4>
                                             <textarea
-                                                className="input-field"
+                                                className="input-field text-gray-700 w-full"
                                                 rows="3"
                                                 placeholder="Digite seu comentário ou solução..."
                                             ></textarea>
