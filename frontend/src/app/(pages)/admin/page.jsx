@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import {
     Users,
     PlusCircle,
@@ -30,8 +31,10 @@ export default function Admin() {
     const [showUserModal, setShowUserModal] = useState(false);
     const [reload, setReload] = useState(false);
     const [categorias, setCategorias] = useState([]);
+    const [categoriasChamados, setCategoriasChamados] = useState([]);
     const [loadingUsers, setLoadingUsers] = useState(true);
-
+    const [chamadoSelecionado, setChamadoSelecionado] = useState(null);
+    const [chamados, setChamados] = useState([]);
 
     // Estados para formulário de categoria
     const [categoriaNome, setCategoriaNome] = useState('');
@@ -115,6 +118,35 @@ export default function Admin() {
         })();
     }, [reload]);
 
+    useEffect(() => {
+        const token = document.cookie
+            .split('; ')
+            .find((row) => row.startsWith('token='))
+            ?.split('=')[1];
+
+        if (!token) router.push('/');
+        (async () => {
+            try {
+                const response = await fetch(API.GET_POOL_WITH_TICKETS, {
+                    method: 'GET',  
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                if (!response.ok) {
+                    console.error('Erro ao buscar pools:', response.status);
+                    return;
+                }
+                const data = await response.json();
+                setCategoriasChamados(data);
+            } catch (err) {
+                console.error('Erro na requisição:', err);
+                alert('Erro na requisição, por favor, tente novamente.');
+            }
+        })();
+    });
+
     // função para criar usuário
     async function createUser() {
         const token = document.cookie
@@ -124,10 +156,7 @@ export default function Admin() {
 
         if (!token) router.push('/');
         setCanCreate(false);
-        console.log("este é o dado:", formData);
         try {
-
-
             const response = await fetch(API.USERS, {
                 method: 'POST',
                 headers: {
@@ -248,34 +277,29 @@ export default function Admin() {
         }
     }
 
+    function GraficoDeChamados({ data }) {
+        return (
+            <BarChart width={500} height={300} data={data}>
+                <CartesianGrid strokeDasharray="4 4" />
+                <XAxis dataKey="categoria" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="quantidade" fill="#8884d8" />
+            </BarChart>
+        );
+    }
+
     // Dados simulados para o dashboard
     const estatisticas = {
-        totalUsuarios: usuarios.filter(user => user.funcao === 'usuario').length,
+        totalUsuarios: usuarios.filter((user) => user.funcao === 'usuario').length,
         totalAdmins: usuarios.filter((user) => user.funcao === 'admin').length,
         totaladmins: usuarios.filter((user) => user.funcao === 'admin').length,
-        chamadosAbertos: 42,
-        chamadosFechados: 156,
-        chamadosEmProgresso: 27,
-        tempoMedioResolucao: '4h 30min',
-        satisfacaoMedia: 4.7,
+        chamadosAbertos: chamados.filter((chamado) => chamado.status === 'pendente').length,
+        chamadosFechados: chamados.filter((chamado) => chamado.status === 'concluido').length,
+        chamadosEmProgresso: chamados.filter((chamado) => chamado.status === 'em progresso').length,
     };
-
-    // Dados simulados para gráficos
-    const chamadosPorDepartamento = [
-        { departamento: 'TI', quantidade: 45 },
-        { departamento: 'RH', quantidade: 23 },
-        { departamento: 'Financeiro', quantidade: 18 },
-        { departamento: 'Marketing', quantidade: 12 },
-        { departamento: 'Comercial', quantidade: 8 },
-    ];
-
-    const chamadosPorCategoria = [
-        { categoria: 'Hardware', quantidade: 38 },
-        { categoria: 'Software', quantidade: 52 },
-        { categoria: 'Rede', quantidade: 27 },
-        { categoria: 'Acesso', quantidade: 31 },
-        { categoria: 'Outros', quantidade: 8 },
-    ];
+    const chamadosPorCategoria = categoriasChamados;
 
     // Lógica de filtragem dos usuários
 
@@ -310,60 +334,36 @@ export default function Admin() {
         setCanCreate(true);
     };
 
-    const [chamadoSelecionado, setChamadoSelecionado] = useState(null);
-    const [chamados, setChamados] = useState([
-        {
-            id: 1001,
-            titulo: 'Problema com impressora',
-            descricao: 'A impressora da sala 302 não está funcionando corretamente.',
-            usuario: 'João Silva',
-            status: 'Pendente',
-            data: '12/06/2023',
-            categoria: 'Suporte',
-            admin: null,
-        },
-        {
-            id: 1002,
-            titulo: 'Computador não liga',
-            descricao: 'O computador da recepção não está ligando após queda de energia.',
-            usuario: 'Maria Oliveira',
-            status: 'Em Progresso',
-            data: '13/06/2023',
-            categoria: 'Hardware',
-            admin: 'Admin',
-        },
-        {
-            id: 1003,
-            titulo: 'Acesso ao sistema ERP',
-            descricao: 'Preciso de acesso ao módulo financeiro do sistema ERP.',
-            usuario: 'Carlos Santos',
-            status: 'Pendente',
-            data: '14/06/2023',
-            categoria: 'Acesso',
-            admin: null,
-        },
-        {
-            id: 1004,
-            titulo: 'Atualização de software',
-            descricao: 'Solicito atualização do pacote Office em minha máquina.',
-            usuario: 'Ana Pereira',
-            status: 'Pendente',
-            data: '15/06/2023',
-            categoria: 'Software',
-            admin: null,
-        },
-        {
-            id: 1005,
-            titulo: 'Problema com internet',
-            descricao: 'A conexão com a internet está instável na sala de reuniões.',
-            usuario: 'Paulo Mendes',
-            status: 'Resolvido',
-            data: '16/06/2023',
-            categoria: 'Rede',
-            admin: 'Admin',
-        },
-    ]);
-    const nomeAdmin = 'Admin'; // Simulação do nome do admin logado
+    // carrega chamados criados
+    useEffect(() => {
+        const token = document.cookie
+            .split('; ')
+            .find((row) => row.startsWith('token='))
+            ?.split('=')[1];
+
+        if (!token) router.push('/');
+        (async () => {
+            try {
+                const response = await fetch(API.TICKET, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+
+                if (!response.ok) {
+                    console.error('Erro ao buscar tickets:', response.status);
+                    return;
+                }
+                const data = await response.json();
+                setChamados(data);
+            } catch (err) {
+                console.error('Erro na requisição:', err);
+                alert('Erro na requisição, por favor, tente novamente.');
+            }
+        })();
+    });
 
     const handleChamadoClick = (chamado) => {
         setChamadoSelecionado(chamado);
@@ -379,17 +379,16 @@ export default function Admin() {
         setChamadoSelecionado({ ...chamadoSelecionado, status: novoStatus });
     };
 
-    // Candidatar-se ao chamado
-    const handleCandidatar = () => {
-        setChamados((prev) =>
-            prev.map((c) => (c.id === chamadoSelecionado.id ? { ...c, status: 'Em Progresso', admin: nomeAdmin } : c))
-        );
-        setChamadoSelecionado({ ...chamadoSelecionado, status: 'Em Progresso', admin: nomeAdmin });
-        setActiveTab('emProgresso');
-    };
     // Estados para edição de usuário
     const [showEditUserModal, setShowEditUserModal] = useState(false);
-    const [editUserData, setEditUserData] = useState({ id: '', nome: '', email: '', senha: '', funcao: '', categoria: '' });
+    const [editUserData, setEditUserData] = useState({
+        id: '',
+        nome: '',
+        email: '',
+        senha: '',
+        funcao: '',
+        categoria: '',
+    });
 
     function handleEditUser(usuario) {
         setEditUserData({
@@ -398,7 +397,7 @@ export default function Admin() {
             email: usuario.email,
             senha: '',
             funcao: usuario.funcao,
-            categoria: usuario.categoria || ''
+            categoria: usuario.categoria || '',
         });
         setShowEditUserModal(true);
     }
@@ -461,74 +460,82 @@ export default function Admin() {
                     <nav className="flex flex-wrap gap-4">
                         <button
                             onClick={() => setActiveTab('dashboard')}
-                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${activeTab === 'dashboard' ? 'bg-red-100 text-red-700 font-medium' : 'hover:bg-gray-100'
-                                }`}
+                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${
+                                activeTab === 'dashboard' ? 'bg-red-100 text-red-700 font-medium' : 'hover:bg-gray-100'
+                            }`}
                         >
                             <BarChart2 className="h-5 w-5" />
                             <span>Dashboard</span>
                         </button>
                         <button
                             onClick={() => setActiveTab('usuarios')}
-                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${activeTab === 'usuarios'
+                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${
+                                activeTab === 'usuarios'
                                     ? 'bg-yellow-100 text-yellow-700 font-medium'
                                     : 'hover:bg-gray-100'
-                                }`}
+                            }`}
                         >
                             <Users className="h-5 w-5" />
                             <span>Usuários</span>
                         </button>
                         <button
                             onClick={() => setActiveTab('relatorios')}
-                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${activeTab === 'relatorios'
+                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${
+                                activeTab === 'relatorios'
                                     ? 'bg-green-100 text-green-700 font-medium'
                                     : 'hover:bg-gray-100'
-                                }`}
+                            }`}
                         >
                             <PieChart className="h-5 w-5" />
                             <span>Relatórios</span>
                         </button>
                         <button
                             onClick={() => setActiveTab('chamados')}
-                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${activeTab === 'chamados' ? 'bg-blue-100 text-blue-700 font-medium' : 'hover:bg-gray-100'
-                                }`}
+                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${
+                                activeTab === 'chamados' ? 'bg-blue-100 text-blue-700 font-medium' : 'hover:bg-gray-100'
+                            }`}
                         >
                             <PieChart className="h-5 w-5" />
                             <span>Chamados</span>
                         </button>
                         <button
                             onClick={() => setActiveTab('categorias')}
-                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${activeTab === 'categorias'
+                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${
+                                activeTab === 'categorias'
                                     ? 'bg-pink-100 text-pink-700 font-medium'
                                     : 'hover:bg-gray-100'
-                                }`}
+                            }`}
                         >
                             <PieChart className="h-5 w-5" />
                             <span>Categorias</span>
                         </button>
                         <button
                             onClick={() => setActiveTab('pool')}
-                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${activeTab === 'pool' ? 'bg-red-100 text-red-700 font-medium' : 'hover:bg-gray-100'
-                                }`}
+                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${
+                                activeTab === 'pool' ? 'bg-red-100 text-red-700 font-medium' : 'hover:bg-gray-100'
+                            }`}
                         >
                             <Layers className="h-5 w-5" />
                             <span>Pool de Chamados</span>
                         </button>
                         <button
                             onClick={() => setActiveTab('emProgresso')}
-                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${activeTab === 'emProgresso'
+                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${
+                                activeTab === 'emProgresso'
                                     ? 'bg-yellow-100 text-yellow-700 font-medium'
                                     : 'hover:bg-gray-100'
-                                }`}
+                            }`}
                         >
                             <Clock className="h-5 w-5" />
                             <span>Em Progresso</span>
                         </button>
                         <button
                             onClick={() => setActiveTab('resolvidos')}
-                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${activeTab === 'resolvidos'
+                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${
+                                activeTab === 'resolvidos'
                                     ? 'bg-green-100 text-green-700 font-medium'
                                     : 'hover:bg-gray-100'
-                                }`}
+                            }`}
                         >
                             <CheckCircle className="h-5 w-5" />
                             <span>Resolvidos</span>
@@ -550,7 +557,7 @@ export default function Admin() {
                                 </div>
                                 <div className="grid grid-cols-3 gap-4">
                                     <div>
-                                        <p className="text-sm text-gray-500">Total de Usuários</p>
+                                        <p className="text-sm text-gray-500">Usuários comuns</p>
                                         <p className="text-2xl font-bold text-gray-800">{estatisticas.totalUsuarios}</p>
                                     </div>
                                     <div>
@@ -597,43 +604,7 @@ export default function Admin() {
                         {/* Gráficos */}
                         <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm w-full">
                             <h3 className="text-lg font-semibold text-gray-800 mb-4">Chamados por Categoria</h3>
-                            <div className="h-64 flex items-center justify-center">
-                                <div className="relative h-40 w-40 rounded-full border-8 border-gray-100 flex items-center justify-center">
-                                    <div className="absolute inset-0 h-full w-full">
-                                        {/* Simulação visual de um gráfico de pizza */}
-                                        <div className="absolute inset-0 h-full w-full rounded-full overflow-hidden">
-                                            <div className="absolute top-0 left-0 h-1/2 w-1/2 bg-red-500 origin-bottom-right transform rotate-0"></div>
-                                            <div className="absolute top-0 right-0 h-1/2 w-1/2 bg-blue-500 origin-bottom-left transform rotate-0"></div>
-                                            <div className="absolute bottom-0 left-0 h-1/2 w-1/2 bg-yellow-500 origin-top-right transform rotate-0"></div>
-                                            <div className="absolute bottom-0 right-0 h-1/2 w-1/2 bg-green-500 origin-top-left transform rotate-0"></div>
-                                        </div>
-                                    </div>
-                                    <div className="z-10 bg-white h-24 w-24 rounded-full flex items-center justify-center">
-                                        <p className="text-sm font-medium text-gray-600">Total: 156</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="flex flex-wrap justify-center gap-4 mt-4">
-                                {chamadosPorCategoria.map((item, index) => (
-                                    <div key={index} className="flex items-center">
-                                        <div
-                                            className={`h-3 w-3 rounded-full mr-2 ${index === 0
-                                                    ? 'bg-red-500'
-                                                    : index === 1
-                                                        ? 'bg-blue-500'
-                                                        : index === 2
-                                                            ? 'bg-yellow-500'
-                                                            : index === 3
-                                                                ? 'bg-green-500'
-                                                                : 'bg-gray-500'
-                                                }`}
-                                        ></div>
-                                        <span className="text-xs text-gray-600">
-                                            {item.categoria}: {item.quantidade}
-                                        </span>
-                                    </div>
-                                ))}
-                            </div>
+                            <GraficoDeChamados data={chamadosPorCategoria} />
                         </div>
                     </div>
                 )}
@@ -685,11 +656,12 @@ export default function Admin() {
                         </div>
 
                         {/* Lista de usuários */}
-                        {loadingUsers ? (<div className="flex justify-center items-center h-48">
-                            <p className="text-gray-500 text-lg">Carregando usuários...</p>
-                        </div>) : filteredUsers.length > 0 ? (
+                        {loadingUsers ? (
+                            <div className="flex justify-center items-center h-48">
+                                <p className="text-gray-500 text-lg">Carregando usuários...</p>
+                            </div>
+                        ) : filteredUsers.length > 0 ? (
                             <div className="space-y-4">
-
                                 {filteredUsers.map((usuario) => (
                                     <div
                                         key={usuario.id}
@@ -701,20 +673,22 @@ export default function Admin() {
                                                 <p className="text-sm text-gray-500 mt-1">{usuario.email}</p>
                                             </div>
                                             <span
-                                                className={`px-3 py-1 rounded-full text-xs font-medium ${usuario.status === 'ativo'
+                                                className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                                    usuario.status === 'ativo'
                                                         ? 'bg-green-100 text-green-800'
                                                         : 'bg-red-100 text-red-800'
-                                                    }`}
+                                                }`}
                                             >
                                                 {usuario.status}
                                             </span>
                                         </div>
                                         <div className="flex justify-between items-center mt-4">
                                             <span
-                                                className={`px-2 py-1 rounded-full text-xs font-medium ${usuario.funcao === 'admin'
+                                                className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                                    usuario.funcao === 'admin'
                                                         ? 'bg-blue-100 text-blue-800'
                                                         : 'bg-green-100 text-green-800'
-                                                    }`}
+                                                }`}
                                             >
                                                 {usuario.funcao}
                                             </span>
@@ -743,9 +717,14 @@ export default function Admin() {
                                                                     <span className="text-2xl">&times;</span>
                                                                 </button>
                                                             </div>
-                                                            <form onSubmit={handleEditUserSubmit} className="p-6 space-y-4">
+                                                            <form
+                                                                onSubmit={handleEditUserSubmit}
+                                                                className="p-6 space-y-4"
+                                                            >
                                                                 <div>
-                                                                    <label className="block text-sm font-medium text-gray-700 mb-2">Nome Completo *</label>
+                                                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                                        Nome Completo *
+                                                                    </label>
                                                                     <input
                                                                         type="text"
                                                                         name="nome"
@@ -757,7 +736,9 @@ export default function Admin() {
                                                                     />
                                                                 </div>
                                                                 <div>
-                                                                    <label className="block text-sm font-medium text-gray-700 mb-2">Email *</label>
+                                                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                                        Email *
+                                                                    </label>
                                                                     <input
                                                                         type="email"
                                                                         name="email"
@@ -769,7 +750,9 @@ export default function Admin() {
                                                                     />
                                                                 </div>
                                                                 <div>
-                                                                    <label className="block text-sm font-medium text-gray-700 mb-2">Senha (deixe em branco para não alterar)</label>
+                                                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                                        Senha (deixe em branco para não alterar)
+                                                                    </label>
                                                                     <input
                                                                         type="password"
                                                                         name="senha"
@@ -780,7 +763,9 @@ export default function Admin() {
                                                                     />
                                                                 </div>
                                                                 <div>
-                                                                    <label className="block text-sm font-medium text-gray-700 mb-2">Tipo de Usuário *</label>
+                                                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                                        Tipo de Usuário *
+                                                                    </label>
                                                                     <select
                                                                         name="funcao"
                                                                         value={editUserData.funcao}
@@ -795,16 +780,22 @@ export default function Admin() {
                                                                 </div>
                                                                 {editUserData.funcao === 'admin' && (
                                                                     <div>
-                                                                        <label className="block text-sm font-medium text-gray-700 mb-2">Categoria</label>
+                                                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                                            Categoria
+                                                                        </label>
                                                                         <select
                                                                             name="categoria"
                                                                             value={editUserData.categoria}
                                                                             onChange={handleEditInputChange}
                                                                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-500"
                                                                         >
-                                                                            <option value="">Selecione uma categoria</option>
+                                                                            <option value="">
+                                                                                Selecione uma categoria
+                                                                            </option>
                                                                             {categorias.map((cat) => (
-                                                                                <option key={cat.id} value={cat.id}>{cat.titulo}</option>
+                                                                                <option key={cat.id} value={cat.id}>
+                                                                                    {cat.titulo}
+                                                                                </option>
                                                                             ))}
                                                                         </select>
                                                                     </div>
@@ -852,9 +843,7 @@ export default function Admin() {
                                 ))}
                             </div>
                         ) : (
-                            <div className="text-center text-gray-500">
-                                Nenhum usuário encontrado.
-                            </div>
+                            <div className="text-center text-gray-500">Nenhum usuário encontrado.</div>
                         )}
                     </div>
                 )}
@@ -1133,64 +1122,51 @@ export default function Admin() {
                         <div className="flex flex-col lg:flex-row gap-6">
                             {/* Lista de chamados */}
                             <div
-                                className={`${chamadoSelecionado ? 'lg:w-1/2' : 'w-full'
-                                    } bg-white rounded-lg border border-gray-200`}
+                                className={`${
+                                    chamadoSelecionado ? 'lg:w-1/2' : 'w-full'
+                                } bg-white rounded-lg border border-gray-200`}
                             >
                                 {/* Lista de chamados */}
                                 <div className="space-y-4 p-4">
-                                    {chamados
-                                        .filter((chamado) => {
-                                            if (activeTab === 'pool')
-                                                return chamado.status === 'Pendente' && !chamado.admin;
-                                            if (activeTab === 'chamadosPendentes')
-                                                return chamado.status === 'Pendente' && chamado.admin === nomeAdmin;
-                                            if (activeTab === 'emProgresso')
-                                                return (
-                                                    chamado.status === 'Em Progresso' && chamado.admin === nomeAdmin
-                                                );
-                                            if (activeTab === 'resolvidos')
-                                                return (
-                                                    chamado.status === 'Resolvido' && chamado.admin === nomeAdmin
-                                                );
-                                            return true;
-                                        })
-                                        .map((chamado) => (
-                                            <div
-                                                key={chamado.id}
-                                                className={`p-4 border rounded-lg cursor-pointer transition-all ${chamadoSelecionado?.id === chamado.id
-                                                        ? 'border-red-500 bg-red-50'
-                                                        : 'border-gray-200 hover:border-red-300 hover:bg-gray-50'
+                                    {chamados.map((chamado) => (
+                                        <div
+                                            key={chamado.id}
+                                            className={`p-4 border rounded-lg cursor-pointer transition-all ${
+                                                chamadoSelecionado?.id === chamado.id
+                                                    ? 'border-red-500 bg-red-50'
+                                                    : 'border-gray-200 hover:border-red-300 hover:bg-gray-50'
+                                            }`}
+                                            onClick={() => handleChamadoClick(chamado)}
+                                        >
+                                            <div className="flex justify-between items-start mb-2">
+                                                <h3 className="font-medium text-gray-800">{chamado.titulo}</h3>
+                                                <div
+                                                    className={`px-2 py-1 text-xs rounded-full ${
+                                                        chamado.status === 'Pendente'
+                                                            ? 'bg-red-100 text-red-800'
+                                                            : chamado.status === 'Em Progresso'
+                                                            ? 'bg-yellow-100 text-yellow-800'
+                                                            : 'bg-green-100 text-green-800'
                                                     }`}
-                                                onClick={() => handleChamadoClick(chamado)}
-                                            >
-                                                <div className="flex justify-between items-start mb-2">
-                                                    <h3 className="font-medium text-gray-800">{chamado.titulo}</h3>
-                                                    <div
-                                                        className={`px-2 py-1 text-xs rounded-full ${chamado.status === 'Pendente'
-                                                                ? 'bg-red-100 text-red-800'
-                                                                : chamado.status === 'Em Progresso'
-                                                                    ? 'bg-yellow-100 text-yellow-800'
-                                                                    : 'bg-green-100 text-green-800'
-                                                            }`}
-                                                    >
-                                                        {chamado.status}
-                                                    </div>
-                                                </div>
-
-                                                <p className="text-sm text-gray-600 mb-2 line-clamp-2">
-                                                    {chamado.descricao}
-                                                </p>
-                                                <div className="flex items-center justify-between text-xs text-gray-500">
-                                                    <div className="flex items-center space-x-4">
-                                                        <span className="flex items-center">
-                                                            <Calendar className="h-3 w-3 mr-1" />
-                                                            {chamado.data}
-                                                        </span>
-                                                        <span>#{chamado.id}</span>
-                                                    </div>
+                                                >
+                                                    {chamado.status}
                                                 </div>
                                             </div>
-                                        ))}
+
+                                            <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+                                                {chamado.descricao}
+                                            </p>
+                                            <div className="flex items-center justify-between text-xs text-gray-500">
+                                                <div className="flex items-center space-x-4">
+                                                    <span className="flex items-center">
+                                                        <Calendar className="h-3 w-3 mr-1" />
+                                                        {chamado.data}
+                                                    </span>
+                                                    <span>#{chamado.id}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
 
@@ -1228,12 +1204,13 @@ export default function Admin() {
                                                     {chamadoSelecionado.titulo}
                                                 </h3>
                                                 <span
-                                                    className={`px-2 py-1 text-xs rounded-full ${chamadoSelecionado.status === 'Pendente'
+                                                    className={`px-2 py-1 text-xs rounded-full ${
+                                                        chamadoSelecionado.status === 'Pendente'
                                                             ? 'bg-red-100 text-red-800'
                                                             : chamadoSelecionado.status === 'Em Progresso'
-                                                                ? 'bg-yellow-100 text-yellow-800'
-                                                                : 'bg-green-100 text-green-800'
-                                                        }`}
+                                                            ? 'bg-yellow-100 text-yellow-800'
+                                                            : 'bg-green-100 text-green-800'
+                                                    }`}
                                                 >
                                                     {chamadoSelecionado.status}
                                                 </span>
@@ -1279,8 +1256,8 @@ export default function Admin() {
                                         {/* Ações */}
                                         <div>
                                             {activeTab === 'pool' &&
-                                                chamadoSelecionado.status === 'Pendente' &&
-                                                !chamadoSelecionado.admin ? (
+                                            chamadoSelecionado.status === 'Pendente' &&
+                                            !chamadoSelecionado.admin ? (
                                                 <button
                                                     onClick={handleCandidatar}
                                                     className="px-4 py-2 rounded-md bg-blue-600 text-white font-medium hover:bg-blue-700 transition"
@@ -1295,28 +1272,31 @@ export default function Admin() {
                                                     <div className="flex space-x-3">
                                                         <button
                                                             onClick={() => handleAtualizarStatus('Pendente')}
-                                                            className={`px-3 py-2 rounded-md text-sm font-medium ${chamadoSelecionado.status === 'Pendente'
+                                                            className={`px-3 py-2 rounded-md text-sm font-medium ${
+                                                                chamadoSelecionado.status === 'Pendente'
                                                                     ? 'bg-red-100 text-red-700 ring-1 ring-red-700'
                                                                     : 'text-red-700 hover:bg-red-50'
-                                                                }`}
+                                                            }`}
                                                         >
                                                             Pendente
                                                         </button>
                                                         <button
                                                             onClick={() => handleAtualizarStatus('Em Progresso')}
-                                                            className={`px-3 py-2 rounded-md text-sm font-medium ${chamadoSelecionado.status === 'Em Progresso'
+                                                            className={`px-3 py-2 rounded-md text-sm font-medium ${
+                                                                chamadoSelecionado.status === 'Em Progresso'
                                                                     ? 'bg-yellow-100 text-yellow-700 ring-1 ring-yellow-700'
                                                                     : 'text-yellow-700 hover:bg-yellow-50'
-                                                                }`}
+                                                            }`}
                                                         >
                                                             Em Progresso
                                                         </button>
                                                         <button
                                                             onClick={() => handleAtualizarStatus('Resolvido')}
-                                                            className={`px-3 py-2 rounded-md text-sm font-medium ${chamadoSelecionado.status === 'Resolvido'
+                                                            className={`px-3 py-2 rounded-md text-sm font-medium ${
+                                                                chamadoSelecionado.status === 'Resolvido'
                                                                     ? 'bg-green-100 text-green-700 ring-1 ring-green-700'
                                                                     : 'text-green-700 hover:bg-green-50'
-                                                                }`}
+                                                            }`}
                                                         >
                                                             Resolvido
                                                         </button>

@@ -1,4 +1,4 @@
-import { getPool, getPools, createPool, updatePool, getTicketsByPoolId } from '../services/poolService.js';
+import { getPool, getPools, createPool, updatePool, getTicketsByPoolId, getPoolsWithTickets } from '../services/poolService.js';
 
 export async function getPoolsController(req, res) {
     try {
@@ -11,6 +11,19 @@ export async function getPoolsController(req, res) {
         res.status(status).json({ mensagem, status });
     }
 }
+
+export async function getPoolsWithTicketsController(req, res) {
+    try {
+        const pools = await getPoolsWithTickets();
+        res.status(200).json(pools);
+    } catch (err) {
+        console.error('Erro ao buscar pools:', err);
+        const status = err.status || 500;
+        const mensagem = err.message || 'Erro interno do servidor';
+        res.status(status).json({ mensagem, status });
+    }
+}
+
 
 export async function getPoolController(req, res) {
     try {

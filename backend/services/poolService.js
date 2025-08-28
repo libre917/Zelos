@@ -13,6 +13,24 @@ export async function getPools() {
     }
 }
 
+export async function getPoolsWithTickets() {
+    try {
+        const pools = await readAll('pool');
+        const categoryPromises = pools.map(async (pool) => {
+            const tickets = await readAll('chamados', `tipo_id = '${pool.id}'`);
+            return {
+                categoria: pool.titulo,
+                quantidade: tickets.length,
+            };
+        });
+        const dadosDoGrafico = await Promise.all(categoryPromises);
+        return dadosDoGrafico;
+    } catch (err) {
+        console.error('Erro ao obter pools:', err);
+        throw err;
+    }
+}
+
 export async function getPool(id) {
     try {
         const pool = await read('pool', `id = '${id}'`);

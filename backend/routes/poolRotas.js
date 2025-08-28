@@ -1,5 +1,5 @@
 import express from 'express';
-import { createPoolController, getPoolController, getPoolsController, getTicketsByPoolIdController, updatePoolController } from '../controllers/PoolController.js';
+import { createPoolController, getPoolController, getPoolsController, getPoolsWithTicketsController, getTicketsByPoolIdController, updatePoolController } from '../controllers/PoolController.js';
 
 const router = express.Router();
 
@@ -8,6 +8,9 @@ router.get('/',  getPoolsController);
 
 // rota para obter tickets de um pool específico
 router.get('/:id/tickets',  getTicketsByPoolIdController);
+
+// rota para obter pools com quantidade de tickets
+router.get('/with-tickets',  getPoolsWithTicketsController);
 
 // Rota para obter um pool específico
 router.get('/:id',  getPoolController);

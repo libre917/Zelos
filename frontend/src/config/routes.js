@@ -23,6 +23,9 @@ export const API = {
     //caminho para busca ou criação de categorias
     POOL: `${process.env.NEXT_PUBLIC_API_URL}/pool`,
 
+    //caminho para busca de pools com quantidade de tickets relacionados ao pool
+    GET_POOL_WITH_TICKETS:`${process.env.NEXT_PUBLIC_API_URL}/pool/with-tickets`,
+
     //caminho para busca ou criação de chamados
     TICKET: `${process.env.NEXT_PUBLIC_API_URL}/ticket`,
 

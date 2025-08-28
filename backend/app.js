@@ -39,7 +39,6 @@ try {
         })
     );
     app.use(express.json());
-
     app.use(
         session({
             secret: 'sJYMmuCB2Z187XneUuaOVYTVUlxEOb2K94tFZy370HjOY7T7aiCKvwhNQpQBYL9e',
