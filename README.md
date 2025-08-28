@@ -723,15 +723,9 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
 
 ## 👥 Autores
 
-- **Equipe Zelos** - *Desenvolvimento inicial* - [Paivs](https://github.com/Paivs)
-
-## 🙏 Agradecimentos
-
-- Escola SENAI Armando de Arruda Pereira
-- Equipe de TI da SENAI
-- Comunidade Node.js e Next.js
-
----
+- **Lucas Soalheiro**
+- **Lucas Toledo**
+- **Lucas Barberini**
 
 **Última atualização**: Dezembro 2024
 **Versão**: 1.0.0
