@@ -2,10 +2,10 @@ import mysql from 'mysql2/promise';
 import bcrypt from 'bcryptjs';
 
 const pool = mysql.createPool({
-    host: 'localhost',
-    user: 'root',
-    password: '',
-    database: 'zelos', 
+    host: process.env.DB_HOST || 'localhost',
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || '' ,
+    database: process.env.DB_NAME || 'zelos', 
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
