@@ -505,6 +505,364 @@ const [pool, solicitante, tecnico, apontamentos] = await Promise.all([
 ]);
 ```
 
+## 🎯 Camada de Serviços Detalhada
+
+### Users Service (`backend/services/usersService.js`)
+
+#### `getUsers()`
+```javascript
+export async function getUsers() {
+    try {
+        const users = await readAll('usuarios');
+        for (const user of users) {
+            user.senha = undefined; // Remove senha por segurança
+        }
+        return users;
+    } catch (err) {
+        console.error('getUsers error:', err);
+        throw err;
+    }
+}
+```
+
+#### `createUser(id_admin, data)`
+```javascript
+export async function createUser(id_admin, data) {
+    try {
+        if (!id_admin) throw erroStatus('ID do administrador é obrigatório', 400);
+
+        const userRole = await getRoleUser(id_admin);
+        if (userRole !== 'admin') throw erroStatus('Apenas administradores podem criar usuários', 403);
+
+        if (!data.nome || !data.email || !data.senha || !data.funcao) {
+            throw erroStatus('Nome, email, senha e função obrigatórios', 400);
+        }
+
+        const userData = new User(data);
+
+        validarEmail(userData.email);
+        validarRole(userData.funcao, ['admin', 'usuario', 'tecnico']);
+        await checkEmailDuplicado(userData.email);
+
+        userData.senha = await generateHashedPassword(userData.senha);
+
+        return await create('usuarios', userData);
+    } catch (err) {
+        console.error('createUser error:', err);
+        throw err;
+    }
+}
+```
+
+#### `createTechnician(id_admin, data, id_pool)`
+```javascript
+export async function createTechnician(id_admin, data, id_pool) {
+    try {
+        if (!id_admin) throw erroStatus('ID do administrador é obrigatório', 400);
+
+        const userRole = await getRoleUser(id_admin);
+        if (userRole !== 'admin') throw erroStatus('Apenas administradores podem criar técnicos', 403);
+
+        const poolExistente = await getPool(id_pool);
+        if (!poolExistente) throw erroStatus('Pool não encontrado', 404);
+
+        if (!data.nome || !data.email || !data.senha || !data.funcao) {
+            throw erroStatus('Nome, email, senha e função obrigatórios', 400);
+        }
+
+        const userData = new User(data);
+
+        validarEmail(userData.email);
+        validarRole(userData.funcao, ['tecnico']);
+        await checkEmailDuplicado(userData.email);
+
+        userData.senha = await generateHashedPassword(userData.senha);
+
+        const tecnicoId = await create('usuarios', userData);
+
+        const relacaoTecId = await create('pool_tecnico', { id_pool, id_tecnico: tecnicoId.id });
+
+        return { relacaoTecId, tecnicoId };
+    } catch (err) {
+        console.error('createTechnician error:', err);
+        throw err;
+    }
+}
+```
+
+### Pool Service (`backend/services/poolService.js`)
+
+#### `getPoolsWithTickets()`
+```javascript
+export async function getPoolsWithTickets() {
+    try {
+        const pools = await readAll('pool');
+        const categoryPromises = pools.map(async (pool) => {
+            const tickets = await readAll('chamados', `tipo_id = '${pool.id}'`);
+            return {
+                categoria: pool.titulo,
+                quantidade: tickets.length,
+            };
+        });
+        const dadosDoGrafico = await Promise.all(categoryPromises);
+        return dadosDoGrafico;
+    } catch (err) {
+        console.error('Erro ao obter pools:', err);
+        throw err;
+    }
+}
+```
+
+#### `getPool(id)`
+```javascript
+export async function getPool(id) {
+    try {
+        const pool = await read('pool', `id = '${id}'`);
+        const poolTec = await readAll('pool_tecnico', `id_pool = '${id}'`);
+        return { pool, poolTec };
+    } catch (err) {
+        console.error('Erro ao obter pool:', err);
+        throw err;
+    }
+}
+```
+
+#### `getTicketsByPoolId(id_pool)`
+```javascript
+export const getTicketsByPoolId = async (id_pool) => {
+    try {
+        return await readAll('chamados', `tipo_id = '${id_pool}'`);
+    } catch (err) {
+        console.error('Erro ao obter tickets da pool:', err);
+        throw err;
+    }
+};
+```
+
+### Reports Service (`backend/services/reportsService.js`)
+
+#### `createReport(data)`
+```javascript
+export async function createReport(data) {
+    try {
+        // Validação de obrigatórios
+        validarCamposObrigatorios(data, ["chamado_id", "tecnico_id", "descricao", "comeco", "fim"]);
+
+        // Verifica se o chamado existe
+        const chamadoExistente = await getTicket(data.chamado_id);
+        if (!chamadoExistente) {
+            throw erroStatus("Chamado não encontrado", 404);
+        }
+
+        // Verifica se o usuário é técnico
+        await validarRole(data.tecnico_id, "tecnico");
+
+        // Cria o apontamento
+        const report = new Report(data);
+        return await create("apontamentos", report);
+
+    } catch (err) {
+        console.error("Erro ao criar apontamento:", err);
+        throw err;
+    }
+}
+```
+
+#### `gerarRelatorioChamado(chamadoId, caminhoSaida)`
+```javascript
+export async function gerarRelatorioChamado(chamadoId, caminhoSaida = `relatorio-${chamadoId}.pdf`) {
+    const record = await getRecord(chamadoId);
+    if (!record) {
+        throw new Error("Chamado não encontrado");
+    }
+
+    const doc = new PDFDocument();
+    doc.pipe(fs.createWriteStream(caminhoSaida));
+
+    // Cabeçalho
+    doc.fontSize(20).text("Relatório de Chamado", { align: "center" });
+    doc.moveDown();
+
+    // Dados do chamado
+    doc.fontSize(14).text(`ID: ${record.chamado.id}`);
+    doc.text(`Título: ${record.chamado.titulo}`);
+    doc.text(`Descrição: ${record.chamado.descricao}`);
+    doc.text(`Status: ${record.chamado.status}`);
+    doc.text(`Criado em: ${new Date(record.chamado.criado_em).toLocaleString()}`);
+    doc.moveDown();
+
+    // Solicitante
+    if (record.solicitante) {
+        doc.fontSize(16).text("Solicitante:", { underline: true });
+        doc.fontSize(12).text(`Nome: ${record.solicitante.nome}`);
+        doc.text(`Email: ${record.solicitante.email}`);
+        doc.moveDown();
+    }
+
+    // Técnico
+    if (record.tecnico) {
+        doc.fontSize(16).text("Técnico:", { underline: true });
+        doc.fontSize(12).text(`Nome: ${record.tecnico.nome}`);
+        doc.text(`Email: ${record.tecnico.email}`);
+        doc.moveDown();
+    }
+
+    // Pool
+    if (record.pool) {
+        doc.fontSize(16).text("Tipo de Chamado:", { underline: true });
+        doc.fontSize(12).text(`Título: ${record.pool.titulo}`);
+        doc.text(`Descrição: ${record.pool.descricao}`);
+        doc.moveDown();
+    }
+
+    // Apontamentos
+    if (record.apontamentos.length > 0) {
+        doc.fontSize(16).text("Apontamentos:", { underline: true });
+        record.apontamentos.forEach((a, i) => {
+            doc.fontSize(12).text(
+                `${i + 1}. ${a.descricao} (Início: ${a.comeco}, Fim: ${a.fim}, Duração: ${a.duracao}min)`
+            );
+        });
+    }
+
+    // Finaliza o PDF
+    doc.end();
+
+    return caminhoSaida;
+}
+```
+
+#### `gerarRelatorioTodosChamados(caminhoSaida)`
+```javascript
+export async function gerarRelatorioTodosChamados(caminhoSaida = "relatorio-chamados.pdf") {
+  const ticketsRaw = await getTickets();
+
+  // Normaliza possíveis formatos ({ rows: [...] } ou já array)
+  const tickets = Array.isArray(ticketsRaw)
+    ? ticketsRaw
+    : (ticketsRaw?.rows ?? []);
+
+  if (!isNonEmptyArray(tickets)) {
+    throw new Error("Nenhum chamado encontrado");
+  }
+
+  // Busca todos os records em paralelo (mais rápido)
+  const records = await Promise.all(
+    tickets.map(t =>
+      getRecord(t.id).catch(() => null) // evita quebrar o PDF por 1 registro com erro
+    )
+  );
+
+  const doc = new PDFDocument({ margin: 50 });
+  const out = fs.createWriteStream(caminhoSaida);
+  doc.pipe(out);
+
+  // Título principal
+  doc.fontSize(22).text("Relatório de Chamados", { align: "center" });
+  doc.moveDown(2);
+
+  for (const record of records) {
+    if (!record || !record.chamado) continue;
+
+    doc.fontSize(16).text(`Chamado #${record.chamado.id}`, { underline: true });
+    doc.moveDown(0.5);
+
+    // Dados básicos
+    doc.fontSize(12).text(`Título: ${record.chamado.titulo ?? "-"}`);
+    doc.text(`Descrição: ${record.chamado.descricao ?? "-"}`);
+    doc.text(`Status: ${record.chamado.status ?? "-"}`);
+    const criadoEm = record.chamado.criado_em
+      ? new Date(record.chamado.criado_em).toLocaleString()
+      : "-";
+    doc.text(`Criado em: ${criadoEm}`);
+    doc.moveDown(0.5);
+
+    // Solicitante
+    if (record.solicitante) {
+      doc.text(`Solicitante: ${record.solicitante.nome ?? "-"} (${record.solicitante.email ?? "-"})`);
+    }
+
+    // Técnico
+    if (record.tecnico) {
+      doc.text(`Técnico: ${record.tecnico.nome ?? "-"} (${record.tecnico.email ?? "-"})`);
+    }
+
+    // Pool
+    if (record.pool) {
+      doc.text(`Tipo: ${record.pool.titulo ?? "-"} - ${record.pool.descricao ?? "-"}`);
+    }
+
+    doc.moveDown(0.5);
+
+    // Apontamentos
+    if (isNonEmptyArray(record.apontamentos)) {
+      doc.text("Apontamentos:");
+      record.apontamentos.forEach((a, i) => {
+        const inicio = a.comeco ?? "-";
+        const fim = a.fim ?? "-";
+        const dur = a.duracao ?? "-";
+        doc.text(`  ${i + 1}. ${a.descricao ?? "-"} | Início: ${inicio} | Fim: ${fim} | Duração: ${dur} min`);
+      });
+    }
+
+    // Linha separadora (respeita largura da página/margens)
+    doc.moveDown(1);
+    const left = doc.page.margins.left;
+    const right = doc.page.width - doc.page.margins.right;
+    doc.moveTo(left, doc.y).lineTo(right, doc.y).stroke();
+    doc.moveDown(1);
+  }
+
+  // Finaliza e aguarda terminar a escrita do arquivo
+  doc.end();
+
+  await new Promise((resolve, reject) => {
+    out.on("finish", resolve);
+    out.on("error", reject);
+  });
+
+  return caminhoSaida;
+}
+```
+
+### Padrões de Implementação dos Serviços
+
+#### 1. Tratamento de Erros Consistente
+```javascript
+try {
+    // Lógica do serviço
+} catch (err) {
+    console.error('Nome do serviço error:', err);
+    throw err; // Re-throw para tratamento no controller
+}
+```
+
+#### 2. Validações Centralizadas
+```javascript
+// Validação de campos obrigatórios
+validarCamposObrigatorios(data, ['campo1', 'campo2']);
+
+// Validação de roles
+await validarRole(userId, ['admin', 'tecnico']);
+
+// Validação de email
+validarEmail(email);
+await checkEmailDuplicado(email);
+```
+
+#### 3. Uso de Models
+```javascript
+const userData = new User(data);
+userData.updateUser(updateData);
+```
+
+#### 4. Transações de Banco
+```javascript
+// Para operações que envolvem múltiplas tabelas
+const tecnicoId = await create('usuarios', userData);
+const relacaoTecId = await create('pool_tecnico', { id_pool, id_tecnico: tecnicoId.id });
+```
+
 ## 🔧 Configurações de Desenvolvimento
 
 ### Variáveis de Ambiente

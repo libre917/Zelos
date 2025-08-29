@@ -360,6 +360,47 @@ Autenticação de usuário via email e senha.
 }
 ```
 
+### Usuários
+
+#### GET `/users` - Lista todos os usuários
+#### GET `/users/:id` - Obtém usuário específico
+#### GET `/users/me/info` - Informações do usuário logado
+#### GET `/users/me/role` - Função do usuário logado
+#### POST `/users` - Cria novo usuário
+#### POST `/users/tecnico` - Cria novo técnico
+#### PUT `/users/:id` - Atualiza usuário
+#### PUT `/users/:id/status` - Atualiza status do usuário
+#### DELETE `/users/:id` - Remove usuário
+
+### Chamados
+
+#### GET `/ticket` - Lista todos os chamados
+#### GET `/ticket/:id` - Obtém chamado específico
+#### GET `/ticket/user` - Chamados do usuário logado
+#### GET `/ticket/status/:status` - Chamados por status
+#### GET `/ticket/tecnico/:id` - Chamados de um técnico
+#### GET `/ticket/record/:id` - Registro completo do chamado
+#### POST `/ticket` - Cria novo chamado
+#### PUT `/ticket/:id/tecnico` - Atribui técnico ao chamado
+
+### Pools de Serviço
+
+#### GET `/pool` - Lista tipos de serviços
+#### GET `/pool/with-tickets` - Pools com quantidade de tickets
+#### GET `/pool/:id` - Obtém pool específico
+#### GET `/pool/:id/tickets` - Tickets de um pool
+#### POST `/pool` - Cria novo tipo de serviço
+#### PUT `/pool/:id` - Atualiza pool
+#### DELETE `/pool/:id` - Remove pool
+
+### Relatórios e Apontamentos
+
+#### GET `/report/:ticket_id/reports` - Lista apontamentos
+#### GET `/report/:ticket_id/reports/:id` - Obtém apontamento específico
+#### POST `/report/:ticket_id/reports` - Cria novo apontamento
+#### GET `/report/record/pdf` - Relatório PDF de todos os chamados
+#### GET `/report/:ticket_id/pdf` - Relatório PDF de chamado específico
+
 #### POST `/auth/logout`
 Logout do usuário.
 

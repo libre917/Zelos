@@ -399,6 +399,11 @@ Authorization: Bearer <jwt_token>
 
 Lista todos os usuários do sistema.
 
+**Headers:**
+```
+Authorization: Bearer <jwt_token>
+```
+
 **Response (200):**
 ```json
 [
@@ -427,6 +432,11 @@ Lista todos os usuários do sistema.
 
 Obtém um usuário específico por ID.
 
+**Headers:**
+```
+Authorization: Bearer <jwt_token>
+```
+
 **Parâmetros:**
 - `id` (path): ID do usuário
 
@@ -446,6 +456,11 @@ Obtém um usuário específico por ID.
 ### POST `/users`
 
 Cria um novo usuário.
+
+**Headers:**
+```
+Authorization: Bearer <jwt_token>
+```
 
 **Request Body:**
 ```json
@@ -475,6 +490,11 @@ Cria um novo usuário.
 
 Atualiza um usuário existente.
 
+**Headers:**
+```
+Authorization: Bearer <jwt_token>
+```
+
 **Parâmetros:**
 - `id` (path): ID do usuário
 
@@ -497,6 +517,11 @@ Atualiza um usuário existente.
 
 Remove um usuário do sistema.
 
+**Headers:**
+```
+Authorization: Bearer <jwt_token>
+```
+
 **Parâmetros:**
 - `id` (path): ID do usuário
 
@@ -504,6 +529,110 @@ Remove um usuário do sistema.
 ```json
 {
   "message": "Usuário removido com sucesso"
+}
+```
+
+### GET `/users/me/info`
+
+Obtém informações do usuário logado.
+
+**Headers:**
+```
+Authorization: Bearer <jwt_token>
+```
+
+**Response (200):**
+```json
+{
+  "id": 3,
+  "nome": "João Silva",
+  "email": "joao.silva@senai.sp.br",
+  "funcao": "usuario",
+  "status": "ativo",
+  "criado_em": "2024-12-01T09:00:00.000Z",
+  "atualizado_em": "2024-12-01T09:00:00.000Z"
+}
+```
+
+### GET `/users/me/role`
+
+Obtém a função (role) do usuário logado.
+
+**Headers:**
+```
+Authorization: Bearer <jwt_token>
+```
+
+**Response (200):**
+```json
+{
+  "funcao": "usuario"
+}
+```
+
+### POST `/users/tecnico`
+
+Cria um novo técnico vinculado a um pool de serviço.
+
+**Headers:**
+```
+Authorization: Bearer <jwt_token>
+```
+
+**Request Body:**
+```json
+{
+  "nome": "Novo Técnico",
+  "email": "tecnico@senai.sp.br",
+  "senha": "senha123",
+  "funcao": "tecnico",
+  "id_pool": 1
+}
+```
+
+**Campos Obrigatórios:**
+- `nome`: Nome completo do técnico
+- `email`: Email único do técnico
+- `senha`: Senha do técnico
+- `funcao`: Deve ser "tecnico"
+- `id_pool`: ID do pool de serviço
+
+**Response (201):**
+```json
+{
+  "message": "Técnico criado com sucesso",
+  "relacaoTecId": { "id": 5 },
+  "tecnicoId": { "id": 10 }
+}
+```
+
+### PUT `/users/:id/status`
+
+Atualiza o status de um usuário (ativo/inativo).
+
+**Headers:**
+```
+Authorization: Bearer <jwt_token>
+```
+
+**Parâmetros:**
+- `id` (path): ID do usuário
+
+**Request Body:**
+```json
+{
+  "status": "inativo"
+}
+```
+
+**Valores Possíveis para Status:**
+- `ativo`: Usuário ativo no sistema
+- `inativo`: Usuário desabilitado
+
+**Response (200):**
+```json
+{
+  "message": "Status do usuário atualizado com sucesso"
 }
 ```
 
@@ -539,6 +668,28 @@ Lista todos os tipos de serviços disponíveis.
 ]
 ```
 
+### GET `/pool/with-tickets`
+
+Lista pools com quantidade de tickets associados.
+
+**Response (200):**
+```json
+[
+  {
+    "categoria": "Manutenção",
+    "quantidade": 15
+  },
+  {
+    "categoria": "Suporte de TI",
+    "quantidade": 8
+  },
+  {
+    "categoria": "Limpeza",
+    "quantidade": 3
+  }
+]
+```
+
 ### GET `/pool/:id`
 
 Obtém um tipo de serviço específico por ID.
@@ -549,15 +700,48 @@ Obtém um tipo de serviço específico por ID.
 **Response (200):**
 ```json
 {
-  "id": 1,
-  "titulo": "Manutenção",
-  "descricao": "Serviços de manutenção geral",
-  "status": "ativo",
-  "criado_em": "2024-12-01T08:00:00.000Z",
-  "atualizado_em": "2024-12-01T08:00:00.000Z",
-  "created_by": 1,
-  "updated_by": 1
+  "pool": {
+    "id": 1,
+    "titulo": "Manutenção",
+    "descricao": "Serviços de manutenção geral",
+    "status": "ativo",
+    "criado_em": "2024-12-01T08:00:00.000Z",
+    "atualizado_em": "2024-12-01T08:00:00.000Z",
+    "created_by": 1,
+    "updated_by": 1
+  },
+  "poolTec": [
+    {
+      "id": 1,
+      "id_pool": 1,
+      "id_tecnico": 5
+    }
+  ]
 }
+```
+
+### GET `/pool/:id/tickets`
+
+Lista todos os tickets de um pool específico.
+
+**Parâmetros:**
+- `id` (path): ID do pool
+
+**Response (200):**
+```json
+[
+  {
+    "id": 1,
+    "titulo": "Manutenção do Projetor",
+    "descricao": "Projetor não está funcionando",
+    "tipo_id": 1,
+    "tecnico_id": 5,
+    "usuario_id": 3,
+    "status": "em andamento",
+    "criado_em": "2024-12-01T10:00:00.000Z",
+    "atualizado_em": "2024-12-01T14:30:00.000Z"
+  }
+]
 ```
 
 ### POST `/pool`
@@ -621,51 +805,110 @@ Remove um tipo de serviço do sistema.
 }
 ```
 
-## 📊 Relatórios
+## 📊 Relatórios e Apontamentos
 
-### GET `/report`
+### GET `/report/:ticket_id/reports`
 
-Gera relatórios do sistema.
+Lista todos os apontamentos de um chamado específico.
 
-**Headers:**
+**Parâmetros:**
+- `ticket_id` (path): ID do chamado
+
+**Response (200):**
+```json
+[
+  {
+    "id": 1,
+    "chamado_id": 5,
+    "tecnico_id": 3,
+    "descricao": "Iniciada manutenção do equipamento",
+    "comeco": "2024-12-01T14:00:00.000Z",
+    "fim": null,
+    "duracao": null,
+    "criado_em": "2024-12-01T14:00:00.000Z"
+  },
+  {
+    "id": 2,
+    "chamado_id": 5,
+    "tecnico_id": 3,
+    "descricao": "Manutenção concluída com sucesso",
+    "comeco": "2024-12-01T14:00:00.000Z",
+    "fim": "2024-12-01T16:30:00.000Z",
+    "duracao": 9000,
+    "criado_em": "2024-12-01T16:30:00.000Z"
+  }
+]
 ```
-Authorization: Bearer <jwt_token>
-```
 
-**Query Parameters:**
-- `tipo`: Tipo de relatório (`chamados`, `usuarios`, `tecnicos`)
-- `data_inicio`: Data de início (YYYY-MM-DD)
-- `data_fim`: Data de fim (YYYY-MM-DD)
-- `formato`: Formato do relatório (`json`, `pdf`)
+### GET `/report/:ticket_id/reports/:id`
 
-**Exemplo de Request:**
-```
-GET /report?tipo=chamados&data_inicio=2024-12-01&data_fim=2024-12-31&formato=pdf
-```
+Obtém um apontamento específico de um chamado.
 
-**Response (200) - JSON:**
+**Parâmetros:**
+- `ticket_id` (path): ID do chamado
+- `id` (path): ID do apontamento
+
+**Response (200):**
 ```json
 {
-  "relatorio": {
-    "tipo": "chamados",
-    "periodo": "2024-12-01 a 2024-12-31",
-    "total_chamados": 45,
-    "chamados_por_status": {
-      "pendente": 12,
-      "em andamento": 18,
-      "concluído": 15
-    },
-    "chamados_por_tipo": {
-      "Manutenção": 20,
-      "Suporte de TI": 15,
-      "Limpeza": 10
-    }
-  }
+  "id": 1,
+  "chamado_id": 5,
+  "tecnico_id": 3,
+  "descricao": "Iniciada manutenção do equipamento",
+  "comeco": "2024-12-01T14:00:00.000Z",
+  "fim": null,
+  "duracao": null,
+  "criado_em": "2024-12-01T14:00:00.000Z"
 }
 ```
 
-**Response (200) - PDF:**
-Retorna um arquivo PDF com o relatório solicitado.
+### POST `/report/:ticket_id/reports`
+
+Cria um novo apontamento para um chamado.
+
+**Parâmetros:**
+- `ticket_id` (path): ID do chamado
+
+**Request Body:**
+```json
+{
+  "tecnico_id": 3,
+  "descricao": "Iniciada manutenção do equipamento",
+  "comeco": "2024-12-01T14:00:00.000Z",
+  "fim": null
+}
+```
+
+**Campos Obrigatórios:**
+- `tecnico_id`: ID do técnico responsável
+- `descricao`: Descrição do trabalho realizado
+- `comeco`: Horário de início do serviço
+- `fim`: Horário de fim do serviço (opcional)
+
+**Response (201):**
+```json
+{
+  "message": "Apontamento criado com sucesso",
+  "id": 5
+}
+```
+
+### GET `/report/record/pdf`
+
+Gera relatório em PDF de todos os chamados do sistema.
+
+**Response (200):**
+Retorna um arquivo PDF com relatório completo de todos os chamados.
+
+### GET `/report/:ticket_id/pdf`
+
+Gera relatório em PDF de um chamado específico.
+
+**Parâmetros:**
+- `ticket_id` (path): ID do chamado
+
+**Response (200):**
+Retorna um arquivo PDF com relatório detalhado do chamado específico.
 
 ## 🏥 Health Check
 
