@@ -67,18 +67,53 @@ export async function getTicketsByUser(userId) {
 
 export async function getTicketsThatTechnicianIsPermited(technicianId) {
     try {
+        // Busca o pool do técnico
         const [{ id_pool }] = await getPoolTechnicians(technicianId);
         if (!id_pool) throw erroStatus('Técnico não encontrado');
-        const response = await readAll('chamados', `tipo_id = '${id_pool}'`);
-        const [{ usuario_id }] = response;
-        const { nome } = await getUser(usuario_id);
-        response.usuario_id = nome;
-        return response;
+
+        // Busca chamados do pool do técnico
+        const chamados = await readAll('chamados', `tipo_id = '${id_pool}'`);
+
+        // Enriquecer chamados com nomes (tipo, técnico e usuário)
+        const chamadosComNomes = await Promise.all(
+            chamados.map(async (chamado) => {
+                // Nome do pool
+                let tipo_nome = null;
+                if (chamado.tipo_id) {
+                    const pool = await read('pool', `id = '${chamado.tipo_id}'`);
+                    tipo_nome = pool ? pool.titulo : null;
+                }
+
+                // Nome do técnico
+                let tecnico_nome = null;
+                if (chamado.tecnico_id) {
+                    const tecnico = await read('usuarios', `id = '${chamado.tecnico_id}'`);
+                    tecnico_nome = tecnico ? tecnico.nome : null;
+                }
+
+                // Nome do usuário
+                let usuario_nome = null;
+                if (chamado.usuario_id) {
+                    const usuario = await read('usuarios', `id = '${chamado.usuario_id}'`);
+                    usuario_nome = usuario ? usuario.nome : null;
+                }
+
+                return {
+                    ...chamado,
+                    tipo: tipo_nome,
+                    tecnico: tecnico_nome,
+                    usuario: usuario_nome,
+                };
+            })
+        );
+
+        return chamadosComNomes;
     } catch (err) {
         console.error('Erro ao obter chamados do técnico:', err);
         throw err;
     }
 }
+
 
 // Busca chamados que um tecnico está operando
 export async function getTicketsByTechnician(technicianId) {
