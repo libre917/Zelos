@@ -14,6 +14,9 @@ export const API = {
     // caminho para mudar status de usuário para ativo ou inativo
     CHANGE_STATUS_USER: (id) => `${process.env.NEXT_PUBLIC_API_URL}/users/${id}/status`,
 
+    // caminho para criar um tecnico e associar a uma pool
+    CREATE_TECHNICIAN: `${process.env.NEXT_PUBLIC_API_URL}/users/tecnico`,
+
     //caminho de busca de função de usuário da API
     GET_USER_ROLE: `${process.env.NEXT_PUBLIC_API_URL}/users/me/role`,
 

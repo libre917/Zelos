@@ -8,7 +8,37 @@ import { getUser } from './usersService.js';
 // Busca todos os chamados
 export async function getTickets() {
     try {
-        return await readAll('chamados');
+        const chamados = await readAll('chamados');
+        // Buscar nomes relacionados em paralelo
+        const chamadosComNomes = await Promise.all(
+            chamados.map(async (chamado) => {
+                // Busca nome do pool (tipo_id)
+                let tipo_nome = null;
+                if (chamado.tipo_id) {
+                    const pool = await read('pool', `id = '${chamado.tipo_id}'`);
+                    tipo_nome = pool ? pool.titulo : null;
+                }
+                // Busca nome do técnico
+                let tecnico_nome = null;
+                if (chamado.tecnico_id) {
+                    const tecnico = await read('usuarios', `id = '${chamado.tecnico_id}'`);
+                    tecnico_nome = tecnico ? tecnico.nome : null;
+                }
+                // Busca nome do usuário
+                let usuario_nome = null;
+                if (chamado.usuario_id) {
+                    const usuario = await read('usuarios', `id = '${chamado.usuario_id}'`);
+                    usuario_nome = usuario ? usuario.nome : null;
+                }
+                return {
+                    ...chamado,
+                    tipo: tipo_nome,
+                    tecnico: tecnico_nome,
+                    usuario: usuario_nome,
+                };
+            })
+        );
+        return chamadosComNomes;
     } catch (err) {
         console.error('Erro ao obter chamados:', err);
         throw err;
@@ -42,7 +72,7 @@ export async function getTicketsThatTechnicianIsPermited(technicianId) {
         const response = await readAll('chamados', `tipo_id = '${id_pool}'`);
         const [{ usuario_id }] = response;
         const { nome } = await getUser(usuario_id);
-        response.usuario_id = nome
+        response.usuario_id = nome;
         return response;
     } catch (err) {
         console.error('Erro ao obter chamados do técnico:', err);
