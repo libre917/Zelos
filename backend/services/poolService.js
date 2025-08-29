@@ -1,12 +1,30 @@
-import { read, readAll, create, update } from '../config/database.js';
+import { read, readAll, create, update, deleteRecord } from '../config/database.js';
 import { Pool } from '../model/Pool.js';
 import erroStatus from '../utils/erroStatus.js';
-import { validarTitulo, validarRole } from '../utils/validar.js';
+import { validarRole } from '../utils/validar.js';
 
 // Services
 export async function getPools() {
     try {
         return await readAll('pool');
+    } catch (err) {
+        console.error('Erro ao obter pools:', err);
+        throw err;
+    }
+}
+
+export async function getPoolsWithTickets() {
+    try {
+        const pools = await readAll('pool');
+        const categoryPromises = pools.map(async (pool) => {
+            const tickets = await readAll('chamados', `tipo_id = '${pool.id}'`);
+            return {
+                categoria: pool.titulo,
+                quantidade: tickets.length,
+            };
+        });
+        const dadosDoGrafico = await Promise.all(categoryPromises);
+        return dadosDoGrafico;
     } catch (err) {
         console.error('Erro ao obter pools:', err);
         throw err;
@@ -44,10 +62,18 @@ export async function getPoolbyTitle(title) {
     }
 }
 
+export async function getPoolTechnicians(id_tecnico) {
+    try {
+        return await readAll('pool_tecnico', `id_tecnico = '${id_tecnico}'`);
+    } catch (err) {
+        console.error('Erro ao obter técnicos da pool:', err);
+        throw err;
+    }
+}
+
 export async function getPoolTechniciansById(id_pool, technicianId) {
     try {
-         return await readAll('pool_tecnico', `id_pool = '${id_pool}' AND id_tecnico = '${technicianId}'`);
-        
+        return await readAll('pool_tecnico', `id_pool = '${id_pool}' AND id_tecnico = '${technicianId}'`);
     } catch (err) {
         console.error('Erro ao obter técnicos da pool:', err);
         throw err;
@@ -67,8 +93,7 @@ export async function createPool(data) {
     try {
         if (!data.titulo) throw erroStatus('Título é obrigatório', 400);
 
-        validarTitulo(data.titulo);
-        await validarRole(data.created_by, "admin");
+        await validarRole(data.created_by, 'admin');
 
         const tituloExistente = await read('pool', `titulo = '${data.titulo}'`);
         if (tituloExistente) throw erroStatus('Título já cadastrado', 409);
@@ -86,7 +111,7 @@ export async function updatePool(id, data) {
         const poolExistente = await getPool(id);
         if (!poolExistente) throw erroStatus('Pool não encontrado', 404);
 
-        await validarRole(data.updated_by, "admin");
+        await validarRole(data.updated_by, 'admin');
 
         const pool = new Pool(poolExistente);
         pool.updatePool(data);
@@ -96,8 +121,6 @@ export async function updatePool(id, data) {
         }
 
         if (data.titulo) {
-            validarTitulo(data.titulo);
-
             const tituloExistente = await read('pool', `titulo = '${data.titulo}'`);
             if (tituloExistente) throw erroStatus('Título já cadastrado', 409);
 
@@ -107,6 +130,15 @@ export async function updatePool(id, data) {
         if (data.descricao) pool.descricao = data.descricao;
 
         return await update('pool', pool, `id = '${id}'`);
+    } catch (err) {
+        console.error('Erro ao atualizar pool:', err);
+        throw err;
+    }
+}
+
+export async function deletePool(id){
+    try {
+        return await deleteRecord('pool', `id = '${id}'`);
     } catch (err) {
         console.error('Erro ao atualizar pool:', err);
         throw err;

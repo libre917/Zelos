@@ -17,14 +17,19 @@ const porta = process.env.PORT || 8080;
 
 // 3. Middlewares essenciais com tratamento de erros
 try {
-    (async () =>{
-    const existAdmin = await readAll("usuarios", `funcao = 'admin'`)
-    
-    if (!existAdmin || existAdmin.length === 0) {
-        const senhaHash = await generateHashedPassword("admin@123")
-        const adminCriado = await create('usuarios', { nome: "admin", senha: senhaHash, email: "admin@email.com", funcao: "admin" })
-        console.log("admin criado para funcionamento inicial da aplicação");
-    }
+    (async () => {
+        const existAdmin = await readAll('usuarios', `funcao = 'admin'`);
+
+        if (!existAdmin || existAdmin.length === 0) {
+            const senhaHash = await generateHashedPassword('admin@123');
+            const adminCriado = await create('usuarios', {
+                nome: 'admin',
+                senha: senhaHash,
+                email: 'admin@email.com',
+                funcao: 'admin',
+            });
+            console.log('admin criado para funcionamento inicial da aplicação');
+        }
     })();
 
     app.use(
@@ -34,7 +39,6 @@ try {
         })
     );
     app.use(express.json());
-
     app.use(
         session({
             secret: 'sJYMmuCB2Z187XneUuaOVYTVUlxEOb2K94tFZy370HjOY7T7aiCKvwhNQpQBYL9e',
@@ -77,17 +81,8 @@ process.on('uncaughtException', (err) => {
 });
 
 // 7. Inicialização do servidor com verificação
-const server = app
-    .listen(porta, () => {
-        console.log(`Servidor rodando na porta ${porta}`);
-    })
-    .on('error', (err) => {
-        console.error('Erro ao iniciar:', err);
-    });
-
-// 8. Encerramento elegante
-process.on('SIGTERM', () => {
-    server.close(() => {
-        console.log('Servidor encerrado');
-    });
+app.listen(porta, () => {
+    console.log(`Servidor rodando na porta ${porta}`);
+}).on('error', (err) => {
+    console.error('Erro ao iniciar:', err);
 });

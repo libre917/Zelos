@@ -30,7 +30,6 @@ export const loginController = async (req, res) => {
             sameSite: 'strict',
             maxAge: 3600000,
         });
- 
 
         res.json({ mensagem: 'Login realizado com sucesso', token });
     } catch (error) {
@@ -39,7 +38,7 @@ export const loginController = async (req, res) => {
     }
 };
 
-export const logoutController = async (req, res) => {
+export async function logoutController(req, res) {
     try {
         // Remover o token do cookie
         res.clearCookie('token');
@@ -48,4 +47,22 @@ export const logoutController = async (req, res) => {
         console.error('Erro ao fazer logout:', error);
         res.status(500).json({ mensagem: 'Erro ao fazer logout' });
     }
-};
+}
+
+export async function checkAuth(req, res) {
+    try {
+        if (req.isAuthenticated()) {
+            return res.json({
+                authenticated: true,
+                user: {
+                    username: req.user.username,
+                    displayName: req.user.displayName,
+                },
+            });
+        }
+        res.status(401).json({ authenticated: false });
+    } catch (error) {
+        console.error('Erro ao checar validade do token:', error);
+        res.status(500).json({mensagem: "Erro ao checar validação"})
+    }
+}

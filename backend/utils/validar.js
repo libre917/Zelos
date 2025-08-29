@@ -1,4 +1,5 @@
 import { getRoleUser } from "../services/usersService.js";
+import erroStatus from "./erroStatus.js";
 import { read } from "../config/database.js";
 
 const STATUS_VALIDOS = ['pendente', 'em_andamento', 'concluido'];
@@ -25,6 +26,8 @@ export async function validarRole(userId, roleEsperado) {
     const role = await getRoleUser(userId);
     if (Array.isArray(roleEsperado)) {
         if (!roleEsperado.includes(role)) {
+            console.log(role);
+            
             throw erroStatus(`Apenas usuários com perfil ${roleEsperado.join(', ')} podem executar essa ação`, 403);
         }
     } else {
@@ -43,15 +46,5 @@ export async function checkEmailDuplicado(email) {
     const emailExistente = await read('usuarios', `email = '${email}'`);
     if (emailExistente) {
         throw erroStatus('Email já cadastrado', 409);
-    }
-}
-
-// Verifica se o título está entre os válidos
-export function validarTitulo(titulo) {
-    if (!TITULOS_VALIDOS.includes(titulo)) {
-        throw erroStatus(
-            'Título deve ser um dos seguintes: ' + TITULOS_VALIDOS.join(', '),
-            400
-        );
     }
 }

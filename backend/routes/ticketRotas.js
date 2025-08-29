@@ -7,7 +7,8 @@ import {
     getRecordController,
     getTicketsByUserController,
     getTicketsByTechnicianController,
-    getTicketsByStatusController
+    getTicketsByStatusController,
+    getTicketsThatTechnicianIsPermitedController
 } from '../controllers/TicketsController.js';
 import reportRoute from './reportRotas.js';
 
@@ -22,7 +23,9 @@ router.get('/:id', getTicketController);
 // Rota para obter chamados do usuário autenticado
 router.get('/info/user', getTicketsByUserController);
 
-// Rota para obter chamados por técnico
+router.get('/info/tecnico', getTicketsThatTechnicianIsPermitedController);
+
+// Rota para obter chamados que o técnico está atendendo
 router.get('/info/tecnico/:id', getTicketsByTechnicianController);
 
 // Rota para obter chamados por status

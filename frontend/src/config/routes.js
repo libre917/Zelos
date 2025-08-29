@@ -19,4 +19,22 @@ export const API = {
 
     //caminho para buscar informações necessárias do usuário
     GET_USER_INFO: `${process.env.NEXT_PUBLIC_API_URL}/users/me/info`,
+
+    //caminho para busca ou criação de categorias
+    POOL: `${process.env.NEXT_PUBLIC_API_URL}/pool`,
+
+    //caminho para busca de pools com quantidade de tickets relacionados ao pool
+    GET_POOL_WITH_TICKETS: `${process.env.NEXT_PUBLIC_API_URL}/pool/with-tickets`,
+
+    //caminho para busca ou criação de chamados
+    TICKET: `${process.env.NEXT_PUBLIC_API_URL}/ticket`,
+
+    //caminho para buscar chamados do usuário
+    GET_USER_TICKETS: `${process.env.NEXT_PUBLIC_API_URL}/ticket/info/user`,
+
+    //caminho para buscar chamados que o técnico pode acessar
+    GET_TECHNICIAN_TICKETS: `${process.env.NEXT_PUBLIC_API_URL}/ticket/info/tecnico`,
+
+    //caminho para setar o técnico ao chamado
+    SET_TECHNICIAN: (id) => `${process.env.NEXT_PUBLIC_API_URL}/ticket/${id}/tecnico`,
 };

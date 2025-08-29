@@ -22,7 +22,6 @@ export default function Home() {
 
         if (!token) return; // Se não tiver token, não faz nada
 
-        console.log('Token encontrado:', token);
 
         (async () => {
             try {
@@ -40,10 +39,7 @@ export default function Home() {
                 }
 
                 const data = await response.json();
-                console.log(typeof data);
-
-                console.log(data);
-                router.push(`/${data.role}`); // Redireciona para a página da role do usuário
+                router.push(`/${data.role.toLowerCase().normalize("NFD").replace(/\p{M}/gu, "")}`); // Redireciona para a página da role do usuário
             } catch (err) {
                 console.error('Erro na requisição:', err);
             }
@@ -73,7 +69,7 @@ export default function Home() {
         if (autenticacao.status !== 200) {
             const { mensagem } = await autenticacao.json();
             alert(mensagem);
-            console.log('Erro ao fazer login:', mensagem);
+            console.error('Erro ao fazer login:', mensagem);
         }
         setReload(!reload);
         setEmailErro('');
@@ -102,7 +98,7 @@ export default function Home() {
                         <div className="flex flex-col items-center">
                             {/* Título do Sistema */}
                             <h1 className="text-3xl font-extrabold text-red-600 drop-shadow-sm text-center">
-                                Sistema de Chamados
+                                Zelos
                             </h1>
 
                             {/* Imagem do Logo do Senai  */}

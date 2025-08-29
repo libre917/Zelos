@@ -1,8 +1,9 @@
 import { read, readAll, create, update } from '../config/database.js';
 import { Ticket } from '../model/Ticket.js';
 import erroStatus from '../utils/erroStatus.js';
-import { getPoolTechniciansById } from './poolService.js';
+import { getPoolTechnicians, getPoolTechniciansById } from './poolService.js';
 import { validarCamposObrigatorios, validarStatus, validarRole } from '../utils/validar.js';
+import { getUser } from './usersService.js';
 
 // Busca todos os chamados
 export async function getTickets() {
@@ -24,12 +25,27 @@ export async function getTicket(id) {
     }
 }
 
-// Busca chamados de um usuário 
+// Busca chamados de um usuário
 export async function getTicketsByUser(userId) {
     try {
         return await readAll('chamados', `usuario_id = '${userId}'`);
     } catch (err) {
         console.error('Erro ao obter chamados do usuário:', err);
+        throw err;
+    }
+}
+
+export async function getTicketsThatTechnicianIsPermited(technicianId) {
+    try {
+        const [{ id_pool }] = await getPoolTechnicians(technicianId);
+        if (!id_pool) throw erroStatus('Técnico não encontrado');
+        const response = await readAll('chamados', `tipo_id = '${id_pool}'`);
+        const [{ usuario_id }] = response;
+        const { nome } = await getUser(usuario_id);
+        response.usuario_id = nome
+        return response;
+    } catch (err) {
+        console.error('Erro ao obter chamados do técnico:', err);
         throw err;
     }
 }
@@ -105,8 +121,8 @@ export async function createTicket(data) {
         // Valida status
         validarStatus(ticketData.status);
 
-        // Apenas "usuario" pode criar chamados
-        await validarRole(ticketData.usuario_id, ['usuario', 'admin']);
+        // Apenas usuarios e admins podem criar chamados
+        await validarRole(ticketData.usuario_id, ['usuario', 'Usuário', 'admin']);
 
         // Se tiver técnico, validar se realmente é técnico
         if (ticketData.tecnico_id) {
@@ -137,7 +153,7 @@ export async function setTechnicianToTicket(ticketId, technicianId) {
         if (!ticket) {
             throw erroStatus('Chamado não encontrado', 404);
         }
-        
+
         // Se houver pool, valida se técnico pertence à pool
         const [pool] = await getPoolTechniciansById(ticket.tipo_id, technicianId);
 
@@ -145,7 +161,11 @@ export async function setTechnicianToTicket(ticketId, technicianId) {
             throw erroStatus('Técnico não autorizado para este tipo de chamado', 403);
         }
 
-        const response = await update('chamados', { tecnico_id: technicianId, status: 'em andamento' }, `id = '${ticketId}'`);
+        const response = await update(
+            'chamados',
+            { tecnico_id: technicianId, status: 'em andamento' },
+            `id = '${ticketId}'`
+        );
         return response;
     } catch (err) {
         console.error('Erro ao atribuir técnico ao chamado:', err);
