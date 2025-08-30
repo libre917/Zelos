@@ -3,10 +3,6 @@
         "install": "cd backend && npm install && cd .. && cd frontend && npm install",
         "startBack": "cd ./backend && node --watch app.js",
         "startFront": "cd ./frontend && npm run dev"
-    },
-    "devDependencies": {
-        "autoprefixer": "^10.4.21",
-        "postcss": "^8.5.6",
-        "tailwindcss": "^4.1.11"
     }
+
 }
