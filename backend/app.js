@@ -9,7 +9,7 @@ import ticketRotas from './routes/ticketRotas.js';
 import poolRotas from './routes/poolRotas.js';
 import authMiddleware from './middlewares/authMiddleware.js';
 import { create, readAll } from './config/database.js';
-import { generateHashedPassword } from './hashPassword.js';
+import { generateHashedPassword } from './utils/hashPassword.js';
 
 // 2. Configuração básica do Express
 const app = express();
@@ -22,7 +22,7 @@ try {
 
         if (!existAdmin || existAdmin.length === 0) {
             const senhaHash = await generateHashedPassword('admin@123');
-            const adminCriado = await create('usuarios', {
+            await create('usuarios', {
                 nome: 'admin',
                 senha: senhaHash,
                 email: 'admin@email.com',

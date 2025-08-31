@@ -2,7 +2,7 @@ import { read, readAll, create, update } from '../config/database.js';
 import { User } from '../model/User.js';
 import { getPool } from './poolService.js';
 import erroStatus from '../utils/erroStatus.js';
-import { generateHashedPassword } from '../hashPassword.js';
+import { generateHashedPassword } from '../utils/hashPassword.js';
 import { validarEmail, validarRole, checkEmailDuplicado } from '../utils/validar.js';
 
 // Buscar todos os usuários
@@ -37,6 +37,21 @@ export async function getRoleUser(id) {
         return user.funcao;
     } catch (err) {
         console.error('getRoleUser error:', err);
+        throw err;
+    }
+}
+
+export async function getTecnicians() {
+    try {
+        const tecnicians = await readAll('usuarios', `funcao = 'tecnico'`);
+        const categorys = await readAll('pool_tecnico');
+        for (const tecnician of tecnicians) {
+            tecnician.senha = undefined;
+            tecnician.categorys = categorys.filter((cat) => cat.id_tecnico === tecnician.id).map((cat) => cat.id_pool);
+        }
+        return tecnicians;
+    } catch (err) {
+        console.error('getTecnicians error:', err);
         throw err;
     }
 }

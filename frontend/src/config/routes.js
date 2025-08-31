@@ -11,6 +11,9 @@ export const API = {
     //caminho para buscar ou criar usuários, irá variar conforme a implementação
     USERS: `${process.env.NEXT_PUBLIC_API_URL}/users`,
 
+    //caminhos para buscar tecnicos
+    GET_TECHNICIANS: `${process.env.NEXT_PUBLIC_API_URL}/users?filter=tecnicos`,
+
     // caminho para mudar status de usuário para ativo ou inativo
     CHANGE_STATUS_USER: (id) => `${process.env.NEXT_PUBLIC_API_URL}/users/${id}/status`,
 

@@ -181,6 +181,14 @@ export async function createTicket(data) {
         // Verifica obrigatórios
         validarCamposObrigatorios(data, ['titulo', 'descricao', 'usuario_id', 'tipo_id']);
 
+        // Verifica se título já existe
+        const idExistente = await read('chamados', `titulo = '${data.titulo}'`);
+        if (idExistente) {
+            throw erroStatus('Este chamado já foi criado', 409);
+        }
+
+        // Monta o objeto chamado
+
         const ticketData = new Ticket(data);
 
         // Valida status

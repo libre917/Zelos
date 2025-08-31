@@ -22,7 +22,7 @@ import {
     Clock,
     User,
     FileText,
-    Send
+    Send,
 } from 'lucide-react';
 import { API } from '../../../config/routes';
 
@@ -48,6 +48,7 @@ export default function Admin() {
 
     // Estados para a lista de usuários e filtros
     const [usuarios, setUsuarios] = useState([]);
+    const [tecnicos, setTecnicos] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterType, setFilterType] = useState('Todos'); // 'Todos', 'Usuário', 'Técnico', 'Administrador'
     const [formData, setFormData] = useState({
@@ -130,6 +131,34 @@ export default function Admin() {
         })();
     }, [reload]);
 
+    // busca tecnicos
+    useEffect(() => {
+        const token = document.cookie
+            .split('; ')
+            .find((row) => row.startsWith('token='))
+            ?.split('=')[1];
+
+        if (!token) router.push('/');
+        (async () => {
+            try {
+                const response = await fetch(API.GET_TECHNICIANS, {
+                    method: 'GET',
+                    headers: {
+                        'Content-type': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+
+                const data = await response.json();
+                setTecnicos(data);
+            } catch (err) {
+                console.error(('Erro na requisição:', err));
+            } finally {
+                setLoadingUsers(false);
+            }
+        })();
+    }, [reload]);
+
     useEffect(() => {
         const token = document.cookie
             .split('; ')
@@ -169,25 +198,28 @@ export default function Admin() {
         if (!token) router.push('/');
         setCanCreate(false);
         try {
-            const response = await fetch(API.USERS, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({
-                    nome: formData.nome,
-                    email: formData.email,
-                    senha: formData.senha,
-                    funcao: formData.funcao,
-                    status: formData.status,
-                }),
-            });
-
-            if (!response.ok) {
-                const res = await response.json();
-                console.error('Erro ao cadastrar usuário:', response.status);
-                alert(res.mensagem);
+            let response;
+            // Se for técnico, faz fetch na rota /users/tecnico
+            if (formData.funcao === 'tecnico') {
+                response = await fetch(API.CREATE_TECHNICIAN, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({
+                        nome: formData.nome,
+                        email: formData.email,
+                        senha: formData.senha,
+                        funcao: formData.funcao,
+                        id_pool: formData.categoria,
+                    }),
+                });
+                alert(`${formData.nome} foi cadastrado com sucesso!`);
+                setShowUserModal(false);
+                const data = await response.json();
+                setReload(!reload);
+                setUsuarios((prev) => [...prev, data]);
                 setFormData({
                     nome: '',
                     email: '',
@@ -195,21 +227,49 @@ export default function Admin() {
                     tipo: '',
                     status: 'Ativo',
                 });
+            } else {
+                const response = await fetch(API.USERS, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({
+                        nome: formData.nome,
+                        email: formData.email,
+                        senha: formData.senha,
+                        funcao: formData.funcao,
+                        status: formData.status,
+                    }),
+                });
 
-                return;
+                if (!response.ok) {
+                    const res = await response.json();
+                    console.error('Erro ao cadastrar usuário:', response.status);
+                    alert(res.mensagem);
+                    setFormData({
+                        nome: '',
+                        email: '',
+                        senha: '',
+                        tipo: '',
+                        status: 'Ativo',
+                    });
+
+                    return;
+                }
+                alert(`${formData.nome} foi cadastrado com sucesso!`);
+                setShowUserModal(false);
+                const data = await response.json();
+                setReload(!reload);
+                setUsuarios((prev) => [...prev, data]);
+                setFormData({
+                    nome: '',
+                    email: '',
+                    senha: '',
+                    tipo: '',
+                    status: 'Ativo',
+                });
             }
-            alert(`Usuário ${formData.nome} foi cadastrado com sucesso!`);
-            setShowUserModal(false);
-            const data = await response.json();
-            setReload(!reload);
-            setUsuarios((prev) => [...prev, data]);
-            setFormData({
-                nome: '',
-                email: '',
-                senha: '',
-                tipo: '',
-                status: 'Ativo',
-            });
         } catch (err) {
             console.error('Erro na requisição:', err);
         } finally {
@@ -260,7 +320,6 @@ export default function Admin() {
             alert('Erro na requisição, por favor, tente novamente.');
         }
     }
-
     async function updataStatus(id, newStatus) {
         const token = document.cookie
             .split('; ')
@@ -311,7 +370,7 @@ export default function Admin() {
         totalAdmins: usuarios.filter((user) => user.funcao === 'admin').length,
         chamadosAbertos: chamados.filter((chamado) => chamado.status === 'pendente').length,
         chamadosFechados: chamados.filter((chamado) => chamado.status === 'concluido').length,
-        chamadosEmProgresso: chamados.filter((chamado) => chamado.status === 'em progresso').length,
+        chamadosEmProgresso: chamados.filter((chamado) => chamado.status === 'em andamento').length,
     };
     const chamadosPorCategoria = categoriasChamados;
 
@@ -328,7 +387,6 @@ export default function Admin() {
     // Função para lidar com mudanças no formulário
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        console.log(name, value);
 
         setFormData((prev) => ({
             ...prev,
@@ -343,7 +401,6 @@ export default function Admin() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log(usuarios);
 
         setCanCreate(true);
     };
@@ -479,8 +536,6 @@ export default function Admin() {
             return;
         }
         try {
-            console.log(formChamadoData);
-
             const response = await fetch(API.TICKET, {
                 method: 'POST',
                 headers: {
@@ -493,10 +548,12 @@ export default function Admin() {
                     tipo_id: formChamadoData.categoria,
                 }),
             });
-            console.log('Enviando Dados', formChamadoData);
+
+            const mensagem = await response.json();
 
             if (!response.ok) {
                 setError('Erro ao criar chamado.');
+                alert(mensagem.mensagem);
                 setLoading(false);
                 return;
             }
@@ -509,7 +566,7 @@ export default function Admin() {
             setLoading(false);
         }
     };
-
+    
 
     return (
         <div className="flex flex-col h-screen bg-gray-50">
@@ -527,54 +584,60 @@ export default function Admin() {
                     <nav className="flex flex-wrap gap-4">
                         <button
                             onClick={() => setActiveTab('dashboard')}
-                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${activeTab === 'dashboard' ? 'bg-red-100 text-red-700 font-medium' : 'hover:bg-gray-100'
-                                }`}
+                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${
+                                activeTab === 'dashboard' ? 'bg-red-100 text-red-700 font-medium' : 'hover:bg-gray-100'
+                            }`}
                         >
                             <BarChart2 className="h-5 w-5" />
                             <span>Dashboard</span>
                         </button>
                         <button
                             onClick={() => setActiveTab('usuarios')}
-                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${activeTab === 'usuarios'
-                                ? 'bg-yellow-100 text-yellow-700 font-medium'
-                                : 'hover:bg-gray-100'
-                                }`}
+                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${
+                                activeTab === 'usuarios'
+                                    ? 'bg-yellow-100 text-yellow-700 font-medium'
+                                    : 'hover:bg-gray-100'
+                            }`}
                         >
                             <Users className="h-5 w-5" />
                             <span>Usuários</span>
                         </button>
                         <button
                             onClick={() => setActiveTab('relatorios')}
-                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${activeTab === 'relatorios'
-                                ? 'bg-green-100 text-green-700 font-medium'
-                                : 'hover:bg-gray-100'
-                                }`}
+                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${
+                                activeTab === 'relatorios'
+                                    ? 'bg-green-100 text-green-700 font-medium'
+                                    : 'hover:bg-gray-100'
+                            }`}
                         >
                             <PieChart className="h-5 w-5" />
                             <span>Relatórios</span>
                         </button>
                         <button
                             onClick={() => setActiveTab('chamados')}
-                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${activeTab === 'chamados' ? 'bg-blue-100 text-blue-700 font-medium' : 'hover:bg-gray-100'
-                                }`}
+                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${
+                                activeTab === 'chamados' ? 'bg-blue-100 text-blue-700 font-medium' : 'hover:bg-gray-100'
+                            }`}
                         >
                             <PieChart className="h-5 w-5" />
                             <span>Chamados</span>
                         </button>
                         <button
                             onClick={() => setActiveTab('categorias')}
-                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${activeTab === 'categorias'
-                                ? 'bg-pink-100 text-pink-700 font-medium'
-                                : 'hover:bg-gray-100'
-                                }`}
+                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${
+                                activeTab === 'categorias'
+                                    ? 'bg-pink-100 text-pink-700 font-medium'
+                                    : 'hover:bg-gray-100'
+                            }`}
                         >
                             <PieChart className="h-5 w-5" />
                             <span>Categorias</span>
                         </button>
                         <button
                             onClick={() => setActiveTab('pool')}
-                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${activeTab === 'pool' ? 'bg-red-100 text-red-700 font-medium' : 'hover:bg-gray-100'
-                                }`}
+                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${
+                                activeTab === 'pool' ? 'bg-red-100 text-red-700 font-medium' : 'hover:bg-gray-100'
+                            }`}
                         >
                             <Layers className="h-5 w-5" />
                             <span>Pool de Chamados</span>
@@ -712,22 +775,24 @@ export default function Admin() {
                                                 <p className="text-sm text-gray-500 mt-1">{usuario.email}</p>
                                             </div>
                                             <span
-                                                className={`px-3 py-1 rounded-full text-xs font-medium ${usuario.status === 'ativo'
-                                                    ? 'bg-green-100 text-green-800'
-                                                    : 'bg-red-100 text-red-800'
-                                                    }`}
+                                                className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                                    usuario.status === 'ativo'
+                                                        ? 'bg-green-100 text-green-800'
+                                                        : 'bg-red-100 text-red-800'
+                                                }`}
                                             >
                                                 {usuario.status}
                                             </span>
                                         </div>
                                         <div className="flex justify-between items-center mt-4">
                                             <span
-                                                className={`px-2 py-1 rounded-full text-xs font-medium ${usuario.funcao === 'admin'
-                                                    ? 'bg-blue-100 text-blue-800'
-                                                    : usuario.funcao === 'tecnico'
-                                                    ? 'bg-yellow-100 text-yellow-800'
-                                                    : 'bg-green-100 text-green-800'
-                                                    }`}
+                                                className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                                    usuario.funcao === 'admin'
+                                                        ? 'bg-blue-100 text-blue-800'
+                                                        : usuario.funcao === 'tecnico'
+                                                        ? 'bg-yellow-100 text-yellow-800'
+                                                        : 'bg-green-100 text-green-800'
+                                                }`}
                                             >
                                                 {usuario.funcao}
                                             </span>
@@ -997,7 +1062,7 @@ export default function Admin() {
                                 </div>
                             </div>
 
-                            <form className='space-y-6' onSubmit={handleSubmitAdmin}>
+                            <form className="space-y-6" onSubmit={handleSubmitAdmin}>
                                 {/* Linha 1 */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                                     <div>
@@ -1010,6 +1075,7 @@ export default function Admin() {
                                             value={formChamadoData.equipamentoId}
                                             onChange={handleChange}
                                             placeholder="Digite o Id do equipamento"
+                                            maxLength={10}
                                             className="input-field text-gray-700"
                                         />
                                     </div>
@@ -1019,10 +1085,10 @@ export default function Admin() {
                                             Categoria
                                         </label>
                                         <select
-                                            name='categoria'
+                                            name="categoria"
                                             value={formChamadoData.categoria}
                                             onChange={handleChange}
-                                            className='input-field text-gray-700'
+                                            className="input-field text-gray-700"
                                         >
                                             <option value="">Selecione uma categoria</option>
                                             {categorias.map((categoria) => (
@@ -1038,12 +1104,13 @@ export default function Admin() {
                                 <div className="mb-6">
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
                                     <textarea
-                                        name='descricao'
+                                        name="descricao"
                                         value={formChamadoData.descricao}
                                         onChange={handleChange}
                                         placeholder="Descreva detalhadamente o problema ou solicitação"
                                         rows={4}
-                                        className="input-field text-gray-700"
+                                        className="input-field text-gray-700 resize-none"
+                                        maxLength={300}
                                     ></textarea>
                                 </div>
 
@@ -1064,9 +1131,11 @@ export default function Admin() {
                                         <span>{loading ? 'Criando...' : 'Criar Chamado'}</span>
                                     </button>
                                     {success && (
-                                        <div className='text-green-600 font-medium self-center'>Chamado criado com sucesso!</div>
+                                        <div className="text-green-600 font-medium self-center">
+                                            Chamado criado com sucesso!
+                                        </div>
                                     )}
-                                    {error && <div className='text-red-600 font-medium self-center'>{error}</div>}
+                                    {error && <div className="text-red-600 font-medium self-center">{error}</div>}
                                 </div>
                             </form>
                         </div>
@@ -1102,6 +1171,7 @@ export default function Admin() {
                                         onChange={handleInputChangeCategoria}
                                         className="mt-1 block w-full border border-gray-300 text-gray-700 rounded-md shadow-sm p-2 focus:ring-red-500 focus:border-red-500"
                                         placeholder="Ex: Hardware"
+                                        maxLength={50}
                                         required
                                     />
                                 </div>
@@ -1120,6 +1190,7 @@ export default function Admin() {
                                         onChange={handleInputChangeCategoria}
                                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-gray-700 focus:ring-red-500 focus:border-red-500 break-words w-64"
                                         placeholder="Ex: Problemas com computadores e periféricos"
+                                        maxLength={150}
                                         required
                                     />
                                 </div>
@@ -1156,7 +1227,7 @@ export default function Admin() {
                 )}
 
                 {/* Área de Pool de Chamados */}
-                {(activeTab === 'pool') && (
+                {activeTab === 'pool' && (
                     <div className="bg-white rounded-xl shadow-md p-6 mb-8">
                         <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
                             {activeTab === 'pool' && <Layers className="h-5 w-5 mr-2 text-red-600" />}
@@ -1200,29 +1271,32 @@ export default function Admin() {
                         <div className="flex flex-col lg:flex-row gap-6">
                             {/* Lista de chamados */}
                             <div
-                                className={`${chamadoSelecionado ? 'lg:w-1/2' : 'w-full'
-                                    } bg-white rounded-lg border border-gray-200`}
+                                className={`${
+                                    chamadoSelecionado ? 'lg:w-1/2' : 'w-full'
+                                } bg-white rounded-lg border border-gray-200`}
                             >
                                 {/* Lista de chamados */}
                                 <div className="space-y-4 p-4">
                                     {chamados.map((chamado) => (
                                         <div
                                             key={chamado.id}
-                                            className={`p-4 border rounded-lg cursor-pointer transition-all ${chamadoSelecionado?.id === chamado.id
-                                                ? 'border-red-500 bg-red-50'
-                                                : 'border-gray-200 hover:border-red-300 hover:bg-gray-50'
-                                                }`}
+                                            className={`p-4 border rounded-lg cursor-pointer transition-all ${
+                                                chamadoSelecionado?.id === chamado.id
+                                                    ? 'border-red-500 bg-red-50'
+                                                    : 'border-gray-200 hover:border-red-300 hover:bg-gray-50'
+                                            }`}
                                             onClick={() => handleChamadoClick(chamado)}
                                         >
                                             <div className="flex justify-between items-start mb-2">
                                                 <h3 className="font-medium text-gray-800">{chamado.titulo}</h3>
                                                 <div
-                                                    className={`px-2 py-1 text-xs rounded-full ${chamado.status === 'Pendente'
-                                                        ? 'bg-red-100 text-red-800'
-                                                        : chamado.status === 'Em Progresso'
+                                                    className={`px-2 py-1 text-xs rounded-full ${
+                                                        chamado.status === 'pendente'
+                                                            ? 'bg-red-100 text-red-800'
+                                                            : chamado.status === 'em andamento'
                                                             ? 'bg-yellow-100 text-yellow-800'
                                                             : 'bg-green-100 text-green-800'
-                                                        }`}
+                                                    }`}
                                                 >
                                                     {chamado.status}
                                                 </div>
@@ -1279,12 +1353,13 @@ export default function Admin() {
                                                     {chamadoSelecionado.titulo}
                                                 </h3>
                                                 <span
-                                                    className={`px-2 py-1 text-xs rounded-full ${chamadoSelecionado.status === 'pendente'
-                                                        ? 'bg-red-100 text-red-800'
-                                                        : chamadoSelecionado.status === 'em progresso'
+                                                    className={`px-2 py-1 text-xs rounded-full ${
+                                                        chamadoSelecionado.status === 'pendente'
+                                                            ? 'bg-red-100 text-red-800'
+                                                            : chamadoSelecionado.status === 'em progresso'
                                                             ? 'bg-yellow-100 text-yellow-800'
                                                             : 'bg-green-100 text-green-800'
-                                                        }`}
+                                                    }`}
                                                 >
                                                     {chamadoSelecionado.status}
                                                 </span>
@@ -1310,9 +1385,7 @@ export default function Admin() {
                                             </div>
                                             <div>
                                                 <p className="text-xs text-gray-500">Categoria</p>
-                                                <p className="font-medium text-gray-700">
-                                                    {chamadoSelecionado.tipo}
-                                                </p>
+                                                <p className="font-medium text-gray-700">{chamadoSelecionado.tipo}</p>
                                             </div>
                                             <div>
                                                 <p className="text-xs text-gray-500"></p>
@@ -1328,23 +1401,27 @@ export default function Admin() {
                                         </div>
 
                                         <div>
-                                            <label htmlFor="atribuir" className="block text-sm font-medium text-gray-700">
+                                            <label
+                                                htmlFor="atribuir"
+                                                className="block text-sm font-medium text-gray-700"
+                                            >
                                                 Atribuir a um técnico
                                             </label>
+
                                             <select
                                                 id="atribuir"
                                                 className="mt-1 block w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-red-400 focus:border-red-400 transition outline-none bg-gray-50 shadow-sm text-black"
                                             >
                                                 <option value="">Selecione um técnico</option>
-                                                {usuarios
-                                                    .filter((user) => user.funcao === 'tecnico' && user.status === 'ativo')
+                                                {tecnicos
+                                                    .filter(
+                                                        (tecnico) => tecnico.status === 'ativo' && tecnico.categorys == chamadoSelecionado.tipo_id
+                                                    )
                                                     .map((tecnico) => (
                                                         <option key={tecnico.id} value={tecnico.id}>
-                                                            {tecnico.nome} ({tecnico.email})
+                                                            {tecnico.nome} ({tecnico.email}) 
                                                         </option>
                                                     ))}
-
-
                                             </select>
                                         </div>
 
@@ -1354,9 +1431,10 @@ export default function Admin() {
                                                 disabled={loading}
                                                 className={`flex items-center gap-2 px-4 py-2 rounded-2xl transition cursor-pointer
 
-                                                    ${loading
-                                                        ? "bg-gray-300 cursor-not-allowed text-gray-600"
-                                                        : "bg-red-600 hover:bg-red-500 text-white"
+                                                    ${
+                                                        loading
+                                                            ? 'bg-gray-300 cursor-not-allowed text-gray-600'
+                                                            : 'bg-red-600 hover:bg-red-500 text-white'
                                                     }`}
                                             >
                                                 {loading ? (
@@ -1369,8 +1447,6 @@ export default function Admin() {
                                                 )}
                                             </button>
                                         </div>
-
-
                                     </div>
                                 </div>
                             )}
@@ -1494,5 +1570,4 @@ export default function Admin() {
             )}
         </div>
     );
-
 }

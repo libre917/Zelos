@@ -6,10 +6,16 @@ import {
     createTechnician,
     setStatusUser,
     getRoleUser,
+    getTecnicians,
 } from '../services/usersService.js';
 
 export async function getUsersController(req, res) {
     try {
+        const filter = req.query.filter;
+        if (filter === 'tecnicos') {
+            const tecnicians = await getTecnicians();
+            return res.status(200).json(tecnicians);
+        }
         const users = await getUsers();
         res.status(200).json(users);
     } catch (err) {
