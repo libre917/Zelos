@@ -3,7 +3,6 @@ import express from 'express';
 import cors from 'cors';
 import session from 'express-session';
 import authRotas from './routes/authRotas.js';
-import passport from './config/ldap.js';
 import userRotas from './routes/userRotas.js';
 import ticketRotas from './routes/ticketRotas.js';
 import poolRotas from './routes/poolRotas.js';
@@ -47,13 +46,6 @@ try {
             cookie: { secure: false },
         })
     );
-
-    // 4. Inicialização segura do Passport
-    if (!passport) {
-        throw new Error('Passport não foi importado corretamente');
-    }
-    app.use(passport.initialize());
-    app.use(passport.session());
 } catch (err) {
     console.error('Erro na configuração inicial:', err);
     process.exit(1);

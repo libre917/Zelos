@@ -1,21 +1,22 @@
 # Zelos
+
 ## Sistema de Chamados - Escola SENAI Armando de Arruda Pereira
 
 Este é um projeto de sistema de chamados para a Escola SENAI Armando de Arruda Pereira, desenvolvido para gerenciar solicitações de manutenção, apoio técnico e outros serviços para itens identificados pelo número de patrimônio da escola. O sistema foi construído com Next.js, Node.js e MySQL.
 
 ## 📋 Índice
 
-- [Sobre o Projeto](#sobre-o-projeto)
-- [Tecnologias Utilizadas](#tecnologias-utilizadas)
-- [Arquitetura do Sistema](#arquitetura-do-sistema)
-- [Como Iniciar](#como-iniciar)
-- [Estrutura de Diretórios](#estrutura-de-diretórios)
-- [Banco de Dados](#banco-de-dados)
-- [API Endpoints](#api-endpoints)
-- [Autenticação e Autorização](#autenticação-e-autorização)
-- [Integração AD](#integração-ad)
-- [Desenvolvimento](#desenvolvimento)
-- [Licença](#licença)
+-   [Sobre o Projeto](#sobre-o-projeto)
+-   [Tecnologias Utilizadas](#tecnologias-utilizadas)
+-   [Arquitetura do Sistema](#arquitetura-do-sistema)
+-   [Como Iniciar](#como-iniciar)
+-   [Estrutura de Diretórios](#estrutura-de-diretórios)
+-   [Banco de Dados](#banco-de-dados)
+-   [API Endpoints](#api-endpoints)
+-   [Autenticação e Autorização](#autenticação-e-autorização)
+-   [Integração AD](#integração-ad)
+-   [Desenvolvimento](#desenvolvimento)
+-   [Licença](#licença)
 
 ## 🎯 Sobre o Projeto
 
@@ -23,32 +24,32 @@ Este sistema permite que os usuários registrem chamados de manutenção e outro
 
 ### Funcionalidades Principais
 
-- **Criação de Chamados**: Usuários podem criar chamados informando o número de patrimônio ou descrição de item e o tipo de serviço necessário.
-- **Acompanhamento de Chamados**: Técnicos e usuários podem visualizar o status dos chamados e acompanhar as atualizações feitas pelos responsáveis.
-- **Apontamentos de Técnicos**: Técnicos podem adicionar apontamentos detalhados sobre o serviço realizado.
-- **Relatórios**: O sistema permite a geração de relatórios sobre os chamados, tipos de serviços e técnicos envolvidos.
-- **Gestão de Usuários**: Sistema de roles (admin, técnico, usuário) com permissões específicas.
-- **Pool de Serviços**: Categorização de tipos de serviços com técnicos especializados.
+-   **Criação de Chamados**: Usuários e Admins podem criar chamados informando o número de patrimônio ou descrição de item e o tipo de serviço necessário.
+-   **Acompanhamento de Chamados**:Usuários que criaram o chamado podem acompanhar seus chamados, admins podem acompanhar todos os chamados
+-   **Apontamentos de Técnicos**: Técnicos podem adicionar apontamentos no chamado que está sendo realizado.
+-   **Relatórios**: O sistema permite a geração de relatórios em PDF para admins.
+-   **Gestão de Usuários**: Sistema de roles (admin, técnico, usuário) com permissões específicas.
+-   **Pool de Serviços**: Categorização de tipos de serviços com técnicos especializados.
 
 ## 🛠️ Tecnologias Utilizadas
 
 ### Backend
-- **Node.js**: Ambiente de execução JavaScript
-- **Express.js**: Framework web para Node.js
-- **MySQL2**: Driver MySQL para Node.js com suporte a Promises
-- **JWT**: Autenticação baseada em tokens
-- **Passport.js**: Middleware de autenticação
-- **LDAP**: Integração com Active Directory
-- **bcryptjs**: Criptografia de senhas
-- **Multer**: Upload de arquivos
-- **PDFKit**: Geração de relatórios em PDF
+
+-   **Node.js**: Ambiente de execução JavaScript
+-   **Express.js**: Framework web para Node.js
+-   **MySQL2**: Driver MySQL para Node.js com suporte a Promises
+-   **JWT**: Autenticação baseada em tokens
+-   **bcryptjs**: Criptografia de senhas
+-   **PDFKit**: Geração de relatórios em PDF
 
 ### Frontend
-- **Next.js**: Framework React para o frontend
-- **React**: Biblioteca para interfaces de usuário
+
+-   **Next.js**: Framework React para o frontend
+-   **React**: Biblioteca para interfaces de usuário
 
 ### Banco de Dados
-- **MySQL**: Banco de dados relacional
+
+-   **MySQL**: Banco de dados relacional
 
 ## 🏗️ Arquitetura do Sistema
 
@@ -71,20 +72,15 @@ O sistema segue uma arquitetura em camadas bem definida:
 │   Banco de      │  ← MySQL
 │   Dados         │
 └─────────────────┘
-         │
-         ▼
-┌─────────────────┐
-│   Active        │  ← LDAP Integration
-│   Directory     │
-└─────────────────┘
 ```
 
 ### Padrão MVC
-- **Models**: Definição das entidades do sistema
-- **Views**: Componentes React (frontend)
-- **Controllers**: Lógica de negócio e controle de requisições
-- **Services**: Camada de serviços para operações complexas
-- **Routes**: Definição dos endpoints da API
+
+-   **Models**: Definição das entidades do sistema
+-   **Views**: (frontend)
+-   **Controllers**: controle de requisições
+-   **Services**: Camada para a lógica de negócios
+-   **Routes**: Definição dos endpoints da API
 
 ## 🚀 Como Iniciar
 
@@ -92,14 +88,14 @@ O sistema segue uma arquitetura em camadas bem definida:
 
 Antes de começar, é necessário ter as seguintes ferramentas instaladas em sua máquina:
 
-- **Node.js** (versão >= 14.x)
-- **MySQL** (versão 8.0+)
-- **Git**
+-   **Node.js** (versão >= 14.x)
+-   **MySQL** (versão 8.0+)
+-   **Git**
 
 ### 1. Clonar o repositório
 
 ```bash
-git clone https://github.com/Paivs/Zelos.git
+git https://github.com/libre917/Zelos.git
 cd Zelos
 ```
 
@@ -121,9 +117,9 @@ mysql -u root -p zelos < init.sql
 
 #### 2.3 Configurar variáveis de ambiente
 
-Crie um arquivo `.env` na raiz do projeto backend:
+Crie um arquivo `.env` na raiz da pasta backend e um na raiz da pasta frontend:
 
-```env
+```env (backend)
 # Database
 DB_HOST=localhost
 DB_USER=root
@@ -140,36 +136,32 @@ FRONTEND_URL=http://localhost:3000
 PORT=8080
 ```
 
-### 3. Instalar dependências
-
-#### 3.1 Backend
-```bash
-cd backend
-npm install
+```
+NEXT_PUBLIC_API_URL=http://example_url:3333
 ```
 
-#### 3.2 Frontend
+### 3. Instalar dependências
+
 ```bash
-cd frontend
-npm install
+
+npm run install
+
 ```
 
 ### 4. Iniciar os serviços
 
 #### 4.1 Backend
+
 ```bash
-cd backend
-npm start
-# ou
-node app.js
+npm run startBack
 ```
 
-O servidor estará rodando em `http://localhost:8080`
+O servidor estará rodando em `http://localhost:PORT` (PORT é definido no arquivo .env)
 
 #### 4.2 Frontend
+
 ```bash
-cd frontend
-npm run dev
+npm run startFront
 ```
 
 O sistema estará rodando em `http://localhost:3000`
@@ -178,51 +170,59 @@ O sistema estará rodando em `http://localhost:3000`
 
 ```
 zelos/
-├── backend/                    # Servidor Node.js/Express
-│   ├── config/                # Configurações do sistema
-│   │   ├── database.js        # Configuração do banco MySQL
-│   │   ├── ldap.js           # Configuração LDAP/AD
-│   │   └── dotenv.js         # Carregamento de variáveis
-│   ├── controllers/           # Controladores da API
-│   │   ├── AuthController.js  # Autenticação e autorização
-│   │   ├── TicketsController.js # Gestão de chamados
-│   │   ├── UsersController.js # Gestão de usuários
-│   │   ├── PoolController.js  # Gestão de pools de serviço
-│   │   └── ReportController.js # Relatórios
-│   ├── services/              # Camada de serviços
-│   │   ├── ticketsService.js  # Lógica de negócio dos chamados
-│   │   ├── usersService.js    # Lógica de negócio dos usuários
-│   │   └── poolService.js     # Lógica de negócio dos pools
-│   ├── model/                 # Modelos de dados
-│   │   ├── User.js           # Modelo de usuário
-│   │   ├── Ticket.js         # Modelo de chamado
-│   │   ├── Pool.js           # Modelo de pool
-│   │   └── Report.js         # Modelo de relatório
-│   ├── routes/                # Definição das rotas
-│   │   ├── authRotas.js      # Rotas de autenticação
-│   │   ├── ticketRotas.js    # Rotas de chamados
-│   │   ├── userRotas.js      # Rotas de usuários
-│   │   ├── poolRotas.js      # Rotas de pools
-│   │   └── reportRotas.js    # Rotas de relatórios
-│   ├── middlewares/           # Middlewares personalizados
-│   │   └── authMiddleware.js  # Validação de JWT
-│   ├── utils/                 # Utilitários
-│   │   ├── validar.js        # Validações
-│   │   └── erroStatus.js     # Tratamento de erros
-│   ├── app.js                 # Arquivo principal do servidor
-│   └── package.json           # Dependências do backend
-├── frontend/                   # Aplicação Next.js
-│   ├── app/                   # Páginas da aplicação
-│   │   ├── usuario/           # Páginas do usuário comum
-│   │   ├── admin/             # Páginas do administrador
-│   │   └── tecnico/           # Páginas do técnico
-│   ├── components/            # Componentes React
-│   └── package.json           # Dependências do frontend
-├── bd/                        # Scripts de banco de dados
-│   ├── init.sql               # Script de inicialização
-│   ├── bd.md                  # Documentação do banco
-│   └── Dockerfile             # Containerização do banco
-└── README.md                  # Este arquivo
+├── backend/                      || Servidor Node.js/Express
+│   ├── config/                   # Configurações do sistema
+│   │   ├── database.js           # Configuração do banco MySQL
+│   │   └── dotenv.js             # Carregamento de variáveis
+│   ├── controllers/              || Controladores da API
+│   │   ├── AuthController.js     # Autenticação e autorização
+│   │   ├── PoolController.js     # Controla as requisições das categorias
+│   │   └── ReportController.js   # Controla as requisições dos aponatamentos e relatórios
+│   │   ├── TicketsController.js  # Controla as requisições dos chamados
+│   │   ├── UsersController.js    # Controla as requisições dos usuários
+│   ├── services/                 || Camada de serviços
+│   │   ├── ticketsService.js     # Lógica de negócio dos chamados
+│   │   ├── reportsService.js     # Lógica de negócio dos apontamentos e relatórios
+│   │   ├── usersService.js       # Lógica de negócio dos usuários
+│   │   └── poolService.js        # Lógica de negócio dos pools
+│   ├── model/                    || Modelos de dados
+│   │   ├── User.js               # Modelo de usuário
+│   │   ├── Ticket.js             # Modelo de chamado
+│   │   ├── Pool.js               # Modelo de pool
+│   │   └── Report.js             # Modelo de relatório
+│   ├── routes/                   || Definição das rotas
+│   │   ├── authRotas.js          # Rotas de autenticação
+│   │   ├── ticketRotas.js        # Rotas de chamados
+│   │   ├── userRotas.js          # Rotas de usuários
+│   │   ├── poolRotas.js          # Rotas de pools
+│   │   └── reportRotas.js        # Rotas de relatórios
+│   ├── middlewares/              || Middlewares
+│   │   └── authMiddleware.js     # Validação de JWT
+│   ├── utils/                    || Utilitários ou helpers
+│   │   ├── hashPassword.js       # Hash de senha dos usuários, tecnicos e admins
+│   │   ├── validar.js            # Validações dos dados
+│   │   └── erroStatus.js         # Tratamento de erros
+│   ├── app.js                    || Iniciador do Servidor
+│   └── package.json              || Dependências do backend
+├── frontend/                     || Frontend do sistema
+│   ├── app/                      || Páginas da aplicação
+│   │   ├── usuario/              # Páginas do usuário comum
+│   │   ├── admin/                # Páginas do administrador
+│   │   └── tecnico/              # Páginas do técnico
+│   ├── components/               || Componentes React
+│   │   ├── Components/           || Componentes React
+│   │   ├── contexts/             || Componentes React
+│   │   │   └──AuthContext.jsx    # Autenticação e autorização 
+│   │   └── services/             || Componentes React
+│   │       └──AuthService.js     # Serviço de autenticação 
+│   ├── config/                   || Configurações gerais
+│   │   └──routes.js              # Rotas da API para utilização 
+│   └── package.json              # Dependências do frontend
+├── bd/                           || Scripts de banco de dados
+│   ├── init.sql                  # Script de inicialização
+│   ├── bd.md                     # Documentação do banco
+│   └── Dockerfile                # Containerização do banco
+└── README.md                     # Este arquivo
 ```
 
 ## 🗄️ Banco de Dados
@@ -230,50 +230,43 @@ zelos/
 ### Estrutura das Tabelas
 
 #### 1. Tabela `usuarios`
+
 Armazena informações dos usuários do sistema.
 
 ```sql
-CREATE TABLE usuarios (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(255) NOT NULL,
-    senha VARCHAR(255) NOT NULL,
-    email VARCHAR(255) NOT NULL UNIQUE,
-    funcao VARCHAR(100) NOT NULL,
-    status ENUM('ativo', 'inativo') DEFAULT 'ativo',
-    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
+CREATE TABLE `usuarios` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `nome` varchar(255) NOT NULL,
+  `senha` varchar(255) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `funcao` enum('usuario','tecnico','admin') DEFAULT 'usuario',
+  `status` enum('ativo','inativo') DEFAULT 'ativo',
+  `criado_em` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `atualizado_em` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `email` (`email`)
+)
 ```
 
-**Campos:**
-- `id`: Identificador único do usuário
-- `nome`: Nome completo do usuário
-- `senha`: Hash da senha (bcrypt)
-- `email`: Email único do usuário
-- `funcao`: Role do usuário (admin, tecnico, usuario)
-- `status`: Status ativo/inativo
-- `criado_em`: Data de criação
-- `atualizado_em`: Data da última atualização
-
 #### 2. Tabela `pool`
+
 Categorias de tipos de serviços disponíveis.
 
 ```sql
-CREATE TABLE pool (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    titulo varchar(50) NOT NULL,
-    descricao TEXT,
-    status ENUM('ativo', 'inativo') DEFAULT 'ativo',
-    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    created_by INT,
-    updated_by INT,
-    FOREIGN KEY (created_by) REFERENCES usuarios(id),
-    FOREIGN KEY (updated_by) REFERENCES usuarios(id)
-);
+CREATE TABLE `pool` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `titulo` varchar(50) NOT NULL,
+  `descricao` varchar(250) DEFAULT NULL,
+  `status` enum('ativo','inativo') DEFAULT 'ativo',
+  `criado_em` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `created_by` int DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`created_by`) REFERENCES `usuarios` (`id`)
+)
 ```
 
 #### 3. Tabela `chamados`
+
 Registra todos os chamados do sistema.
 
 ```sql
@@ -293,12 +286,8 @@ CREATE TABLE chamados (
 );
 ```
 
-**Status dos Chamados:**
-- `pendente`: Aguardando atribuição de técnico
-- `em andamento`: Técnico atribuído, trabalho em progresso
-- `concluído`: Serviço finalizado
-
 #### 4. Tabela `apontamentos`
+
 Registra os apontamentos dos técnicos durante o serviço.
 
 ```sql
@@ -317,6 +306,7 @@ CREATE TABLE apontamentos (
 ```
 
 #### 5. Tabela `pool_tecnico`
+
 Relacionamento entre técnicos e tipos de serviços.
 
 ```sql
@@ -342,79 +332,111 @@ CREATE INDEX idx_apontamentos_comeco_fim ON apontamentos(comeco, fim);
 ### Autenticação
 
 #### POST `/auth/login`
+
 Autenticação de usuário via email e senha.
 
 **Request Body:**
+
 ```json
 {
-  "email": "usuario@email.com",
-  "password": "senha123"
+    "email": "usuario@email.com",
+    "password": "senha123"
 }
 ```
 
 **Response:**
+
 ```json
 {
-  "mensagem": "Login realizado com sucesso",
-  "token": "jwt_token_aqui"
+    "mensagem": "Login realizado com sucesso",
+    "token": "jwt_token_aqui"
 }
 ```
 
 ### Usuários
 
 #### GET `/users` - Lista todos os usuários
+
 #### GET `/users/:id` - Obtém usuário específico
+
 #### GET `/users/me/info` - Informações do usuário logado
+
 #### GET `/users/me/role` - Função do usuário logado
+
 #### POST `/users` - Cria novo usuário
+
 #### POST `/users/tecnico` - Cria novo técnico
+
 #### PUT `/users/:id` - Atualiza usuário
+
 #### PUT `/users/:id/status` - Atualiza status do usuário
+
 #### DELETE `/users/:id` - Remove usuário
 
 ### Chamados
 
 #### GET `/ticket` - Lista todos os chamados
+
 #### GET `/ticket/:id` - Obtém chamado específico
+
 #### GET `/ticket/user` - Chamados do usuário logado
+
 #### GET `/ticket/status/:status` - Chamados por status
+
 #### GET `/ticket/tecnico/:id` - Chamados de um técnico
+
 #### GET `/ticket/record/:id` - Registro completo do chamado
+
 #### POST `/ticket` - Cria novo chamado
+
 #### PUT `/ticket/:id/tecnico` - Atribui técnico ao chamado
 
 ### Pools de Serviço
 
 #### GET `/pool` - Lista tipos de serviços
+
 #### GET `/pool/with-tickets` - Pools com quantidade de tickets
+
 #### GET `/pool/:id` - Obtém pool específico
+
 #### GET `/pool/:id/tickets` - Tickets de um pool
+
 #### POST `/pool` - Cria novo tipo de serviço
+
 #### PUT `/pool/:id` - Atualiza pool
+
 #### DELETE `/pool/:id` - Remove pool
 
 ### Relatórios e Apontamentos
 
 #### GET `/report/:ticket_id/reports` - Lista apontamentos
+
 #### GET `/report/:ticket_id/reports/:id` - Obtém apontamento específico
+
 #### POST `/report/:ticket_id/reports` - Cria novo apontamento
+
 #### GET `/report/record/pdf` - Relatório PDF de todos os chamados
+
 #### GET `/report/:ticket_id/pdf` - Relatório PDF de chamado específico
 
 #### POST `/auth/logout`
+
 Logout do usuário.
 
 **Response:**
+
 ```json
 {
-  "mensagem": "Logout realizado com sucesso"
+    "mensagem": "Logout realizado com sucesso"
 }
 ```
 
 #### GET `/auth/check`
+
 Verifica se o usuário está autenticado.
 
 **Headers:**
+
 ```
 Authorization: Bearer <jwt_token>
 ```
@@ -422,84 +444,105 @@ Authorization: Bearer <jwt_token>
 ### Chamados
 
 #### GET `/ticket`
+
 Lista todos os chamados (requer autenticação).
 
 **Headers:**
+
 ```
 Authorization: Bearer <jwt_token>
 ```
 
 #### GET `/ticket/:id`
+
 Obtém um chamado específico por ID.
 
 #### POST `/ticket`
+
 Cria um novo chamado.
 
 **Request Body:**
+
 ```json
 {
-  "titulo": "Manutenção do Projetor",
-  "descricao": "Projetor não está funcionando",
-  "tipo_id": 1
+    "titulo": "Manutenção do Projetor",
+    "descricao": "Projetor não está funcionando",
+    "tipo_id": 1
 }
 ```
 
 #### PUT `/ticket/:id/tecnico`
+
 Atribui um técnico a um chamado.
 
 **Request Body:**
+
 ```json
 {
-  "tecnico_id": 5
+    "tecnico_id": 5
 }
 ```
 
 #### GET `/ticket/user`
+
 Lista chamados do usuário logado.
 
 #### GET `/ticket/status/:status`
+
 Lista chamados por status (pendente, em andamento, concluído).
 
 #### GET `/ticket/tecnico/:id`
+
 Lista chamados de um técnico específico.
 
 ### Usuários
 
 #### GET `/users`
+
 Lista todos os usuários.
 
 #### GET `/users/:id`
+
 Obtém um usuário específico.
 
 #### POST `/users`
+
 Cria um novo usuário.
 
 #### PUT `/users/:id`
+
 Atualiza um usuário existente.
 
 #### DELETE `/users/:id`
+
 Remove um usuário.
 
 ### Pools de Serviço
 
 #### GET `/pool`
+
 Lista todos os tipos de serviços.
 
 #### GET `/pool/:id`
+
 Obtém um tipo de serviço específico.
 
 #### POST `/pool`
+
 Cria um novo tipo de serviço.
 
 #### PUT `/pool/:id`
+
 Atualiza um tipo de serviço.
 
 #### DELETE `/pool/:id`
+
 Remove um tipo de serviço.
 
 ### Relatórios
 
 #### GET `/report`
+
 Gera relatórios do sistema.
 
 ## 🔐 Autenticação e Autorização
@@ -508,38 +551,38 @@ Gera relatórios do sistema.
 
 O sistema utiliza JSON Web Tokens (JWT) para autenticação:
 
-- **Geração**: Token é gerado no login com expiração de 1 dia
-- **Validação**: Middleware `authMiddleware` valida tokens em rotas protegidas
-- **Armazenamento**: Token é armazenado em cookie HTTP-only
+-   **Geração**: Token é gerado no login com expiração de 1 dia
+-   **Validação**: Middleware `authMiddleware` valida tokens em rotas protegidas
+-   **Armazenamento**: Token é armazenado em cookie HTTP-only
 
 ### Middleware de Autenticação
 
 ```javascript
 // backend/middlewares/authMiddleware.js
 const authMiddleware = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  
-  if (!authHeader) {
-    return res.status(401).json({ mensagem: 'Não autorizado: Token não fornecido' });
-  }
+    const authHeader = req.headers.authorization;
 
-  const [, token] = authHeader.split(' ');
-  
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.usuarioId = decoded.id;
-    next();
-  } catch (error) {
-    return res.status(403).json({ mensagem: 'Não autorizado: Token inválido' });
-  }
+    if (!authHeader) {
+        return res.status(401).json({ mensagem: 'Não autorizado: Token não fornecido' });
+    }
+
+    const [, token] = authHeader.split(' ');
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.usuarioId = decoded.id;
+        next();
+    } catch (error) {
+        return res.status(403).json({ mensagem: 'Não autorizado: Token inválido' });
+    }
 };
 ```
 
 ### Sistema de Roles
 
-- **Admin**: Acesso total ao sistema
-- **Técnico**: Pode gerenciar chamados e fazer apontamentos
-- **Usuário**: Pode criar e acompanhar seus próprios chamados
+-   **Admin**: Acesso total ao sistema
+-   **Técnico**: Pode gerenciar chamados e fazer apontamentos
+-   **Usuário**: Pode criar e acompanhar seus próprios chamados
 
 ## 🏢 Integração AD
 
@@ -550,23 +593,24 @@ O backend está integrado com o Active Directory da SENAI:
 ```javascript
 // backend/config/ldap.js
 const ldapOptions = {
-  server: {
-    url: 'ldap://10.189.87.7:389',
-    bindDN: 'cn=script,ou=Funcionarios,ou=Usuarios123,dc=educ123,dc=sp,dc=senai,dc=br',
-    bindCredentials: '7GFGOy4ATCiqW9c86eStgCe0RA9BgA',
-    searchBase: 'ou=Funcionars,ou=Usuarios123,dc=educ123,dc=sp,dc=senai,dc=br',
-    searchFilter: '(sAMAccountName={{username}})'
-  }
+    server: {
+        url: 'ldap://10.189.87.7:389',
+        bindDN: 'cn=script,ou=Funcionarios,ou=Usuarios123,dc=educ123,dc=sp,dc=senai,dc=br',
+        bindCredentials: '7GFGOy4ATCiqW9c86eStgCe0RA9BgA',
+        searchBase: 'ou=Funcionars,ou=Usuarios123,dc=educ123,dc=sp,dc=senai,dc=br',
+        searchFilter: '(sAMAccountName={{username}})',
+    },
 };
 ```
 
 ### Endpoint de Autenticação AD
 
 **POST** `/auth/login` com JSON:
+
 ```json
 {
-  "username": "usuario_ad",
-  "password": "senha_ad"
+    "username": "usuario_ad",
+    "password": "senha_ad"
 }
 ```
 
@@ -576,10 +620,10 @@ const ldapOptions = {
 
 ### Padrões de Código
 
-- **ES6+**: Uso de módulos ES6, async/await, destructuring
-- **MVC**: Separação clara entre Model, View e Controller
-- **Services**: Camada de serviços para lógica de negócio
-- **Error Handling**: Tratamento robusto de erros com status HTTP apropriados
+-   **ES6+**: Uso de módulos ES6, async/await, destructuring
+-   **MVC**: Separação clara entre Model, View e Controller
+-   **Services**: Camada de serviços para lógica de negócio
+-   **Error Handling**: Tratamento robusto de erros com status HTTP apropriados
 
 ### Estrutura de Serviços
 
@@ -589,14 +633,14 @@ export async function createTicket(data) {
     try {
         // Validações
         validarCamposObrigatorios(data, ['titulo', 'descricao', 'usuario_id', 'tipo_id']);
-        
+
         // Criação do ticket
         const ticketData = new Ticket(data);
-        
+
         // Validações adicionais
         validarStatus(ticketData.status);
         await validarRole(ticketData.usuario_id, ['usuario', 'Usuário', 'admin']);
-        
+
         // Persistência
         return await create('chamados', ticketData);
     } catch (err) {
@@ -610,10 +654,10 @@ export async function createTicket(data) {
 
 O sistema implementa validações robustas:
 
-- **Campos obrigatórios**: Validação de campos necessários
-- **Status válidos**: Validação de status permitidos
-- **Roles**: Validação de permissões por função
-- **Integridade referencial**: Validação de relacionamentos
+-   **Campos obrigatórios**: Validação de campos necessários
+-   **Status válidos**: Validação de status permitidos
+-   **Roles**: Validação de permissões por função
+-   **Integridade referencial**: Validação de relacionamentos
 
 ### Tratamento de Erros
 
@@ -637,7 +681,7 @@ const pool = mysql.createPool({
     database: 'zelos',
     waitForConnections: true,
     connectionLimit: 10,
-    queueLimit: 0
+    queueLimit: 0,
 });
 ```
 
@@ -674,17 +718,18 @@ GET /health
 ```
 
 **Response:**
+
 ```json
 {
-  "status": "online"
+    "status": "online"
 }
 ```
 
 ### Logs do Sistema
 
-- **Console**: Logs de erro e informações importantes
-- **Tratamento de exceções**: Captura de erros não tratados
-- **Validação de configuração**: Verificação de dependências na inicialização
+-   **Console**: Logs de erro e informações importantes
+-   **Tratamento de exceções**: Captura de erros não tratados
+-   **Validação de configuração**: Verificação de dependências na inicialização
 
 ## 🔧 Configurações
 
@@ -717,10 +762,12 @@ LDAP_BIND_CREDENTIALS=7GFGOy4ATCiqW9c86eStgCe0RA9BgA
 Configuração de CORS para permitir comunicação entre frontend e backend:
 
 ```javascript
-app.use(cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-    credentials: true,
-}));
+app.use(
+    cors({
+        origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+        credentials: true,
+    })
+);
 ```
 
 ## 🚨 Troubleshooting
@@ -728,18 +775,20 @@ app.use(cors({
 ### Problemas Comuns
 
 1. **Erro de conexão com banco**
-   - Verificar se MySQL está rodando
-   - Validar credenciais no arquivo `.env`
-   - Verificar se banco `zelos` existe
+
+    - Verificar se MySQL está rodando
+    - Validar credenciais no arquivo `.env`
+    - Verificar se banco `zelos` existe
 
 2. **Erro de autenticação AD**
-   - Verificar conectividade de rede
-   - Validar configurações LDAP
-   - Testar via rede cabeada ou WiFi B07
+
+    - Verificar conectividade de rede
+    - Validar configurações LDAP
+    - Testar via rede cabeada ou WiFi B07
 
 3. **Erro de JWT**
-   - Verificar se `JWT_SECRET` está definido
-   - Validar formato do token no header Authorization
+    - Verificar se `JWT_SECRET` está definido
+    - Validar formato do token no header Authorization
 
 ### Logs de Debug
 
@@ -764,9 +813,9 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
 
 ## 👥 Autores
 
-- **Lucas Soalheiro**
-- **Lucas Toledo**
-- **Lucas Barberini**
+-   **Lucas Soalheiro**
+-   **Lucas Toledo**
+-   **Lucas Barberini**
 
 **Última atualização**: Dezembro 2024
 **Versão**: 1.0.0
