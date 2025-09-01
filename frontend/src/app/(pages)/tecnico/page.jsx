@@ -10,6 +10,8 @@ import {
     Calendar,
     Layers,
     Send,
+    FileText,
+    AlertCircle,
 } from 'lucide-react';
 
 import { useRouter } from 'next/navigation';
@@ -22,6 +24,7 @@ export default function Tecnico() {
     const [chamados, setChamados] = useState([]);
     const [apontamento, setApontamento] = useState('');
     const [loading, setLoading] = useState(false);
+
 
     // Busca chamados do técnico
     useEffect(() => {
@@ -45,13 +48,44 @@ export default function Tecnico() {
                     return;
                 }
                 const data = await response.json();
-                setChamados(data);
+                
+                // Buscar apontamentos para chamados concluídos
+                const chamadosComApontamentos = await Promise.all(
+                    data.map(async (chamado) => {
+                        if (chamado.status === 'concluido') {
+                            try {
+                                const apontamentosResponse = await fetch(`${API.BASE_URL}/tickets/${chamado.id}/reports`, {
+                                    method: 'GET',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        Authorization: `Bearer ${token}`,
+                                    },
+                                });
+                                if (apontamentosResponse.ok) {
+                                    const apontamentos = await apontamentosResponse.json();
+                                    // Pegar o último apontamento (mais recente)
+                                    const ultimoApontamento = apontamentos.length > 0 ? apontamentos[apontamentos.length - 1] : null;
+                                    return {
+                                        ...chamado,
+                                        apontamentos: apontamentos,
+                                        apontamento: ultimoApontamento?.descricao || null
+                                    };
+                                }
+                            } catch (err) {
+                                console.error('Erro ao buscar apontamentos:', err);
+                            }
+                        }
+                        return chamado;
+                    })
+                );
+                
+                setChamados(chamadosComApontamentos);
             } catch (err) {
                 console.error('Erro na requisição:', err);
             }
         })();
     }, [reload]);
-    
+
 
     // Atribuir-se ao chamado
     const handleCandidatar = async () => {
@@ -76,18 +110,23 @@ export default function Tecnico() {
                 console.error('Erro ao atribuir técnico:', response.status);
                 return;
             }
+
+            // Limpa o apontamento e atualiza a lista
+            setApontamento('');
             setReload(!reload);
+
+            // Muda automaticamente para a aba em andamento
+            setActiveTab('emProgresso');
             handleFecharDetalhes();
         } catch (err) {
             console.error('Erro ao atribuir técnico:', err);
         }
     };
-console.log(chamados);
 
-    // Resolver chamado
+    // Resolver chamado com apontamento
     const handleResolverChamado = async () => {
         if (!apontamento.trim()) {
-            alert('´Por favor, insira um apontamento antes de resolver o chamado.');
+            alert('Por favor, insira um apontamento antes de resolver o chamado.');
             return;
         }
 
@@ -109,28 +148,48 @@ console.log(chamados);
                 },
                 body: JSON.stringify({
                     apontamento: apontamento,
-                    status: 'resolvido'
+                    status: 'concluido', // ✅ Corrigido: com acento
                 }),
             });
 
             if (!response.ok) {
                 console.error('Erro ao resolver chamado:', response.status);
+                alert('Erro ao resolver chamado. Tente novamente.');
                 return;
             }
 
+            // Limpa o apontamento
+            setApontamento('');
+
+            // Atualiza a lista de chamados
+            setReload(!reload);
 
             // Muda automaticamente para a aba de resolvidos
-            setActiveTab('resolvidos');
+            setActiveTab('concluidos');
+
+            // Fecha os detalhes
+            handleFecharDetalhes();
+
+            alert('Chamado concluido com sucesso!');
 
         } catch (err) {
             console.error('Erro ao resolver chamado:', err);
+            alert('Erro ao resolver chamado. Tente novamente.');
         } finally {
             setLoading(false);
         }
     }
 
-    const handleChamadoClick = (chamado) => setChamadoSelecionado(chamado);
-    const handleFecharDetalhes = () => setChamadoSelecionado(null);
+    const handleChamadoClick = (chamado) => {
+        setChamadoSelecionado(chamado);
+        // Limpa o apontamento ao selecionar um novo chamado
+        setApontamento('');
+    };
+
+    const handleFecharDetalhes = () => {
+        setChamadoSelecionado(null);
+        setApontamento('');
+    };
 
     return (
         <div className="flex flex-col h-screen bg-gray-50">
@@ -150,27 +209,27 @@ console.log(chamados);
                                 }`}
                         >
                             <Layers className="h-5 w-5" />
-                            <span>Chamados</span>
+                            <span>Pool de Chamados</span>
                         </button>
                         <button
                             onClick={() => setActiveTab('emProgresso')}
                             className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${activeTab === 'emProgresso'
-                                ? 'bg-yellow-100 text-yellow-700 font-medium'
-                                : 'hover:bg-gray-100'
+                                    ? 'bg-yellow-100 text-yellow-700 font-medium'
+                                    : 'hover:bg-gray-100'
                                 }`}
                         >
                             <Clock className="h-5 w-5" />
-                            <span>Em andamento</span>
+                            <span>Em Andamento</span>
                         </button>
                         <button
-                            onClick={() => setActiveTab('resolvidos')}
-                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${activeTab === 'resolvidos'
-                                ? 'bg-green-100 text-green-700 font-medium'
-                                : 'hover:bg-gray-100'
+                            onClick={() => setActiveTab('concluidos')}
+                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${activeTab === 'concluidos'
+                                    ? 'bg-green-100 text-green-700 font-medium'
+                                    : 'hover:bg-gray-100'
                                 }`}
                         >
                             <CheckCircle className="h-5 w-5" />
-                            <span>Resolvidos</span>
+                            <span>Concluídos</span>
                         </button>
                     </nav>
                 </div>
@@ -179,10 +238,10 @@ console.log(chamados);
                     <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
                         {activeTab === 'pool' && <Layers className="h-5 w-5 mr-2 text-red-600" />}
                         {activeTab === 'emProgresso' && <Clock className="h-5 w-5 mr-2 text-yellow-600" />}
-                        {activeTab === 'resolvidos' && <CheckCircle className="h-5 w-5 mr-2 text-green-600" />}
+                        {activeTab === 'concluidos' && <CheckCircle className="h-5 w-5 mr-2 text-green-600" />}
                         {activeTab === 'pool' && 'Pool de Chamados'}
-                        {activeTab === 'emProgresso' && 'Chamados Em Progresso'}
-                        {activeTab === 'resolvidos' && 'Chamados Resolvidos'}
+                        {activeTab === 'emProgresso' && 'Chamados Em Andamento'}
+                        {activeTab === 'concluidos' && 'Chamados Concluidos'}
                     </h2>
 
                     <div className="flex flex-col lg:flex-row gap-6">
@@ -193,17 +252,17 @@ console.log(chamados);
                                         if (activeTab === 'pool')
                                             return chamado.status === 'pendente' && !chamado.tecnico_id;
                                         if (activeTab === 'emProgresso')
-                                            return chamado.status === 'em andamento' && chamado.tecnico_id && (chama);
-                                        if (activeTab === 'resolvidos')
-                                            return chamado.status === 'resolvido' && chamado.tecnico_id;
-                                        return true;
+                                            return chamado.status === 'em andamento' && chamado.tecnico_id;
+                                        if (activeTab === 'concluidos')
+                                            return chamado.status === 'concluido' && chamado.tecnico_id; // ✅ Corrigido: com acento
+                                        return false;
                                     })
                                     .map((chamado) => (
                                         <div
                                             key={chamado.id}
                                             className={`p-4 border rounded-lg cursor-pointer transition-all ${chamadoSelecionado?.id === chamado.id
-                                                ? 'border-red-500 bg-red-50'
-                                                : 'border-gray-200 hover:border-red-300 hover:bg-gray-50'
+                                                    ? 'border-red-500 bg-red-50'
+                                                    : 'border-gray-200 hover:border-red-300 hover:bg-gray-50'
                                                 }`}
                                             onClick={() => handleChamadoClick(chamado)}
                                         >
@@ -211,10 +270,10 @@ console.log(chamados);
                                                 <h3 className="font-medium text-gray-800">{chamado.titulo}</h3>
                                                 <div
                                                     className={`px-2 py-1 text-xs rounded-full ${chamado.status === 'pendente'
-                                                        ? 'bg-red-100 text-red-800'
-                                                        : chamado.status === 'em andamento'
-                                                            ? 'bg-yellow-100 text-yellow-800'
-                                                            : 'bg-green-100 text-green-800'
+                                                            ? 'bg-red-100 text-red-800'
+                                                            : chamado.status === 'em andamento'
+                                                                ? 'bg-yellow-100 text-yellow-800'
+                                                                : 'bg-green-100 text-green-800'
                                                         }`}
                                                 >
                                                     {chamado.status}
@@ -222,25 +281,56 @@ console.log(chamados);
                                             </div>
 
                                             <p className="text-sm text-gray-600 mb-2 line-clamp-2">{chamado.descricao}</p>
-                                            
-                                            {activeTab === 'resolvidos' && chamado.apontamento && (
+
+                                            {/* Mostra preview do apontamento nos resolvidos */}
+                                            {activeTab === 'concluidos' && chamado.apontamentos && chamado.apontamentos.length > 0 && (
                                                 <div className="mt-2 p-2 bg-green-50 border-l-4 border-green-400 rounded">
-                                                    <p className="text-xs text-green-600 font-medium">Apontamento:</p>
-                                                    <p className="text-sm text-green-700">{chamado.apontamento}</p>
+                                                    <p className="text-xs text-green-600 font-medium flex items-center">
+                                                        <FileText className="h-3 w-3 mr-1" />
+                                                        Apontamentos:
+                                                    </p>
+                                                    {chamado.apontamentos.map((apontamento, index) => (
+                                                        <div key={apontamento.id} className={index > 0 ? 'mt-2 pt-2 border-t border-green-200' : ''}>
+                                                            <p className="text-sm text-green-700 line-clamp-2">{apontamento.descricao}</p>
+                                                            <p className="text-xs text-green-600 mt-1">
+                                                                {new Date(apontamento.criado_em).toLocaleString('pt-BR')}
+                                                                {apontamento.duracao && ` • Duração: ${Math.round(apontamento.duracao / 60)} min`}
+                                                            </p>
+                                                        </div>
+                                                    ))}
                                                 </div>
                                             )}
-                                            
-                                            <div className="flex items-center justify-between text-xs text-gray-500">
+
+                                            <div className="flex items-center justify-between text-xs text-gray-500 mt-2">
                                                 <div className="flex items-center space-x-4">
                                                     <span className="flex items-center">
                                                         <Calendar className="h-3 w-3 mr-1" />
                                                         {new Date(chamado.criado_em).toLocaleString('pt-BR')}
                                                     </span>
                                                 </div>
+                                                {chamado.tipo && (
+                                                    <span className="bg-gray-100 px-2 py-1 rounded text-gray-600">
+                                                        {chamado.tipo}
+                                                    </span>
+                                                )}
                                             </div>
-
                                         </div>
                                     ))}
+
+                                {chamados.filter((chamado) => {
+                                    if (activeTab === 'pool')
+                                        return chamado.status === 'pendente' && !chamado.tecnico_id;
+                                    if (activeTab === 'emProgresso')
+                                        return chamado.status === 'em andamento' && chamado.tecnico_id;
+                                    if (activeTab === 'concluidos')
+                                        return chamado.status === 'concluido' && chamado.tecnico_id; // ✅ Corrigido: com acento
+                                    return false;
+                                }).length === 0 && (
+                                        <div className="text-center py-8 text-gray-500">
+                                            <AlertCircle className="h-12 w-12 mx-auto mb-2 text-gray-300" />
+                                            <p>Nenhum chamado encontrado nesta categoria</p>
+                                        </div>
+                                    )}
                             </div>
                         </div>
 
@@ -260,10 +350,10 @@ console.log(chamados);
                                         <div className="flex justify-between items-center">
                                             <h3 className="text-lg font-medium text-gray-800">{chamadoSelecionado.titulo}</h3>
                                             <span className={`px-2 py-1 text-xs rounded-full ${chamadoSelecionado.status === 'pendente'
-                                                ? 'bg-red-100 text-red-800'
-                                                : chamadoSelecionado.status === 'em andamento'
-                                                    ? 'bg-yellow-100 text-yellow-800'
-                                                    : 'bg-green-100 text-green-800'
+                                                    ? 'bg-red-100 text-red-800'
+                                                    : chamadoSelecionado.status === 'em andamento'
+                                                        ? 'bg-yellow-100 text-yellow-800'
+                                                        : 'bg-green-100 text-green-800'
                                                 }`}>
                                                 {chamadoSelecionado.status}
                                             </span>
@@ -279,12 +369,18 @@ console.log(chamados);
                                     <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
                                         <div>
                                             <p className="text-xs text-gray-500">Solicitante</p>
-                                            <p className="font-medium text-gray-700">{chamadoSelecionado.usuario}</p>
+                                            <p className="font-medium text-gray-700">{chamadoSelecionado.usuario || 'Não informado'}</p>
                                         </div>
                                         <div>
                                             <p className="text-xs text-gray-500">Categoria</p>
-                                            <p className="font-medium text-gray-700">{chamadoSelecionado.tipo}</p>
+                                            <p className="font-medium text-gray-700">{chamadoSelecionado.tipo || 'Não informado'}</p>
                                         </div>
+                                        {chamadoSelecionado.tecnico && (
+                                            <div>
+                                                <p className="text-xs text-gray-500">Técnico Responsável</p>
+                                                <p className="font-medium text-gray-700">{chamadoSelecionado.tecnico}</p>
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div>
@@ -292,45 +388,79 @@ console.log(chamados);
                                         <p className="text-gray-600 bg-gray-50 p-4 rounded-lg">{chamadoSelecionado.descricao}</p>
                                     </div>
 
-                                    {chamadoSelecionado.apontamento && (
+                                    {/* Mostra o apontamento completo se o chamado estiver resolvido */}
+                                    {chamadoSelecionado.status === 'concluido' && (
                                         <div>
-                                            <h4 className="text-sm font-medium text-gray-700 mb-2">Apontamento da Resolução</h4>
+                                            <h4 className="text-sm font-medium text-gray-700 mb-2 flex items-center">
+                                                <FileText className="h-4 w-4 mr-1" />
+                                                Apontamentos da Resolução
+                                            </h4>
                                             <div className="bg-green-50 border-l-4 border-green-400 p-4 rounded-lg">
-                                                <p className="text-green-700">{chamadoSelecionado.apontamento}</p>
+                                                {chamadoSelecionado.apontamentos && chamadoSelecionado.apontamentos.length > 0 ? (
+                                                    <div className="space-y-3">
+                                                        {chamadoSelecionado.apontamentos.map((apontamento, index) => (
+                                                            <div key={apontamento.id} className="border-b border-green-200 last:border-b-0 pb-2 last:pb-0">
+                                                                <p className="text-green-700 whitespace-pre-wrap">{apontamento.descricao}</p>
+                                                                <p className="text-xs text-green-600 mt-1">
+                                                                    {new Date(apontamento.criado_em).toLocaleString('pt-BR')}
+                                                                    {apontamento.duracao && ` • Duração: ${Math.round(apontamento.duracao / 60)} min`}
+                                                                </p>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                ) : (
+                                                    <p className="text-green-700">Nenhum apontamento encontrado.</p>
+                                                )}
                                             </div>
                                         </div>
                                     )}
 
-                                    {chamadoSelecionado.status !== 'resolvido' && (
+                                    {/* Área de apontamento - APENAS para chamados em andamento */}
+                                    {chamadoSelecionado.status === 'em andamento' && activeTab === 'emProgresso' && (
                                         <>
-                                            <div>
-                                                <h4 className="text-sm font-medium text-gray-700 mb-2">Escreva um Apontamento</h4>
+                                            <div className="border-t pt-4">
+                                                <h4 className="text-sm font-medium text-gray-700 mb-2 flex items-center">
+                                                    <FileText className="h-4 w-4 mr-1" />
+                                                    Criar Apontamento para Resolução
+                                                </h4>
+                                                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
+                                                    <p className="text-xs text-blue-600 flex items-center">
+                                                        <AlertCircle className="h-3 w-3 mr-1" />
+                                                        Descreva detalhadamente a solução aplicada para resolver este chamado
+                                                    </p>
+                                                </div>
                                                 <textarea
-                                                    className="w-full border border-gray-300 rounded-lg p-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                                                    className="w-full border border-gray-300 rounded-lg p-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
                                                     id="apontamento"
-                                                    rows="4"
+                                                    rows="5"
                                                     value={apontamento}
                                                     onChange={e => setApontamento(e.target.value)}
-                                                    placeholder="Descreva o apontamento do chamado"
+                                                    placeholder="Descreva o que foi feito para resolver o chamado, incluindo as ações tomadas, problemas encontrados e a solução aplicada..."
                                                 />
+                                                <p className="text-xs text-gray-500 mt-1">
+                                                    {apontamento.length}/500 caracteres
+                                                </p>
                                             </div>
 
-                                            <div className="flex justify-end mt-2">
+                                            <div className="flex justify-end gap-3 mt-4">
                                                 <button
                                                     type="button"
                                                     onClick={handleResolverChamado}
                                                     disabled={loading || !apontamento.trim()}
-                                                    className={`flex items-center gap-2 px-4 py-2 rounded-2xl transition cursor-pointer
+                                                    className={`flex items-center gap-2 px-6 py-2.5 rounded-lg font-medium transition-all
                                                         ${loading || !apontamento.trim()
-                                                            ? 'bg-gray-300 cursor-not-allowed text-gray-600'
-                                                            : 'bg-red-600 hover:bg-red-500 text-white'
+                                                            ? 'bg-gray-300 cursor-not-allowed text-gray-500'
+                                                            : 'bg-green-600 hover:bg-green-700 text-white shadow-md hover:shadow-lg'
                                                         }`}
                                                 >
                                                     {loading ? (
-                                                        <span className="animate-pulse">Resolvendo...</span>
+                                                        <>
+                                                            <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
+                                                            <span>Resolvendo...</span>
+                                                        </>
                                                     ) : (
                                                         <>
-                                                            <Send size={14} />
+                                                            <CheckCircle size={16} />
                                                             Resolver Chamado
                                                         </>
                                                     )}
@@ -339,14 +469,17 @@ console.log(chamados);
                                         </>
                                     )}
 
-
+                                    {/* Botão para se atribuir ao chamado - APENAS no pool */}
                                     {activeTab === 'pool' && !chamadoSelecionado.tecnico_id && (
-                                        <button
-                                            onClick={handleCandidatar}
-                                            className="px-4 py-2 rounded-md bg-blue-600 text-white font-medium hover:bg-blue-700 transition"
-                                        >
-                                            Atribuir-se ao Chamado
-                                        </button>
+                                        <div className="border-t pt-4">
+                                            <button
+                                                onClick={handleCandidatar}
+                                                className="w-full px-4 py-3 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+                                            >
+                                                <Send size={16} />
+                                                Atribuir-se ao Chamado
+                                            </button>
+                                        </div>
                                     )}
                                 </div>
                             </div>

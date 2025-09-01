@@ -46,4 +46,8 @@ export const API = {
 
     //caminho para resolver o chamado
     RESOLVE_TICKET: (id) => `${process.env.NEXT_PUBLIC_API_URL}/ticket/${id}/tecnico/resolve`,
-};
+
+
+}
+
+
