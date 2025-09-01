@@ -1,9 +1,8 @@
-import { getRoleUser } from "../services/usersService.js";
-import erroStatus from "./erroStatus.js";
-import { read } from "../config/database.js";
+import { getRoleUser } from '../services/usersService.js';
+import erroStatus from './erroStatus.js';
+import { read } from '../config/database.js';
 
-const STATUS_VALIDOS = ['pendente', 'em_andamento', 'concluido'];
-const TITULOS_VALIDOS = ['externo', 'manutencao', 'apoio_tecnico', 'limpeza'];
+const STATUS_VALIDOS = ['pendente', 'em andamento', 'concluido'];
 
 // Para verificar se os campos desejados estão preenchidos
 export function validarCamposObrigatorios(data, campos) {
@@ -27,7 +26,7 @@ export async function validarRole(userId, roleEsperado) {
     if (Array.isArray(roleEsperado)) {
         if (!roleEsperado.includes(role)) {
             console.log(role);
-            
+
             throw erroStatus(`Apenas usuários com perfil ${roleEsperado.join(', ')} podem executar essa ação`, 403);
         }
     } else {
@@ -37,7 +36,8 @@ export async function validarRole(userId, roleEsperado) {
     }
 }
 export function validarEmail(email) {
-    if (!email || !email.includes('@') || !email.includes('.com')) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailRegex.test(email)) {
         throw erroStatus('Email inválido', 400);
     }
 }

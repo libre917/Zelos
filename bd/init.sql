@@ -1,69 +1,88 @@
-   -- Criação da tabela `usuarios`
-    CREATE TABLE usuarios (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        nome VARCHAR(255) NOT NULL,
-        senha VARCHAR(255) NOT NULL,
-        email VARCHAR(255) NOT NULL UNIQUE,
-        funcao VARCHAR(100) NOT NULL,
-        status ENUM('ativo', 'inativo') DEFAULT 'ativo',
-        criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-    );
+-- Script de Inicialização do Banco Zelos
+-- Versão Limpa (sem dados de exemplo)
 
-    -- Criação da tabela `pool`
-    CREATE TABLE pool (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        titulo varchar(50) NOT NULL,
-        descricao TEXT,
-        status ENUM('ativo', 'inativo') DEFAULT 'ativo',
-        criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        created_by INT,
-        updated_by INT,
-        FOREIGN KEY (created_by) REFERENCES usuarios(id),
-        FOREIGN KEY (updated_by) REFERENCES usuarios(id)
-    );
+CREATE DATABASE IF NOT EXISTS zelos CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE zelos;
 
-    -- Criação da tabela `chamados`
-    CREATE TABLE chamados (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        titulo VARCHAR(255) NOT NULL,
-        descricao TEXT NOT NULL,
-        tipo_id INT,
-        tecnico_id INT,
-        usuario_id INT,
-        status ENUM('pendente', 'em andamento', 'concluído') DEFAULT 'pendente',
-        criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        FOREIGN KEY (tipo_id) REFERENCES pool(id),
-        FOREIGN KEY (tecnico_id) REFERENCES usuarios(id),
-        FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
-    );
+-- Tabela de usuários
+CREATE TABLE `usuarios` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `nome` varchar(255) NOT NULL,
+  `senha` varchar(255) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `funcao` enum('usuario','tecnico','admin') DEFAULT 'usuario',
+  `status` enum('ativo','inativo') DEFAULT 'ativo',
+  `criado_em` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `atualizado_em` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `email` (`email`),
+  KEY `idx_usuarios_email` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-    -- Criação da tabela `apontamentos`
-    CREATE TABLE apontamentos (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        chamado_id INT,
-        tecnico_id INT,
-        descricao TEXT,
-        comeco TIMESTAMP NOT NULL,
-        fim TIMESTAMP NULL,
-        duracao INT AS (TIMESTAMPDIFF(SECOND, comeco, fim)) STORED, -- Calcula a duração em segundos
-        criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (chamado_id) REFERENCES chamados(id),
-        FOREIGN KEY (tecnico_id) REFERENCES usuarios(id)
-    );
+-- Tabela de pools (categorias de serviço)
+CREATE TABLE `pool` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `titulo` varchar(50) NOT NULL,
+  `descricao` varchar(250) DEFAULT NULL,
+  `status` enum('ativo','inativo') DEFAULT 'ativo',
+  `criado_em` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `atualizado_em` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `created_by` int DEFAULT NULL,
+  `updated_by` int DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `created_by` (`created_by`),
+  KEY `updated_by` (`updated_by`),
+  CONSTRAINT `pool_ibfk_1` FOREIGN KEY (`created_by`) REFERENCES `usuarios` (`id`),
+  CONSTRAINT `pool_ibfk_2` FOREIGN KEY (`updated_by`) REFERENCES `usuarios` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-    -- Criação da tabela `pool_tecnico`
-    CREATE TABLE pool_tecnico (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        id_pool INT,
-        id_tecnico INT,
-        FOREIGN KEY (id_pool) REFERENCES pool(id),
-        FOREIGN KEY (id_tecnico) REFERENCES usuarios(id)
-    );
+-- Relacionamento entre pools e técnicos
+CREATE TABLE `pool_tecnico` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `id_pool` int DEFAULT NULL,
+  `id_tecnico` int DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `id_pool` (`id_pool`),
+  KEY `id_tecnico` (`id_tecnico`),
+  CONSTRAINT `pool_tecnico_ibfk_1` FOREIGN KEY (`id_pool`) REFERENCES `pool` (`id`),
+  CONSTRAINT `pool_tecnico_ibfk_2` FOREIGN KEY (`id_tecnico`) REFERENCES `usuarios` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-    -- Índices adicionais para otimização
-    CREATE INDEX idx_usuarios_email ON usuarios(email);
-    CREATE INDEX idx_chamados_status ON chamados(status);
-    CREATE INDEX idx_apontamentos_comeco_fim ON apontamentos(comeco, fim);
+-- Tabela de chamados
+CREATE TABLE `chamados` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `titulo` varchar(255) NOT NULL,
+  `descricao` varchar(250) DEFAULT NULL,
+  `tipo_id` int DEFAULT NULL,
+  `tecnico_id` int DEFAULT NULL,
+  `usuario_id` int DEFAULT NULL,
+  `status` enum('pendente','em andamento','concluído') DEFAULT 'pendente',
+  `criado_em` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `atualizado_em` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `tipo_id` (`tipo_id`),
+  KEY `tecnico_id` (`tecnico_id`),
+  KEY `usuario_id` (`usuario_id`),
+  KEY `idx_chamados_status` (`status`),
+  CONSTRAINT `chamados_ibfk_1` FOREIGN KEY (`tipo_id`) REFERENCES `pool` (`id`),
+  CONSTRAINT `chamados_ibfk_2` FOREIGN KEY (`tecnico_id`) REFERENCES `usuarios` (`id`),
+  CONSTRAINT `chamados_ibfk_3` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- Tabela de apontamentos
+CREATE TABLE `apontamentos` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `chamado_id` int DEFAULT NULL,
+  `tecnico_id` int DEFAULT NULL,
+  `descricao` varchar(250) DEFAULT NULL,
+  `comeco` timestamp NOT NULL,
+  `fim` timestamp NULL DEFAULT NULL,
+  `duracao` int GENERATED ALWAYS AS (timestampdiff(SECOND,`comeco`,`fim`)) STORED,
+  `criado_em` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `chamado_id` (`chamado_id`),
+  KEY `tecnico_id` (`tecnico_id`),
+  KEY `idx_apontamentos_comeco_fim` (`comeco`,`fim`),
+  CONSTRAINT `apontamentos_ibfk_1` FOREIGN KEY (`chamado_id`) REFERENCES `chamados` (`id`),
+  CONSTRAINT `apontamentos_ibfk_2` FOREIGN KEY (`tecnico_id`) REFERENCES `usuarios` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
