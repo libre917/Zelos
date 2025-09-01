@@ -4,6 +4,7 @@ import erroStatus from '../utils/erroStatus.js';
 import { getPoolTechnicians, getPoolTechniciansById } from './poolService.js';
 import { validarCamposObrigatorios, validarStatus, validarRole } from '../utils/validar.js';
 import { getUser } from './usersService.js';
+import { createReport } from './reportsService.js';
 
 // Busca todos os chamados
 export async function getTickets() {
@@ -246,6 +247,47 @@ export async function setTechnicianToTicket(ticketId, technicianId) {
     }
 }
 
+export async function resolveTicketWithReport(ticketId, technicianId, apontamentoDescricao) {
+    try {
+        validarCamposObrigatorios({ ticketId, technicianId }, ['ticketId', 'technicianId']);
+        
+        const ticket = await getTicket(ticketId);
+        if (!ticket) {
+            throw erroStatus('Chamado não encontrado', 404);
+        }
+        if (ticket.status === 'concluído') {
+            throw erroStatus('Chamado já está resolvido', 400);
+        }
+        if (ticket.tecnico_id !== technicianId) {
+            throw erroStatus('Técnico não atribuído a este chamado', 403);
+        }
+
+        // Criar o apontamento primeiro
+        const agora = new Date();
+        const reportData = {
+            chamado_id: ticketId,
+            tecnico_id: technicianId,
+            descricao: apontamentoDescricao,
+            comeco: agora, // Pode usar o momento atual ou uma data anterior se necessário
+            fim: agora
+        };
+
+        await createReport(reportData);
+
+        // Depois resolver o chamado
+        const response = await update(
+            'chamados',
+            { status: 'concluído' },
+            `id = '${ticketId}'`
+        );
+        
+        return response;
+    } catch (err) {
+        console.error('Erro ao resolver chamado com apontamento:', err);
+        throw err;
+    }
+}
+
 export async function resolveTicket(ticketId, technicianId) {
     try {
         validarCamposObrigatorios({ ticketId, technicianId }, ['ticketId', 'technicianId']);
@@ -253,7 +295,7 @@ export async function resolveTicket(ticketId, technicianId) {
         if (!ticket) {
             throw erroStatus('Chamado não encontrado', 404);
         }
-        if (ticket.status === 'resolvido') {
+        if (ticket.status === 'concluído') {
             throw erroStatus('Chamado já está resolvido', 400);
         }
         if (ticket.tecnico_id !== technicianId) {
@@ -261,7 +303,7 @@ export async function resolveTicket(ticketId, technicianId) {
         }
         const response = await update(
             'chamados',
-            { status: 'resolvido' },
+            { status: 'concluído' },
             `id = '${ticketId}'`
         );
         return response;

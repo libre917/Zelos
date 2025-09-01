@@ -9,6 +9,7 @@ import {
     getTicketsByTechnician,
     getTicketsThatTechnicianIsPermited,
     resolveTicket,
+    resolveTicketWithReport
 } from '../services/ticketsService.js';
 import { getRoleUser } from '../services/usersService.js';
 
@@ -168,10 +169,22 @@ export async function resolveTicketController(req, res) {
     try {
         const id = req.params.id;
         const tecnico_id = req.usuarioId;
-        const updatedRows = await resolveTicket(id, tecnico_id);
-        if (updatedRows === 0) {
-            return res.status(400).json({ message: 'Nenhuma alteração foi feita' });
+        const { apontamento } = req.body;
+
+        // Se tem apontamento, usa a nova função que cria o apontamento
+        if (apontamento && apontamento.trim()) {
+            const updatedRows = await resolveTicketWithReport(id, tecnico_id, apontamento);
+            if (updatedRows === 0) {
+                return res.status(400).json({ message: 'Nenhuma alteração foi feita' });
+            }
+        } else {
+            // Se não tem apontamento, usa a função original
+            const updatedRows = await resolveTicket(id, tecnico_id);
+            if (updatedRows === 0) {
+                return res.status(400).json({ message: 'Nenhuma alteração foi feita' });
+            }
         }
+        
         res.status(200).json({ message: 'Chamado resolvido com sucesso' });
     } catch (err) {
         console.error('Erro ao resolver chamado:', err);

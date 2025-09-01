@@ -401,7 +401,7 @@ export default function Admin() {
         totalTecnicos: usuarios.filter((user) => user.funcao === 'tecnico').length,
         totalAdmins: usuarios.filter((user) => user.funcao === 'admin').length,
         chamadosAbertos: chamados.filter((chamado) => chamado.status === 'pendente').length,
-        chamadosFechados: chamados.filter((chamado) => chamado.status === 'concluido').length,
+        chamadosFechados: chamados.filter((chamado) => chamado.status === 'concluído').length,
         chamadosEmProgresso: chamados.filter((chamado) => chamado.status === 'em andamento').length,
     };
     const chamadosPorCategoria = categoriasChamados;
