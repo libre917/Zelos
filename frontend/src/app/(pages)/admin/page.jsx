@@ -1110,7 +1110,7 @@ export default function Admin() {
                                         placeholder="Descreva detalhadamente o problema ou solicitação"
                                         rows={4}
                                         className="input-field text-gray-700 resize-none"
-                                        maxLength={300}
+                                        maxLength={250}
                                     ></textarea>
                                 </div>
 

@@ -51,6 +51,7 @@ export default function Tecnico() {
             }
         })();
     }, [reload]);
+    
 
     // Atribuir-se ao chamado
     const handleCandidatar = async () => {
@@ -81,6 +82,7 @@ export default function Tecnico() {
             console.error('Erro ao atribuir técnico:', err);
         }
     };
+console.log(chamados);
 
     // Resolver chamado
     const handleResolverChamado = async () => {
@@ -191,7 +193,7 @@ export default function Tecnico() {
                                         if (activeTab === 'pool')
                                             return chamado.status === 'pendente' && !chamado.tecnico_id;
                                         if (activeTab === 'emProgresso')
-                                            return chamado.status === 'em andamento' && chamado.tecnico_id;
+                                            return chamado.status === 'em andamento' && chamado.tecnico_id && (chama);
                                         if (activeTab === 'resolvidos')
                                             return chamado.status === 'resolvido' && chamado.tecnico_id;
                                         return true;
