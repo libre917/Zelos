@@ -43,4 +43,7 @@ export const API = {
 
     //caminho para setar o técnico ao chamado
     SET_TECHNICIAN: (id) => `${process.env.NEXT_PUBLIC_API_URL}/ticket/${id}/tecnico`,
+
+    //caminho para resolver o chamado
+    RESOLVE_TICKET: (id) => `${process.env.NEXT_PUBLIC_API_URL}/ticket/${id}/tecnico/resolve`,
 };

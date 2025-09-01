@@ -8,6 +8,7 @@ import {
     getTicketsByStatus,
     getTicketsByTechnician,
     getTicketsThatTechnicianIsPermited,
+    resolveTicket,
 } from '../services/ticketsService.js';
 import { getRoleUser } from '../services/usersService.js';
 
@@ -157,6 +158,23 @@ export async function setTechnicianToTicketController(req, res) {
         res.status(200).json({ message: 'Técnico atribuído ao chamado com sucesso' });
     } catch (err) {
         console.error('Erro ao atribuir técnico ao chamado:', err);
+        const status = err.status || 500;
+        const mensagem = err.message || 'Erro interno do servidor';
+        res.status(status).json({ mensagem, status });
+    }
+}
+
+export async function resolveTicketController(req, res) {
+    try {
+        const id = req.params.id;
+        const tecnico_id = req.usuarioId;
+        const updatedRows = await resolveTicket(id, tecnico_id);
+        if (updatedRows === 0) {
+            return res.status(400).json({ message: 'Nenhuma alteração foi feita' });
+        }
+        res.status(200).json({ message: 'Chamado resolvido com sucesso' });
+    } catch (err) {
+        console.error('Erro ao resolver chamado:', err);
         const status = err.status || 500;
         const mensagem = err.message || 'Erro interno do servidor';
         res.status(status).json({ mensagem, status });

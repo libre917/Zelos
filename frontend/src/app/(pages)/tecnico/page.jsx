@@ -9,6 +9,7 @@ import {
     Filter,
     Calendar,
     Layers,
+    Send,
 } from 'lucide-react';
 
 import { useRouter } from 'next/navigation';
@@ -19,6 +20,8 @@ export default function Tecnico() {
     const [chamadoSelecionado, setChamadoSelecionado] = useState(null);
     const [reload, setReload] = useState(false);
     const [chamados, setChamados] = useState([]);
+    const [apontamento, setApontamento] = useState('');
+    const [loading, setLoading] = useState(false);
 
     // Busca chamados do técnico
     useEffect(() => {
@@ -79,6 +82,51 @@ export default function Tecnico() {
         }
     };
 
+    // Resolver chamado
+    const handleResolverChamado = async () => {
+        if (!apontamento.trim()) {
+            alert('´Por favor, insira um apontamento antes de resolver o chamado.');
+            return;
+        }
+
+        const token = document.cookie
+            .split('; ')
+            .find((row) => row.startsWith('token='))
+            ?.split('=')[1];
+
+        if (!token) return router.push('/');
+
+        setLoading(true);
+
+        try {
+            const response = await fetch(API.RESOLVE_TICKET(chamadoSelecionado.id), {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    apontamento: apontamento,
+                    status: 'resolvido'
+                }),
+            });
+
+            if (!response.ok) {
+                console.error('Erro ao resolver chamado:', response.status);
+                return;
+            }
+
+
+            // Muda automaticamente para a aba de resolvidos
+            setActiveTab('resolvidos');
+
+        } catch (err) {
+            console.error('Erro ao resolver chamado:', err);
+        } finally {
+            setLoading(false);
+        }
+    }
+
     const handleChamadoClick = (chamado) => setChamadoSelecionado(chamado);
     const handleFecharDetalhes = () => setChamadoSelecionado(null);
 
@@ -96,31 +144,28 @@ export default function Tecnico() {
                     <nav className="flex flex-wrap gap-4">
                         <button
                             onClick={() => setActiveTab('pool')}
-                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${
-                                activeTab === 'pool' ? 'bg-red-100 text-red-700 font-medium' : 'hover:bg-gray-100'
-                            }`}
+                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${activeTab === 'pool' ? 'bg-red-100 text-red-700 font-medium' : 'hover:bg-gray-100'
+                                }`}
                         >
                             <Layers className="h-5 w-5" />
                             <span>Chamados</span>
                         </button>
                         <button
                             onClick={() => setActiveTab('emProgresso')}
-                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${
-                                activeTab === 'emProgresso'
-                                    ? 'bg-yellow-100 text-yellow-700 font-medium'
-                                    : 'hover:bg-gray-100'
-                            }`}
+                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${activeTab === 'emProgresso'
+                                ? 'bg-yellow-100 text-yellow-700 font-medium'
+                                : 'hover:bg-gray-100'
+                                }`}
                         >
                             <Clock className="h-5 w-5" />
                             <span>Em andamento</span>
                         </button>
                         <button
                             onClick={() => setActiveTab('resolvidos')}
-                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${
-                                activeTab === 'resolvidos'
-                                    ? 'bg-green-100 text-green-700 font-medium'
-                                    : 'hover:bg-gray-100'
-                            }`}
+                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${activeTab === 'resolvidos'
+                                ? 'bg-green-100 text-green-700 font-medium'
+                                : 'hover:bg-gray-100'
+                                }`}
                         >
                             <CheckCircle className="h-5 w-5" />
                             <span>Resolvidos</span>
@@ -154,29 +199,35 @@ export default function Tecnico() {
                                     .map((chamado) => (
                                         <div
                                             key={chamado.id}
-                                            className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                                                chamadoSelecionado?.id === chamado.id
-                                                    ? 'border-red-500 bg-red-50'
-                                                    : 'border-gray-200 hover:border-red-300 hover:bg-gray-50'
-                                            }`}
+                                            className={`p-4 border rounded-lg cursor-pointer transition-all ${chamadoSelecionado?.id === chamado.id
+                                                ? 'border-red-500 bg-red-50'
+                                                : 'border-gray-200 hover:border-red-300 hover:bg-gray-50'
+                                                }`}
                                             onClick={() => handleChamadoClick(chamado)}
                                         >
                                             <div className="flex justify-between items-start mb-2">
                                                 <h3 className="font-medium text-gray-800">{chamado.titulo}</h3>
                                                 <div
-                                                    className={`px-2 py-1 text-xs rounded-full ${
-                                                        chamado.status === 'pendente'
-                                                            ? 'bg-red-100 text-red-800'
-                                                            : chamado.status === 'em andamento'
+                                                    className={`px-2 py-1 text-xs rounded-full ${chamado.status === 'pendente'
+                                                        ? 'bg-red-100 text-red-800'
+                                                        : chamado.status === 'em andamento'
                                                             ? 'bg-yellow-100 text-yellow-800'
                                                             : 'bg-green-100 text-green-800'
-                                                    }`}
+                                                        }`}
                                                 >
                                                     {chamado.status}
                                                 </div>
                                             </div>
 
                                             <p className="text-sm text-gray-600 mb-2 line-clamp-2">{chamado.descricao}</p>
+                                            
+                                            {activeTab === 'resolvidos' && chamado.apontamento && (
+                                                <div className="mt-2 p-2 bg-green-50 border-l-4 border-green-400 rounded">
+                                                    <p className="text-xs text-green-600 font-medium">Apontamento:</p>
+                                                    <p className="text-sm text-green-700">{chamado.apontamento}</p>
+                                                </div>
+                                            )}
+                                            
                                             <div className="flex items-center justify-between text-xs text-gray-500">
                                                 <div className="flex items-center space-x-4">
                                                     <span className="flex items-center">
@@ -185,6 +236,7 @@ export default function Tecnico() {
                                                     </span>
                                                 </div>
                                             </div>
+
                                         </div>
                                     ))}
                             </div>
@@ -205,13 +257,12 @@ export default function Tecnico() {
                                     <div>
                                         <div className="flex justify-between items-center">
                                             <h3 className="text-lg font-medium text-gray-800">{chamadoSelecionado.titulo}</h3>
-                                            <span className={`px-2 py-1 text-xs rounded-full ${
-                                                chamadoSelecionado.status === 'pendente'
-                                                    ? 'bg-red-100 text-red-800'
-                                                    : chamadoSelecionado.status === 'em andamento'
+                                            <span className={`px-2 py-1 text-xs rounded-full ${chamadoSelecionado.status === 'pendente'
+                                                ? 'bg-red-100 text-red-800'
+                                                : chamadoSelecionado.status === 'em andamento'
                                                     ? 'bg-yellow-100 text-yellow-800'
                                                     : 'bg-green-100 text-green-800'
-                                            }`}>
+                                                }`}>
                                                 {chamadoSelecionado.status}
                                             </span>
                                         </div>
@@ -238,6 +289,54 @@ export default function Tecnico() {
                                         <h4 className="text-sm font-medium text-gray-700 mb-2">Descrição</h4>
                                         <p className="text-gray-600 bg-gray-50 p-4 rounded-lg">{chamadoSelecionado.descricao}</p>
                                     </div>
+
+                                    {chamadoSelecionado.apontamento && (
+                                        <div>
+                                            <h4 className="text-sm font-medium text-gray-700 mb-2">Apontamento da Resolução</h4>
+                                            <div className="bg-green-50 border-l-4 border-green-400 p-4 rounded-lg">
+                                                <p className="text-green-700">{chamadoSelecionado.apontamento}</p>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {chamadoSelecionado.status !== 'resolvido' && (
+                                        <>
+                                            <div>
+                                                <h4 className="text-sm font-medium text-gray-700 mb-2">Escreva um Apontamento</h4>
+                                                <textarea
+                                                    className="w-full border border-gray-300 rounded-lg p-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                                                    id="apontamento"
+                                                    rows="4"
+                                                    value={apontamento}
+                                                    onChange={e => setApontamento(e.target.value)}
+                                                    placeholder="Descreva o apontamento do chamado"
+                                                />
+                                            </div>
+
+                                            <div className="flex justify-end mt-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={handleResolverChamado}
+                                                    disabled={loading || !apontamento.trim()}
+                                                    className={`flex items-center gap-2 px-4 py-2 rounded-2xl transition cursor-pointer
+                                                        ${loading || !apontamento.trim()
+                                                            ? 'bg-gray-300 cursor-not-allowed text-gray-600'
+                                                            : 'bg-red-600 hover:bg-red-500 text-white'
+                                                        }`}
+                                                >
+                                                    {loading ? (
+                                                        <span className="animate-pulse">Resolvendo...</span>
+                                                    ) : (
+                                                        <>
+                                                            <Send size={14} />
+                                                            Resolver Chamado
+                                                        </>
+                                                    )}
+                                                </button>
+                                            </div>
+                                        </>
+                                    )}
+
 
                                     {activeTab === 'pool' && !chamadoSelecionado.tecnico_id && (
                                         <button

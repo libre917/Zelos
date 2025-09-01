@@ -245,3 +245,28 @@ export async function setTechnicianToTicket(ticketId, technicianId) {
         throw err;
     }
 }
+
+export async function resolveTicket(ticketId, technicianId) {
+    try {
+        validarCamposObrigatorios({ ticketId, technicianId }, ['ticketId', 'technicianId']);
+        const ticket = await getTicket(ticketId);
+        if (!ticket) {
+            throw erroStatus('Chamado não encontrado', 404);
+        }
+        if (ticket.status === 'resolvido') {
+            throw erroStatus('Chamado já está resolvido', 400);
+        }
+        if (ticket.tecnico_id !== technicianId) {
+            throw erroStatus('Técnico não atribuído a este chamado', 403);
+        }
+        const response = await update(
+            'chamados',
+            { status: 'resolvido' },
+            `id = '${ticketId}'`
+        );
+        return response;
+    } catch (err) {
+        console.error('Erro ao resolver chamado:', err);
+        throw err;
+    }
+}

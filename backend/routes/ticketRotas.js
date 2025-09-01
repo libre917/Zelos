@@ -8,7 +8,8 @@ import {
     getTicketsByUserController,
     getTicketsByTechnicianController,
     getTicketsByStatusController,
-    getTicketsThatTechnicianIsPermitedController
+    getTicketsThatTechnicianIsPermitedController,
+    resolveTicketController
 } from '../controllers/TicketsController.js';
 import reportRoute from './reportRotas.js';
 import authMiddleware from '../middlewares/authMiddleware.js';
@@ -40,6 +41,9 @@ router.post('/', createTicketController);
 
 // Rota para setar um técnico a um chamado
 router.put('/:id/tecnico', setTechnicianToTicketController);
+
+// Rota para resolver um chamado
+router.put('/:id/tecnico/resolve', resolveTicketController);
 
 router.use('/', reportRoute);
 
