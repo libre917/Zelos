@@ -50,19 +50,20 @@ export async function logoutController(req, res) {
 }
 
 export async function checkAuth(req, res) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+        return res.status(401).json({ authenticated: false });
+    }
+    
+    const [, token] = authHeader.split(' ');
     try {
-        if (req.isAuthenticated()) {
-            return res.json({
-                authenticated: true,
-                user: {
-                    username: req.user.username,
-                    displayName: req.user.displayName,
-                },
-            });
-        }
-        res.status(401).json({ authenticated: false });
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await read('usuarios', `id = '${decoded.id}'`);
+        res.json({
+            authenticated: true,
+            user: { id: user.id, nome: user.nome, email: user.email }
+        });
     } catch (error) {
-        console.error('Erro ao checar validade do token:', error);
-        res.status(500).json({mensagem: "Erro ao checar validação"})
+        res.status(401).json({ authenticated: false });
     }
 }

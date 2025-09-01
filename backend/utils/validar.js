@@ -2,7 +2,7 @@ import { getRoleUser } from '../services/usersService.js';
 import erroStatus from './erroStatus.js';
 import { read } from '../config/database.js';
 
-const STATUS_VALIDOS = ['pendente', 'em andamento', 'concluido'];
+const STATUS_VALIDOS = ['pendente', 'em andamento', 'concluído'];
 
 // Para verificar se os campos desejados estão preenchidos
 export function validarCamposObrigatorios(data, campos) {

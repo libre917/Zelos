@@ -41,7 +41,7 @@ router.post('/', createTicketController);
 // Rota para setar um técnico a um chamado
 router.put('/:id/tecnico', setTechnicianToTicketController);
 
-router.use('/', authMiddleware, reportRoute);
+router.use('/', reportRoute);
 
 
 export default router;
