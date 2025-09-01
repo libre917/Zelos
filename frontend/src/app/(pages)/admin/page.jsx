@@ -41,6 +41,7 @@ export default function Admin() {
     const [error, setError] = useState('');
     const [statusFiltro, setStatusFiltro] = useState('');
     const [categoriaFiltro, setCategoriaFiltro] = useState('');
+    const [tecnicoId, setTecnicoId] = useState('');
 
     // Estados para formulário de categoria
     const [categoriaNome, setCategoriaNome] = useState('');
@@ -348,6 +349,37 @@ export default function Admin() {
         }
     }
 
+    async function setTechnician(id, ticketId) {
+        const token = document.cookie
+            .split('; ')
+            .find((row) => row.startsWith('token='))
+            ?.split('=')[1];
+
+        if (!token) router.push('/');
+        setCanCreate(false);
+
+        try {
+            console.log(id, ticketId);
+
+            const response = await fetch(API.SET_TECHNICIAN(ticketId), {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ tecnico_id: tecnicoId }),
+            });
+            if (!response.ok) {
+                console.error('Erro ao cadastrar usuário:', response.status);
+                return;
+            }
+            setReload(!reload);
+            setChamadoSelecionado(null);
+        } catch (err) {
+            console.error('Erro na requisição:', err);
+        }
+    }
+
     function GraficoDeChamados({ data }) {
         return (
             <ResponsiveContainer width="100%" height={300}>
@@ -566,7 +598,6 @@ export default function Admin() {
             setLoading(false);
         }
     };
-    
 
     return (
         <div className="flex flex-col h-screen bg-gray-50">
@@ -688,7 +719,7 @@ export default function Admin() {
                                         </p>
                                     </div>
                                     <div>
-                                        <p className="text-sm text-gray-500">Em Progresso</p>
+                                        <p className="text-sm text-gray-500">Em Andamento</p>
                                         <p className="text-2xl font-bold text-gray-800">
                                             {estatisticas.chamadosEmProgresso}
                                         </p>
@@ -1245,7 +1276,7 @@ export default function Admin() {
                                 >
                                     <option value="">Todos os status</option>
                                     <option value="pendente">Pendente</option>
-                                    <option value="em progresso">Em Progresso</option>
+                                    <option value="em andamento">Em Andamento</option>
                                     <option value="concluído">Concluído</option>
                                 </select>
                             </div>
@@ -1277,45 +1308,57 @@ export default function Admin() {
                             >
                                 {/* Lista de chamados */}
                                 <div className="space-y-4 p-4">
-                                    {chamados.map((chamado) => (
-                                        <div
-                                            key={chamado.id}
-                                            className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                                                chamadoSelecionado?.id === chamado.id
-                                                    ? 'border-red-500 bg-red-50'
-                                                    : 'border-gray-200 hover:border-red-300 hover:bg-gray-50'
-                                            }`}
-                                            onClick={() => handleChamadoClick(chamado)}
-                                        >
-                                            <div className="flex justify-between items-start mb-2">
-                                                <h3 className="font-medium text-gray-800">{chamado.titulo}</h3>
-                                                <div
-                                                    className={`px-2 py-1 text-xs rounded-full ${
-                                                        chamado.status === 'pendente'
-                                                            ? 'bg-red-100 text-red-800'
-                                                            : chamado.status === 'em andamento'
-                                                            ? 'bg-yellow-100 text-yellow-800'
-                                                            : 'bg-green-100 text-green-800'
-                                                    }`}
-                                                >
-                                                    {chamado.status}
+                                    {chamados
+                                        .filter((chamado) => {
+                                            let statusOk = true;
+                                            let categoriaOk = true;
+                                            if (statusFiltro) {
+                                                statusOk = chamado.status === statusFiltro;
+                                            }
+                                            if (categoriaFiltro) {
+                                                categoriaOk = String(chamado.tipo_id) === String(categoriaFiltro);
+                                            }
+                                            return statusOk && categoriaOk;
+                                        })
+                                        .map((chamado) => (
+                                            <div
+                                                key={chamado.id}
+                                                className={`p-4 border rounded-lg cursor-pointer transition-all ${
+                                                    chamadoSelecionado?.id === chamado.id
+                                                        ? 'border-red-500 bg-red-50'
+                                                        : 'border-gray-200 hover:border-red-300 hover:bg-gray-50'
+                                                }`}
+                                                onClick={() => handleChamadoClick(chamado)}
+                                            >
+                                                <div className="flex justify-between items-start mb-2">
+                                                    <h3 className="font-medium text-gray-800">{chamado.titulo}</h3>
+                                                    <div
+                                                        className={`px-2 py-1 text-xs rounded-full ${
+                                                            chamado.status === 'pendente'
+                                                                ? 'bg-red-100 text-red-800'
+                                                                : chamado.status === 'em andamento'
+                                                                ? 'bg-yellow-100 text-yellow-800'
+                                                                : 'bg-green-100 text-green-800'
+                                                        }`}
+                                                    >
+                                                        {chamado.status}
+                                                    </div>
                                                 </div>
-                                            </div>
 
-                                            <p className="text-sm text-gray-600 mb-2 line-clamp-2">
-                                                {chamado.descricao}
-                                            </p>
-                                            <div className="flex items-center justify-between text-xs text-gray-500">
-                                                <div className="flex items-center space-x-4">
-                                                    <span className="flex items-center">
-                                                        <Calendar className="h-3 w-3 mr-1" />
-                                                        {chamado.data}
-                                                    </span>
-                                                    <span>#{chamado.id}</span>
+                                                <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+                                                    {chamado.descricao}
+                                                </p>
+                                                <div className="flex items-center justify-between text-xs text-gray-500">
+                                                    <div className="flex items-center space-x-4">
+                                                        <span className="flex items-center">
+                                                            <Calendar className="h-3 w-3 mr-1" />
+                                                            {chamado.data}
+                                                        </span>
+                                                        <span>#{chamado.id}</span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        ))}
                                 </div>
                             </div>
 
@@ -1356,7 +1399,7 @@ export default function Admin() {
                                                     className={`px-2 py-1 text-xs rounded-full ${
                                                         chamadoSelecionado.status === 'pendente'
                                                             ? 'bg-red-100 text-red-800'
-                                                            : chamadoSelecionado.status === 'em progresso'
+                                                            : chamadoSelecionado.status === 'em andamento'
                                                             ? 'bg-yellow-100 text-yellow-800'
                                                             : 'bg-green-100 text-green-800'
                                                     }`}
@@ -1381,6 +1424,10 @@ export default function Admin() {
                                                 <p className="text-xs text-gray-500">Solicitante</p>
                                                 <p className="font-medium text-gray-700">
                                                     {chamadoSelecionado.usuario}
+                                                </p>
+                                                <p className="text-xs text-gray-500">Tecnico</p>
+                                                <p className="font-medium text-gray-700">
+                                                    {chamadoSelecionado.tecnico}
                                                 </p>
                                             </div>
                                             <div>
@@ -1410,27 +1457,32 @@ export default function Admin() {
 
                                             <select
                                                 id="atribuir"
+                                                value={tecnicoId}
+                                                onChange={(e) => setTecnicoId(e.target.value)}
                                                 className="mt-1 block w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-red-400 focus:border-red-400 transition outline-none bg-gray-50 shadow-sm text-black"
                                             >
                                                 <option value="">Selecione um técnico</option>
                                                 {tecnicos
                                                     .filter(
-                                                        (tecnico) => tecnico.status === 'ativo' && tecnico.categorys == chamadoSelecionado.tipo_id
+                                                        (tecnico) =>
+                                                            tecnico.status === 'ativo' &&
+                                                            tecnico.categorys == chamadoSelecionado.tipo_id
                                                     )
                                                     .map((tecnico) => (
                                                         <option key={tecnico.id} value={tecnico.id}>
-                                                            {tecnico.nome} ({tecnico.email}) 
+                                                            {tecnico.nome} ({tecnico.email})
                                                         </option>
                                                     ))}
                                             </select>
                                         </div>
 
                                         <div className="flex justify-end mt-2">
+                                            {/*TODO */}
                                             <button
                                                 type="button"
+                                                onClick={() => setTechnician(tecnicoId, chamadoSelecionado.id)}
                                                 disabled={loading}
                                                 className={`flex items-center gap-2 px-4 py-2 rounded-2xl transition cursor-pointer
-
                                                     ${
                                                         loading
                                                             ? 'bg-gray-300 cursor-not-allowed text-gray-600'
