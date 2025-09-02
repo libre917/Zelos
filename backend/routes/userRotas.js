@@ -1,30 +1,27 @@
 import express from 'express';
-import { createUserController, getUserController, getUsersController, updateUserController, createTechnicianController, setStatusUserController, getRoleController, getMeController } from '../controllers/UsersController.js';
-import authMiddleware from '../middlewares/authMiddleware.js';
+import { createUserController, getUsersController, updateUserController, createTechnicianController, setStatusUserController, getRoleController, getMeController } from '../controllers/UsersController.js';
+
 const router = express.Router();
 
 //rota para obter usuarios;
-router.get('/', authMiddleware,  getUsersController);
-
-//rota para obter um usuario
-router.get('/:id', authMiddleware, getUserController)
+router.get('/',  getUsersController);
 
 //rota para obter informações de um usuario
-router.get('/me/info', authMiddleware, getMeController);
+router.get('/me/info', getMeController);
 
 //rota para obter a role do usuario
-router.get('/me/role', authMiddleware, getRoleController);
+router.get('/me/role', getRoleController);
 
 //rota para criar usuario 
-router.post('/',authMiddleware, createUserController);
+router.post('/', createUserController);
 
 //rota para criar tecnico
-router.post('/tecnico', authMiddleware, createTechnicianController);
+router.post('/tecnico', createTechnicianController);
 
 //rota para atualizar usuario
-router.put('/:id', authMiddleware, updateUserController);
+router.put('/:id', updateUserController);
 
 //rota para atualizar status do usuario
-router.put('/:id/status', authMiddleware, setStatusUserController);
+router.put('/:id/status', setStatusUserController);
 
 export default router

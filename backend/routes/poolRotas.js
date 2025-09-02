@@ -6,9 +6,6 @@ const router = express.Router();
 // Rota para obter todos os pools
 router.get('/',  getPoolsController);
 
-// rota para obter tickets de um pool específico
-router.get('/:id/tickets',  getTicketsByPoolIdController);
-
 // rota para obter pools com quantidade de tickets
 router.get('/with-tickets',  getPoolsWithTicketsController);
 

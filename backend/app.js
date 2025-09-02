@@ -56,7 +56,7 @@ app.use('/auth', authRotas);
 
 app.use('/ticket', authMiddleware, ticketRotas);
 app.use('/pool', authMiddleware, poolRotas);
-app.use('/users', userRotas);
+app.use('/users', authMiddleware, userRotas);
 
 app.get('/health', (req, res) => {
     res.status(200).json({ status: 'online' });
