@@ -2,7 +2,18 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import {
+    BarChart,
+    Bar,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    Legend,
+    ResponsiveContainer,
+    LabelList,
+    Cell,
+} from 'recharts';
 import {
     Users,
     PlusCircle,
@@ -28,6 +39,9 @@ import { API } from '../../../config/routes';
 
 export default function Admin() {
     const router = useRouter();
+    // Estados para relatório PDF
+    const [showSelectChamado, setShowSelectChamado] = useState(false);
+    const [chamadoSelecionadoPdf, setChamadoSelecionadoPdf] = useState('');
     const [activeTab, setActiveTab] = useState('dashboard');
     const [showUserModal, setShowUserModal] = useState(false);
     const [reload, setReload] = useState(false);
@@ -380,21 +394,121 @@ export default function Admin() {
         }
     }
 
+    async function gerarPDF() {
+        if (!chamadoSelecionadoPdf) return;
+        const token = document.cookie
+            .split('; ')
+            .find((row) => row.startsWith('token='))
+            ?.split('=')[1];
+        try {
+            const response = await fetch(API.GENERATE_PDF(chamadoSelecionadoPdf), {
+                method: 'GET',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            if (!response.ok) {
+                console.error('Erro ao gerar PDF:', response.status);
+                alert('Erro ao gerar PDF do chamado.');
+                return;
+            }
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `chamado_${chamadoSelecionadoPdf}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error('Erro na requisição:', err);
+            alert('Erro ao gerar PDF do chamado.');
+        }
+    }
+
+    async function gerarPDFTodosChamados() {
+        const token = document.cookie
+            .split('; ')
+            .find((row) => row.startsWith('token='))
+            ?.split('=')[1];
+        try {
+            const response = await fetch(API.GENERATE_ALL_TICKETS_PDF, {
+                method: 'GET',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            if (!response.ok) {
+                console.error('Erro ao gerar PDF:', response.status);
+                alert('Erro ao gerar PDF dos chamados.');
+                return;
+            }
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', 'todos_chamados.pdf');
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error('Erro na requisição:', err);
+            alert('Erro ao gerar PDF dos chamados.');
+        }
+    }
+
     function GraficoDeChamados({ data }) {
+        // Gera cor fixa a partir do nome da categoria
+        const categoriaParaCor = {};
+        data.forEach((item) => {
+            categoriaParaCor[item.categoria] = stringToColor(item.categoria);
+        });
+
+        // Legend customizado
+        const renderLegend = () => (
+            <ul className="flex flex-wrap gap-4 justify-center mt-2">
+                {Object.entries(categoriaParaCor).map(([categoria, cor]) => (
+                    <li key={categoria} className="flex items-center gap-2">
+                        <span style={{ backgroundColor: cor }} className="w-4 h-4 rounded-sm inline-block" />
+                        <span className="text-gray-900">{categoria}</span>
+                    </li>
+                ))}
+            </ul>
+        );
+
         return (
-            <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={data}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="categoria" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="quantidade" fill="#d88484ff" />
+            <ResponsiveContainer width="100%" height={320}>
+                <BarChart data={data} margin={{ top: 20, right: 30, left: 0, bottom: 10 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                    <XAxis dataKey="categoria" tick={{ fontSize: 12 }} />
+                    <YAxis tickFormatter={(v) => v.toLocaleString()} />
+                    <Tooltip
+                        contentStyle={{ backgroundColor: '#fff', borderRadius: '8px', border: '1px solid #ddd' }}
+                        labelStyle={{ fontWeight: 'bold', color: '#191b1fff' }}
+                    />
+                    <Legend content={renderLegend} />
+                    <Bar dataKey="quantidade" radius={[6, 6, 0, 0]}>
+                        {data.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={categoriaParaCor[entry.categoria]} />
+                        ))}
+                        <LabelList dataKey="quantidade" position="top" />
+                    </Bar>
                 </BarChart>
             </ResponsiveContainer>
         );
     }
 
+    // Função auxiliar para gerar cor única por categoria
+    function stringToColor(str) {
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+            hash = str.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        const hue = Math.abs(hash) % 360;
+        return `hsl(${hue}, 70%, 50%)`;
+    }
     // Dados simulados para o dashboard
     const estatisticas = {
         totalUsuarios: usuarios.filter((user) => user.funcao === 'usuario').length,
@@ -675,7 +789,6 @@ export default function Admin() {
                         </button>
                     </nav>
                 </div>
-
                 {/* Conteúdo das abas */}
                 {activeTab === 'dashboard' && (
                     <div>
@@ -741,7 +854,6 @@ export default function Admin() {
                         </div>
                     </div>
                 )}
-
                 {activeTab === 'usuarios' && (
                     <div className="bg-white rounded-xl shadow-md p-6 mb-8">
                         <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
@@ -989,7 +1101,6 @@ export default function Admin() {
                         )}
                     </div>
                 )}
-
                 {activeTab === 'relatorios' && (
                     <div className="bg-white rounded-xl shadow-md p-6 mb-8">
                         <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
@@ -997,81 +1108,50 @@ export default function Admin() {
                             Relatórios e Análises
                         </h2>
 
-                        {/* Filtros e busca */}
-                        <div className="flex flex-wrap gap-4 mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                            <div className="flex-1 min-w-[200px]">
-                                <div className="relative">
-                                    <input
-                                        type="text"
-                                        placeholder="Filtrar relatórios..."
-                                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                                    />
-                                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-                                </div>
-                            </div>
-                            <div className="w-auto">
-                                <button className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">
-                                    <Download className="h-4 w-4 text-gray-500" />
-                                    <span>Exportar</span>
+                        <div className="flex flex-col md:flex-row gap-4 mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200 items-center">
+                            <button
+                                className="flex items-center space-x-2 px-4 py-2 border border-green-500 text-green-600 rounded-md hover:bg-green-50 transition-colors font-medium"
+                                onClick={gerarPDFTodosChamados}
+                            >
+                                <Download className="h-4 w-4 text-green-600" />
+                                <span>Gerar PDF de Todos os Chamados</span>
+                            </button>
+                            <div className="flex flex-col md:flex-row gap-2 items-center">
+                                <button
+                                    className="flex items-center space-x-2 px-4 py-2 border border-blue-500 text-blue-600 rounded-md hover:bg-blue-50 transition-colors font-medium"
+                                    onClick={() => setShowSelectChamado((prev) => !prev)}
+                                >
+                                    <Download className="h-4 w-4 text-blue-600" />
+                                    <span>Gerar PDF de um Chamado</span>
                                 </button>
+                                {showSelectChamado && (
+                                    <select
+                                        className="ml-2 px-3 py-2 border border-gray-300 rounded-md text-gray-700 min-w-[200px]"
+                                        value={chamadoSelecionadoPdf}
+                                        onChange={(e) => setChamadoSelecionadoPdf(e.target.value)}
+                                    >
+                                        <option value="">Selecione um chamado</option>
+                                        {chamados.map((chamado) => (
+                                            <option key={chamado.id} value={chamado.id}>
+                                                #{chamado.id} - {chamado.titulo} - {chamado.descricao?.slice(0, 40)}
+                                            </option>
+                                        ))}
+                                    </select>
+                                )}
+                                {showSelectChamado && chamadoSelecionadoPdf && (
+                                    <button
+                                        className="ml-2 px-4 py-2 border border-green-500 text-green-600 rounded-md hover:bg-green-50 transition-colors font-medium"
+                                        onClick={gerarPDF}
+                                    >
+                                        Gerar PDF
+                                    </button>
+                                )}
                             </div>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="border rounded-lg p-6 hover:shadow-md transition-shadow">
-                                <div className="flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4 mx-auto">
-                                    <BarChart2 className="h-8 w-8 text-red-500" />
-                                </div>
-                                <h3 className="text-lg font-medium text-center mb-2">Chamados por Status</h3>
-                                <p className="text-sm text-gray-600 text-center mb-4">
-                                    Visualize a distribuição de chamados por status atual.
-                                </p>
-                                <button className="w-full py-2 px-4 border border-green-500 text-green-600 rounded-md hover:bg-green-50 transition-colors">
-                                    Gerar Relatório
-                                </button>
-                            </div>
 
-                            <div className="border rounded-lg p-6 hover:shadow-md transition-shadow">
-                                <div className="flex items-center justify-center h-16 w-16 rounded-full bg-blue-100 mb-4 mx-auto">
-                                    <Clock className="h-8 w-8 text-blue-500" />
-                                </div>
-                                <h3 className="text-lg font-medium text-center mb-2">Tempo Médio de Resolução</h3>
-                                <p className="text-sm text-gray-600 text-center mb-4">
-                                    Analise o tempo médio de resolução por categoria e técnico.
-                                </p>
-                                <button className="w-full py-2 px-4 border border-green-500 text-green-600 rounded-md hover:bg-green-50 transition-colors">
-                                    Gerar Relatório
-                                </button>
-                            </div>
-
-                            <div className="border rounded-lg p-6 hover:shadow-md transition-shadow">
-                                <div className="flex items-center justify-center h-16 w-16 rounded-full bg-yellow-100 mb-4 mx-auto">
-                                    <Users className="h-8 w-8 text-yellow-500" />
-                                </div>
-                                <h3 className="text-lg font-medium text-center mb-2">Chamados por Técnico</h3>
-                                <p className="text-sm text-gray-600 text-center mb-4">
-                                    Compare o desempenho e volume de chamados por técnico.
-                                </p>
-                                <button className="w-full py-2 px-4 border border-green-500 text-green-600 rounded-md hover:bg-green-50 transition-colors">
-                                    Gerar Relatório
-                                </button>
-                            </div>
-
-                            <div className="border rounded-lg p-6 hover:shadow-md transition-shadow">
-                                <div className="flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-4 mx-auto">
-                                    <PieChart className="h-8 w-8 text-green-500" />
-                                </div>
-                                <h3 className="text-lg font-medium text-center mb-2">Chamados por Categoria</h3>
-                                <p className="text-sm text-gray-600 text-center mb-4">
-                                    Analise a distribuição de chamados por categoria e tipo.
-                                </p>
-                                <button className="w-full py-2 px-4 border border-green-500 text-green-600 rounded-md hover:bg-green-50 transition-colors">
-                                    Gerar Relatório
-                                </button>
-                            </div>
-                        </div>
+                        {/* Aqui você pode manter ou remover os cards antigos de relatório, se quiser */}
                     </div>
                 )}
-
                 {activeTab === 'chamados' && (
                     <div className="bg-white rounded-xl shadow-md p-6 mb-8">
                         <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
@@ -1104,7 +1184,11 @@ export default function Admin() {
                                             type="text"
                                             name="equipamentoId"
                                             value={formChamadoData.equipamentoId}
-                                            onChange={handleChange}
+                                            onChange={(e) => {
+                                                if (e.target.value.length <= 10 && /^\d*$/.test(e.target.value)) {
+                                                    handleChange(e);
+                                                }
+                                            }}
                                             placeholder="Digite o Id do equipamento"
                                             maxLength={10}
                                             className="input-field text-gray-700"
@@ -1172,7 +1256,6 @@ export default function Admin() {
                         </div>
                     </div>
                 )}
-
                 {activeTab === 'categorias' && (
                     <div className="bg-white rounded-xl shadow-md p-6 mb-8">
                         <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
@@ -1256,7 +1339,6 @@ export default function Admin() {
                         )}
                     </div>
                 )}
-
                 {/* Área de Pool de Chamados */}
                 {activeTab === 'pool' && (
                     <div className="bg-white rounded-xl shadow-md p-6 mb-8">

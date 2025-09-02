@@ -3,16 +3,7 @@
 import { useState, useEffect } from 'react';
 import { API } from '../../../config/routes';
 
-import {
-    Clock,
-    CheckCircle,
-    Filter,
-    Calendar,
-    Layers,
-    Send,
-    FileText,
-    AlertCircle,
-} from 'lucide-react';
+import { Clock, CheckCircle, Filter, Calendar, Layers, Send, FileText, AlertCircle } from 'lucide-react';
 
 import { useRouter } from 'next/navigation';
 
@@ -25,8 +16,7 @@ export default function Tecnico() {
     const [apontamento, setApontamento] = useState('');
     const [loading, setLoading] = useState(false);
 
-
-    // Busca chamados do técnico
+    // Busca chamados do técnico e, se necessário, os apontamentos
     useEffect(() => {
         const token = document.cookie
             .split('; ')
@@ -48,44 +38,43 @@ export default function Tecnico() {
                     return;
                 }
                 const data = await response.json();
-                
-                // Buscar apontamentos para chamados concluídos
+
+                // Buscar apontamentos para todos os chamados (não só concluídos)
                 const chamadosComApontamentos = await Promise.all(
                     data.map(async (chamado) => {
-                        if (chamado.status === 'concluido') {
-                            try {
-                                const apontamentosResponse = await fetch(`${API.BASE_URL}/tickets/${chamado.id}/reports`, {
-                                    method: 'GET',
-                                    headers: {
-                                        'Content-Type': 'application/json',
-                                        Authorization: `Bearer ${token}`,
-                                    },
-                                });
-                                if (apontamentosResponse.ok) {
-                                    const apontamentos = await apontamentosResponse.json();
-                                    // Pegar o último apontamento (mais recente)
-                                    const ultimoApontamento = apontamentos.length > 0 ? apontamentos[apontamentos.length - 1] : null;
-                                    return {
-                                        ...chamado,
-                                        apontamentos: apontamentos,
-                                        apontamento: ultimoApontamento?.descricao || null
-                                    };
-                                }
-                            } catch (err) {
-                                console.error('Erro ao buscar apontamentos:', err);
+                        try {
+                            const apontamentosResponse = await fetch(API.GET_TICKET_NOTES(chamado.id), {
+                                method: 'GET',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    Authorization: `Bearer ${token}`,
+                                },
+                            });
+                            let apontamentos = [];
+                            if (apontamentosResponse.ok) {
+                                apontamentos = await apontamentosResponse.json();
                             }
+                            // Pega o último apontamento (mais recente)
+                            const ultimoApontamento =
+                                apontamentos.length > 0 ? apontamentos[apontamentos.length - 1] : null;
+                            return {
+                                ...chamado,
+                                apontamentos: apontamentos,
+                                apontamento: ultimoApontamento?.descricao || null,
+                            };
+                        } catch (err) {
+                            // Se der erro, retorna o chamado sem apontamentos
+                            console.error('Erro ao buscar apontamentos:', err);
+                            return { ...chamado, apontamentos: [], apontamento: null };
                         }
-                        return chamado;
                     })
                 );
-                
                 setChamados(chamadosComApontamentos);
             } catch (err) {
                 console.error('Erro na requisição:', err);
             }
         })();
     }, [reload]);
-
 
     // Atribuir-se ao chamado
     const handleCandidatar = async () => {
@@ -171,14 +160,13 @@ export default function Tecnico() {
             handleFecharDetalhes();
 
             alert('Chamado concluido com sucesso!');
-
         } catch (err) {
             console.error('Erro ao resolver chamado:', err);
             alert('Erro ao resolver chamado. Tente novamente.');
         } finally {
             setLoading(false);
         }
-    }
+    };
 
     const handleChamadoClick = (chamado) => {
         setChamadoSelecionado(chamado);
@@ -205,28 +193,31 @@ export default function Tecnico() {
                     <nav className="flex flex-wrap gap-4">
                         <button
                             onClick={() => setActiveTab('pool')}
-                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${activeTab === 'pool' ? 'bg-red-100 text-red-700 font-medium' : 'hover:bg-gray-100'
-                                }`}
+                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${
+                                activeTab === 'pool' ? 'bg-red-100 text-red-700 font-medium' : 'hover:bg-gray-100'
+                            }`}
                         >
                             <Layers className="h-5 w-5" />
                             <span>Pool de Chamados</span>
                         </button>
                         <button
                             onClick={() => setActiveTab('emProgresso')}
-                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${activeTab === 'emProgresso'
+                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${
+                                activeTab === 'emProgresso'
                                     ? 'bg-yellow-100 text-yellow-700 font-medium'
                                     : 'hover:bg-gray-100'
-                                }`}
+                            }`}
                         >
                             <Clock className="h-5 w-5" />
                             <span>Em Andamento</span>
                         </button>
                         <button
                             onClick={() => setActiveTab('concluidos')}
-                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${activeTab === 'concluidos'
+                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${
+                                activeTab === 'concluidos'
                                     ? 'bg-green-100 text-green-700 font-medium'
                                     : 'hover:bg-gray-100'
-                                }`}
+                            }`}
                         >
                             <CheckCircle className="h-5 w-5" />
                             <span>Concluídos</span>
@@ -245,7 +236,11 @@ export default function Tecnico() {
                     </h2>
 
                     <div className="flex flex-col lg:flex-row gap-6">
-                        <div className={`${chamadoSelecionado ? 'lg:w-1/2' : 'w-full'} bg-white rounded-lg border border-gray-200`}>
+                        <div
+                            className={`${
+                                chamadoSelecionado ? 'lg:w-1/2' : 'w-full'
+                            } bg-white rounded-lg border border-gray-200`}
+                        >
                             <div className="space-y-4 p-4">
                                 {chamados
                                     .filter((chamado) => {
@@ -260,46 +255,66 @@ export default function Tecnico() {
                                     .map((chamado) => (
                                         <div
                                             key={chamado.id}
-                                            className={`p-4 border rounded-lg cursor-pointer transition-all ${chamadoSelecionado?.id === chamado.id
+                                            className={`p-4 border rounded-lg cursor-pointer transition-all ${
+                                                chamadoSelecionado?.id === chamado.id
                                                     ? 'border-red-500 bg-red-50'
                                                     : 'border-gray-200 hover:border-red-300 hover:bg-gray-50'
-                                                }`}
+                                            }`}
                                             onClick={() => handleChamadoClick(chamado)}
                                         >
                                             <div className="flex justify-between items-start mb-2">
                                                 <h3 className="font-medium text-gray-800">{chamado.titulo}</h3>
                                                 <div
-                                                    className={`px-2 py-1 text-xs rounded-full ${chamado.status === 'pendente'
+                                                    className={`px-2 py-1 text-xs rounded-full ${
+                                                        chamado.status === 'pendente'
                                                             ? 'bg-red-100 text-red-800'
                                                             : chamado.status === 'em andamento'
-                                                                ? 'bg-yellow-100 text-yellow-800'
-                                                                : 'bg-green-100 text-green-800'
-                                                        }`}
+                                                            ? 'bg-yellow-100 text-yellow-800'
+                                                            : 'bg-green-100 text-green-800'
+                                                    }`}
                                                 >
                                                     {chamado.status}
                                                 </div>
                                             </div>
 
-                                            <p className="text-sm text-gray-600 mb-2 line-clamp-2">{chamado.descricao}</p>
+                                            <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+                                                {chamado.descricao}
+                                            </p>
 
                                             {/* Mostra preview do apontamento nos resolvidos */}
-                                            {activeTab === 'concluidos' && chamado.apontamentos && chamado.apontamentos.length > 0 && (
-                                                <div className="mt-2 p-2 bg-green-50 border-l-4 border-green-400 rounded">
-                                                    <p className="text-xs text-green-600 font-medium flex items-center">
-                                                        <FileText className="h-3 w-3 mr-1" />
-                                                        Apontamentos:
-                                                    </p>
-                                                    {chamado.apontamentos.map((apontamento, index) => (
-                                                        <div key={apontamento.id} className={index > 0 ? 'mt-2 pt-2 border-t border-green-200' : ''}>
-                                                            <p className="text-sm text-green-700 line-clamp-2">{apontamento.descricao}</p>
-                                                            <p className="text-xs text-green-600 mt-1">
-                                                                {new Date(apontamento.criado_em).toLocaleString('pt-BR')}
-                                                                {apontamento.duracao && ` • Duração: ${Math.round(apontamento.duracao / 60)} min`}
-                                                            </p>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            )}
+                                            {activeTab === 'concluidos' &&
+                                                chamado.apontamentos &&
+                                                chamado.apontamentos.length > 0 && (
+                                                    <div className="mt-2 p-2 bg-green-50 border-l-4 border-green-400 rounded">
+                                                        <p className="text-xs text-green-600 font-medium flex items-center">
+                                                            <FileText className="h-3 w-3 mr-1" />
+                                                            Apontamentos:
+                                                        </p>
+                                                        {chamado.apontamentos.map((apontamento, index) => (
+                                                            <div
+                                                                key={apontamento.id}
+                                                                className={
+                                                                    index > 0
+                                                                        ? 'mt-2 pt-2 border-t border-green-200'
+                                                                        : ''
+                                                                }
+                                                            >
+                                                                <p className="text-sm text-green-700 line-clamp-2">
+                                                                    {apontamento.descricao}
+                                                                </p>
+                                                                <p className="text-xs text-green-600 mt-1">
+                                                                    {new Date(apontamento.criado_em).toLocaleString(
+                                                                        'pt-BR'
+                                                                    )}
+                                                                    {apontamento.duracao &&
+                                                                        ` • Duração: ${Math.round(
+                                                                            apontamento.duracao / 60
+                                                                        )} min`}
+                                                                </p>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
 
                                             <div className="flex items-center justify-between text-xs text-gray-500 mt-2">
                                                 <div className="flex items-center space-x-4">
@@ -326,11 +341,11 @@ export default function Tecnico() {
                                         return chamado.status === 'concluido' && chamado.tecnico_id; // ✅ Corrigido: com acento
                                     return false;
                                 }).length === 0 && (
-                                        <div className="text-center py-8 text-gray-500">
-                                            <AlertCircle className="h-12 w-12 mx-auto mb-2 text-gray-300" />
-                                            <p>Nenhum chamado encontrado nesta categoria</p>
-                                        </div>
-                                    )}
+                                    <div className="text-center py-8 text-gray-500">
+                                        <AlertCircle className="h-12 w-12 mx-auto mb-2 text-gray-300" />
+                                        <p>Nenhum chamado encontrado nesta categoria</p>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -338,9 +353,23 @@ export default function Tecnico() {
                             <div className="lg:w-1/2 bg-white rounded-lg border border-gray-200 p-6">
                                 <div className="flex justify-between items-center mb-6">
                                     <h2 className="text-xl font-semibold text-gray-800">Detalhes do Chamado</h2>
-                                    <button onClick={handleFecharDetalhes} className="text-gray-500 hover:text-gray-700">
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    <button
+                                        onClick={handleFecharDetalhes}
+                                        className="text-gray-500 hover:text-gray-700"
+                                    >
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            className="h-6 w-6"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M6 18L18 6M6 6l12 12"
+                                            />
                                         </svg>
                                     </button>
                                 </div>
@@ -348,13 +377,18 @@ export default function Tecnico() {
                                 <div className="space-y-6">
                                     <div>
                                         <div className="flex justify-between items-center">
-                                            <h3 className="text-lg font-medium text-gray-800">{chamadoSelecionado.titulo}</h3>
-                                            <span className={`px-2 py-1 text-xs rounded-full ${chamadoSelecionado.status === 'pendente'
-                                                    ? 'bg-red-100 text-red-800'
-                                                    : chamadoSelecionado.status === 'em andamento'
+                                            <h3 className="text-lg font-medium text-gray-800">
+                                                {chamadoSelecionado.titulo}
+                                            </h3>
+                                            <span
+                                                className={`px-2 py-1 text-xs rounded-full ${
+                                                    chamadoSelecionado.status === 'pendente'
+                                                        ? 'bg-red-100 text-red-800'
+                                                        : chamadoSelecionado.status === 'em andamento'
                                                         ? 'bg-yellow-100 text-yellow-800'
                                                         : 'bg-green-100 text-green-800'
-                                                }`}>
+                                                }`}
+                                            >
                                                 {chamadoSelecionado.status}
                                             </span>
                                         </div>
@@ -369,23 +403,31 @@ export default function Tecnico() {
                                     <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
                                         <div>
                                             <p className="text-xs text-gray-500">Solicitante</p>
-                                            <p className="font-medium text-gray-700">{chamadoSelecionado.usuario || 'Não informado'}</p>
+                                            <p className="font-medium text-gray-700">
+                                                {chamadoSelecionado.usuario || 'Não informado'}
+                                            </p>
                                         </div>
                                         <div>
                                             <p className="text-xs text-gray-500">Categoria</p>
-                                            <p className="font-medium text-gray-700">{chamadoSelecionado.tipo || 'Não informado'}</p>
+                                            <p className="font-medium text-gray-700">
+                                                {chamadoSelecionado.tipo || 'Não informado'}
+                                            </p>
                                         </div>
                                         {chamadoSelecionado.tecnico && (
                                             <div>
                                                 <p className="text-xs text-gray-500">Técnico Responsável</p>
-                                                <p className="font-medium text-gray-700">{chamadoSelecionado.tecnico}</p>
+                                                <p className="font-medium text-gray-700">
+                                                    {chamadoSelecionado.tecnico}
+                                                </p>
                                             </div>
                                         )}
                                     </div>
 
                                     <div>
                                         <h4 className="text-sm font-medium text-gray-700 mb-2">Descrição</h4>
-                                        <p className="text-gray-600 bg-gray-50 p-4 rounded-lg">{chamadoSelecionado.descricao}</p>
+                                        <p className="text-gray-600 bg-gray-50 p-4 rounded-lg">
+                                            {chamadoSelecionado.descricao}
+                                        </p>
                                     </div>
 
                                     {/* Mostra o apontamento completo se o chamado estiver resolvido */}
@@ -396,14 +438,25 @@ export default function Tecnico() {
                                                 Apontamentos da Resolução
                                             </h4>
                                             <div className="bg-green-50 border-l-4 border-green-400 p-4 rounded-lg">
-                                                {chamadoSelecionado.apontamentos && chamadoSelecionado.apontamentos.length > 0 ? (
+                                                {chamadoSelecionado.apontamentos &&
+                                                chamadoSelecionado.apontamentos.length > 0 ? (
                                                     <div className="space-y-3">
                                                         {chamadoSelecionado.apontamentos.map((apontamento, index) => (
-                                                            <div key={apontamento.id} className="border-b border-green-200 last:border-b-0 pb-2 last:pb-0">
-                                                                <p className="text-green-700 whitespace-pre-wrap">{apontamento.descricao}</p>
+                                                            <div
+                                                                key={apontamento.id}
+                                                                className="border-b border-green-200 last:border-b-0 pb-2 last:pb-0"
+                                                            >
+                                                                <p className="text-green-700 whitespace-pre-wrap">
+                                                                    {apontamento.descricao}
+                                                                </p>
                                                                 <p className="text-xs text-green-600 mt-1">
-                                                                    {new Date(apontamento.criado_em).toLocaleString('pt-BR')}
-                                                                    {apontamento.duracao && ` • Duração: ${Math.round(apontamento.duracao / 60)} min`}
+                                                                    {new Date(apontamento.criado_em).toLocaleString(
+                                                                        'pt-BR'
+                                                                    )}
+                                                                    {apontamento.duracao &&
+                                                                        ` • Duração: ${Math.round(
+                                                                            apontamento.duracao / 60
+                                                                        )} min`}
                                                                 </p>
                                                             </div>
                                                         ))}
@@ -426,7 +479,8 @@ export default function Tecnico() {
                                                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
                                                     <p className="text-xs text-blue-600 flex items-center">
                                                         <AlertCircle className="h-3 w-3 mr-1" />
-                                                        Descreva detalhadamente a solução aplicada para resolver este chamado
+                                                        Descreva detalhadamente a solução aplicada para resolver este
+                                                        chamado
                                                     </p>
                                                 </div>
                                                 <textarea
@@ -434,7 +488,7 @@ export default function Tecnico() {
                                                     id="apontamento"
                                                     rows="5"
                                                     value={apontamento}
-                                                    onChange={e => setApontamento(e.target.value)}
+                                                    onChange={(e) => setApontamento(e.target.value)}
                                                     placeholder="Descreva o que foi feito para resolver o chamado, incluindo as ações tomadas, problemas encontrados e a solução aplicada..."
                                                 />
                                                 <p className="text-xs text-gray-500 mt-1">
@@ -448,9 +502,10 @@ export default function Tecnico() {
                                                     onClick={handleResolverChamado}
                                                     disabled={loading || !apontamento.trim()}
                                                     className={`flex items-center gap-2 px-6 py-2.5 rounded-lg font-medium transition-all
-                                                        ${loading || !apontamento.trim()
-                                                            ? 'bg-gray-300 cursor-not-allowed text-gray-500'
-                                                            : 'bg-green-600 hover:bg-green-700 text-white shadow-md hover:shadow-lg'
+                                                        ${
+                                                            loading || !apontamento.trim()
+                                                                ? 'bg-gray-300 cursor-not-allowed text-gray-500'
+                                                                : 'bg-green-600 hover:bg-green-700 text-white shadow-md hover:shadow-lg'
                                                         }`}
                                                 >
                                                     {loading ? (

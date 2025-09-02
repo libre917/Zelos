@@ -41,11 +41,20 @@ export const API = {
     //caminho para buscar chamados que o técnico pode acessar
     GET_TECHNICIAN_TICKETS: `${process.env.NEXT_PUBLIC_API_URL}/ticket/info/tecnico`,
 
+    //caminho para buscar apontamentos de um chamado
+    GET_TICKET_NOTES: (id) => `${process.env.NEXT_PUBLIC_API_URL}/ticket/${id}/reports`,
+
     //caminho para setar o técnico ao chamado
     SET_TECHNICIAN: (id) => `${process.env.NEXT_PUBLIC_API_URL}/ticket/${id}/tecnico`,
 
     //caminho para resolver o chamado
     RESOLVE_TICKET: (id) => `${process.env.NEXT_PUBLIC_API_URL}/ticket/${id}/tecnico/resolve`,
+
+    //caminho para gerar PDF do chamado
+    GENERATE_PDF: (id) => `${process.env.NEXT_PUBLIC_API_URL}/ticket/${id}/pdf`,
+
+    //caminho para gerar PDF de todos os chamados
+    GENERATE_ALL_TICKETS_PDF: `${process.env.NEXT_PUBLIC_API_URL}/ticket/record/pdf`,
 
 
 }

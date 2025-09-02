@@ -1,8 +1,8 @@
 {
     "scripts": {
         "install": "cd backend && npm install && cd .. && cd frontend && npm install",
-        "startBack": "cd ./backend && node --watch app.js",
-        "startFront": "cd ./frontend && npm run dev"
+        "back": "cd ./backend && node --watch app.js",
+        "front": "cd ./frontend && npm run dev"
     }
 
 }

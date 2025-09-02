@@ -180,8 +180,17 @@ export async function gerarRelatorioTodosChamados(caminhoSaida = 'relatorio-cham
         if (isNonEmptyArray(record.apontamentos)) {
             doc.text('Apontamentos:');
             record.apontamentos.forEach((a, i) => {
-                const inicio = a.comeco ?? '-';
-                const fim = a.fim ?? '-';
+                // Formatação de datas
+                let inicio = '-';
+                let fim = '-';
+                if (a.comeco) {
+                    const d = new Date(a.comeco);
+                    inicio = d.toLocaleDateString() + ' ' + d.toLocaleTimeString().slice(0, 5);
+                }
+                if (a.fim) {
+                    const d = new Date(a.fim);
+                    fim = d.toLocaleDateString() + ' ' + d.toLocaleTimeString().slice(0, 5);
+                }
                 const dur = a.duracao ?? '-';
                 doc.text(`  ${i + 1}. ${a.descricao ?? '-'} | Início: ${inicio} | Fim: ${fim} | Duração: ${dur} min`);
             });
