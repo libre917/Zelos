@@ -15,6 +15,7 @@ import {
     User,
     CheckCircle,
     Clock,
+    AlertCircle,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { API } from '../../../config/routes';
@@ -33,9 +34,12 @@ export default function Usuario() {
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState('');
+    const [apontamento, setApontamento] = useState([]);
     // Filtros
     const [statusFiltro, setStatusFiltro] = useState('');
     const [categoriaFiltro, setCategoriaFiltro] = useState('');
+    // Chamado selecionado para visualização de detalhes
+    const [chamadoSelecionado, setChamadoSelecionado] = useState(null);
     useEffect(() => {
         const token = document.cookie
             .split('; ')
@@ -111,6 +115,7 @@ export default function Usuario() {
         }
     };
 
+
     // busca chamados do usuario
     useEffect(() => {
         const token = document.cookie
@@ -132,13 +137,47 @@ export default function Usuario() {
                     console.error('Erro ao buscar chamados:', response.status);
                     return;
                 }
-                const chamados = await response.json();
-                setChamados(chamados);
+                const chamado = await response.json();
+                setChamados(chamado);
+
+                // Buscar apontamentos para todos os chamados (não só concluídos)
+                const chamadosComApontamentos = await Promise.all(
+                    chamado.map(async (ticket) => {
+                        try {
+                            const apontamentosResponse = await fetch(API.GET_TICKET_NOTES(ticket.id), {
+                                method: 'GET',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    Authorization: `Bearer ${token}`,
+                                },
+                            });
+                            let apontamentos = [];
+                            if (apontamentosResponse.ok) {
+                                apontamentos = await apontamentosResponse.json();
+                            }
+                            // Pega o último apontamento (mais recente)
+                            const ultimoApontamento =
+                                apontamentos.length > 0 ? apontamentos[apontamentos.length - 1] : null;
+                            return {
+                                ...ticket,
+                                apontamentos: apontamentos,
+                                apontamento: ultimoApontamento?.descricao || null,
+                            };
+                        } catch (err) {
+                            // Se der erro, retorna o chamado sem apontamentos
+                            console.error('Erro ao buscar apontamentos:', err);
+                            return { ...ticket, apontamentos: [], apontamento: null };
+                        }
+                    })
+                );
+
+                setChamados(chamadosComApontamentos);
             } catch (err) {
                 console.error('Erro na requisição:', err);
             }
         })();
     }, [reload]);
+
 
     // Filtragem dos chamados
     const chamadosFiltrados = chamados.filter((chamado) => {
@@ -149,10 +188,20 @@ export default function Usuario() {
         }
         if (categoriaFiltro && categoriaFiltro !== 'Todas') {
             // categoriaFiltro é o id da categoria
-            categoriaOk = String(chamado.tipo_id) === String(categoriaFiltro);
+            categoriaOk = String(chamado.tipo) === String(categoriaFiltro);
         }
         return statusOk && categoriaOk;
     });
+
+    // Função para selecionar um chamado para visualização detalhada
+    const handleSelecionarChamado = (chamado) => {
+        setChamadoSelecionado(chamado);
+    };
+
+    // Função para fechar os detalhes do chamado
+    const handleFecharDetalhes = () => {
+        setChamadoSelecionado(null);
+    };
 
     return (
         <div className="flex flex-col h-screen bg-gray-50">
@@ -170,22 +219,20 @@ export default function Usuario() {
                     <nav className="flex flex-wrap gap-4">
                         <button
                             onClick={() => setActiveTab('criarChamado')}
-                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${
-                                activeTab === 'criarChamado'
+                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${activeTab === 'criarChamado'
                                     ? 'bg-red-100 text-red-700 font-medium'
                                     : 'hover:bg-gray-100'
-                            }`}
+                                }`}
                         >
                             <PlusCircle className="h-5 w-5" />
                             <span>Criar Chamado</span>
                         </button>
                         <button
                             onClick={() => setActiveTab('meusChamados')}
-                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${
-                                activeTab === 'meusChamados'
+                            className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${activeTab === 'meusChamados'
                                     ? 'bg-yellow-100 text-yellow-700 font-medium'
                                     : 'hover:bg-gray-100'
-                            }`}
+                                }`}
                         >
                             <FileText className="h-5 w-5" />
                             <span>Meus Chamados</span>
@@ -301,7 +348,7 @@ export default function Usuario() {
                                 >
                                     <option value="">Todos os status</option>
                                     <option value="pendente">Pendente</option>
-                                    <option value="em progresso">Em Progresso</option>
+                                    <option value="em andamento">Em Andamento</option>
                                     <option value="concluído">Concluído</option>
                                 </select>
                             </div>
@@ -323,31 +370,190 @@ export default function Usuario() {
                             </div>
                         </div>
 
-                        {/* Lista de chamados */}
-                        <div className="space-y-4">
-                            {chamadosFiltrados.length > 0 ? (
-                                chamadosFiltrados.map((chamado) => (
-                                    <div key={chamado.id} className="border border-gray-200 rounded-lg p-4">
-                                        <h3 className="font-semibold text-gray-800">
-                                            ID de patrimônio: {chamado.titulo}
-                                        </h3>
-                                        <p className="text-gray-600">Descrição: {chamado.descricao}</p>
-                                        <p className="text-gray-600">Técnico Responsável: {chamado.tecnico_id}</p>
-                                        <span className="text-gray-600">Status: {chamado.status}</span>
+                        <div className="flex flex-col lg:flex-row gap-6">
+                            {/* Lista de chamados */}
+                            <div className={`${chamadoSelecionado ? 'lg:w-1/2' : 'w-full'} space-y-4`}>
+                                {chamadosFiltrados.length > 0 ? (
+                                    chamadosFiltrados.map((chamado) => (
+                                        <div
+                                            key={chamado.id}
+                                            className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition-colors"
+                                            onClick={() => handleSelecionarChamado(chamado)}
+                                        >
+                                            <div className="flex justify-between items-center mb-2">
+                                                <h3 className="font-semibold text-gray-800">
+                                                    ID de patrimônio: {chamado.titulo}
+                                                </h3>
+                                                <span
+                                                    className={`px-2 py-1 text-xs rounded-full ${chamado.status === 'pendente'
+                                                        ? 'bg-red-100 text-red-800'
+                                                        : chamado.status === 'em andamento'
+                                                            ? 'bg-yellow-100 text-yellow-800'
+                                                            : 'bg-green-100 text-green-800'
+                                                        }`}
+                                                >
+                                                    {chamado.status}
+                                                </span>
+                                            </div>
+                                            <p className="text-gray-600 line-clamp-2">{chamado.descricao}</p>
+                                            <div className="flex justify-between items-center mt-2 text-xs text-gray-500">
+                                                <span>Técnico: {chamado.tecnico || 'Não atribuído'}</span>
+                                                <span className="flex items-center">
+                                                    <Calendar className="h-3 w-3 mr-1" />
+                                                    {new Date(chamado.criado_em).toLocaleString('pt-BR')}
+                                                </span>
+                                            </div>
+
+                                            {/* Prévia do apontamento para chamados concluídos */}
+                                            {chamado.status === 'concluído' && chamado.apontamento && (
+                                                <div className="mt-2 pt-2 border-t border-gray-100">
+                                                    <p className="text-xs text-gray-500 flex items-center">
+                                                        <CheckCircle className="h-3 w-3 mr-1 text-green-500" />
+                                                        Resolução: {chamado.apontamento.descricao.substring(0, 50)}...
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="text-gray-600 p-4 bg-gray-50 rounded-lg text-center">
+                                        Nenhum chamado encontrado
                                     </div>
-                                ))
-                            ) : (
-                                <div className="text-gray-600">Nenhum chamado encontrado</div>
+                                )}
+                            </div>
+
+                            {/* Detalhes do chamado selecionado */}
+                            {chamadoSelecionado && (
+                                <div className="lg:w-1/2 bg-white rounded-lg border border-gray-200 p-6">
+                                    <div className="flex justify-between items-center mb-6">
+                                        <h2 className="text-xl font-semibold text-gray-800">Detalhes do Chamado</h2>
+                                        <button
+                                            onClick={handleFecharDetalhes}
+                                            className="text-gray-500 hover:text-gray-700"
+                                        >
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                className="h-6 w-6"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                stroke="currentColor"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M6 18L18 6M6 6l12 12"
+                                                />
+                                            </svg>
+                                        </button>
+                                    </div>
+
+                                    <div className="space-y-6">
+                                        <div>
+                                            <div className="flex justify-between items-center">
+                                                <h3 className="text-lg font-medium text-gray-800">
+                                                    {chamadoSelecionado.titulo}
+                                                </h3>
+                                                <span
+                                                    className={`px-2 py-1 text-xs rounded-full ${chamadoSelecionado.status === 'pendente'
+                                                        ? 'bg-red-100 text-red-800'
+                                                        : chamadoSelecionado.status === 'em andamento'
+                                                            ? 'bg-yellow-100 text-yellow-800'
+                                                            : 'bg-green-100 text-green-800'
+                                                        }`}
+                                                >
+                                                    {chamadoSelecionado.status}
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500">
+                                                <span className="flex items-center">
+                                                    <Calendar className="h-4 w-4 mr-1" />
+                                                    {new Date(chamadoSelecionado.criado_em).toLocaleString('pt-BR')}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
+                                            <div>
+                                                <p className="text-xs text-gray-500">Solicitante</p>
+                                                <p className="font-medium text-gray-700">
+                                                    {chamadoSelecionado.usuario || 'Não informado'}
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <p className="text-xs text-gray-500">Categoria</p>
+                                                <p className="font-medium text-gray-700">
+                                                    {chamadoSelecionado.tipo || 'Não informado'}
+                                                </p>
+                                            </div>
+                                            {chamadoSelecionado.tecnico && (
+                                                <div>
+                                                    <p className="text-xs text-gray-500">Técnico Responsável</p>
+                                                    <p className="font-medium text-gray-700">
+                                                        {chamadoSelecionado.tecnico}
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <div>
+                                            <h4 className="text-sm font-medium text-gray-700 mb-2">Descrição</h4>
+                                            <p className="text-gray-600 bg-gray-50 p-4 rounded-lg break-words">
+                                                {chamadoSelecionado.descricao}
+                                            </p>
+                                        </div>
+
+                                        {/* Mostra o apontamento completo se o chamado estiver resolvido */}
+                                        {chamadoSelecionado.status === 'concluido' && (
+                                            <div>
+                                                <h4 className="text-sm font-medium text-gray-700 mb-2 flex items-center">
+                                                    <FileText className="h-4 w-4 mr-1" />
+                                                    Apontamentos da Resolução
+                                                </h4>
+                                                <div className="bg-green-50 border-l-4 border-green-400 p-4 rounded-lg">
+                                                    {chamadoSelecionado.apontamento &&
+                                                        chamadoSelecionado.apontamento.length > 0 ? (
+                                                        <div className="space-y-3">
+
+                                                            <div
+                                                                key={chamadoSelecionado.id}
+                                                                className="border-b border-green-200 last:border-b-0 pb-2 last:pb-0"
+                                                            >
+                                                                <p className="text-green-700 whitespace-pre-wrap break-words">
+                                                                    {chamadoSelecionado.apontamento}
+                                                                </p>
+                                                                <p className="text-xs text-green-600 mt-1">
+                                                                    {new Date(chamadoSelecionado.criado_em).toLocaleString(
+                                                                        'pt-BR'
+                                                                    )}
+                                                                    {chamadoSelecionado.duracao &&
+                                                                        ` • Duração: ${Math.round(
+                                                                            chamadoSelecionado.duracao / 60
+                                                                        )} min`}
+                                                                </p>
+                                                            </div>
+
+                                                        </div>
+                                                    ) : (
+                                                        <p className="text-green-700">Nenhum apontamento encontrado.</p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
                             )}
                         </div>
 
                         {/* Paginação */}
-                        <div className="flex items-center justify-between mt-6 bg-gray-50 p-4 rounded-lg">
-                            <div className="text-sm text-gray-700 flex items-center">
-                                <FileText className="h-4 w-4 mr-2 text-red-500" />
-                                Nenhum chamado encontrado
+                        {!chamadoSelecionado && chamadosFiltrados.length > 0 && (
+                            <div className="flex items-center justify-between mt-6 bg-gray-50 p-4 rounded-lg">
+                                <div className="text-sm text-gray-700 flex items-center">
+                                    <FileText className="h-4 w-4 mr-2 text-red-500" />
+                                    {chamadosFiltrados.length} chamados encontrados
+                                </div>
                             </div>
-                        </div>
+                        )}
                     </div>
                 )}
             </div>

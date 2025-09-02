@@ -59,7 +59,36 @@ export async function getTicket(id) {
 // Busca chamados de um usuário
 export async function getTicketsByUser(userId) {
     try {
-        return await readAll('chamados', `usuario_id = '${userId}'`);
+        const chamados = await readAll('chamados', `usuario_id = '${userId}'`);
+          const chamadosComNomes = await Promise.all(
+            chamados.map(async (chamado) => {
+                // Busca nome do pool (tipo_id)
+                let tipo_nome = null;
+                if (chamado.tipo_id) {
+                    const pool = await read('pool', `id = '${chamado.tipo_id}'`);
+                    tipo_nome = pool ? pool.titulo : null;
+                }
+                // Busca nome do técnico
+                let tecnico_nome = null;
+                if (chamado.tecnico_id) {
+                    const tecnico = await read('usuarios', `id = '${chamado.tecnico_id}'`);
+                    tecnico_nome = tecnico ? tecnico.nome : null;
+                }
+                // Busca nome do usuário
+                let usuario_nome = null;
+                if (chamado.usuario_id) {
+                    const usuario = await read('usuarios', `id = '${chamado.usuario_id}'`);
+                    usuario_nome = usuario ? usuario.nome : null;
+                }
+                return {
+                    ...chamado,
+                    tipo: tipo_nome,
+                    tecnico: tecnico_nome,
+                    usuario: usuario_nome,
+                };
+            })
+        );
+        return chamadosComNomes;
     } catch (err) {
         console.error('Erro ao obter chamados do usuário:', err);
         throw err;

@@ -338,7 +338,7 @@ export default function Tecnico() {
                                     if (activeTab === 'emProgresso')
                                         return chamado.status === 'em andamento' && chamado.tecnico_id;
                                     if (activeTab === 'concluidos')
-                                        return chamado.status === 'concluido' && chamado.tecnico_id; // ✅ Corrigido: com acento
+                                        return chamado.status === 'concluido' && chamado.tecnico_id;
                                     return false;
                                 }).length === 0 && (
                                     <div className="text-center py-8 text-gray-500">
@@ -446,7 +446,7 @@ export default function Tecnico() {
                                                                 key={apontamento.id}
                                                                 className="border-b border-green-200 last:border-b-0 pb-2 last:pb-0"
                                                             >
-                                                                <p className="text-green-700 whitespace-pre-wrap">
+                                                                <p className="text-green-700 whitespace-pre-wrap break-words">
                                                                     {apontamento.descricao}
                                                                 </p>
                                                                 <p className="text-xs text-green-600 mt-1">
