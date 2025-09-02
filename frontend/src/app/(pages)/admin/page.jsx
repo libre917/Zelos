@@ -2,7 +2,18 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import {
+    BarChart,
+    Bar,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    Legend,
+    ResponsiveContainer,
+    LabelList,
+    Cell,
+} from 'recharts';
 import {
     Users,
     PlusCircle,
@@ -25,12 +36,15 @@ import {
     Send,
     NotepadText,
     Layers2,
-    Trash2,
+    Trash2
 } from 'lucide-react';
 import { API } from '../../../config/routes';
 
 export default function Admin() {
     const router = useRouter();
+    // Estados para relatório PDF
+    const [showSelectChamado, setShowSelectChamado] = useState(false);
+    const [chamadoSelecionadoPdf, setChamadoSelecionadoPdf] = useState('');
     const [activeTab, setActiveTab] = useState('dashboard');
     const [showUserModal, setShowUserModal] = useState(false);
     const [reload, setReload] = useState(false);
@@ -87,9 +101,10 @@ export default function Admin() {
                         Authorization: `Bearer ${token}`,
                     },
                 });
-                if (!response.ok) {
-                    console.error('Erro ao buscar categorias:', response.status);
-                    return;
+                if (response.status !== 200) {
+                    const { mensagem } = await response.json();
+                    alert(mensagem);
+                    console.error('Erro ao buscar categorias:', mensagem);
                 }
 
                 const categorias = await response.json();
@@ -120,9 +135,10 @@ export default function Admin() {
                     },
                 });
 
-                if (!response.ok) {
-                    console.error('Erro ao buscar usuarios:', response.status);
-                    return;
+                if (response.status !== 200) {
+                    const { mensagem } = await response.json();
+                    alert(mensagem);
+                    console.error('Erro ao buscar usuários:', mensagem);
                 }
 
                 const data = await response.json();
@@ -248,9 +264,9 @@ export default function Admin() {
                 });
 
                 if (!response.ok) {
-                    const res = await response.json();
-                    console.error('Erro ao cadastrar usuário:', response.status);
-                    alert(res.mensagem);
+                    const { mensagem } = await response.json();
+                    console.error('Erro ao cadastrar usuário:', mensagem);
+                    alert(mensagem);
                     setFormData({
                         nome: '',
                         email: '',
@@ -342,9 +358,10 @@ export default function Admin() {
                 },
                 body: JSON.stringify({ status: newStatus }),
             });
-            if (!response.ok) {
-                console.error('Erro ao cadastrar usuário:', response.status);
-                return;
+            if (response.status !== 200) {
+                const { mensagem } = await response.json();
+                alert(mensagem);
+                console.error('Erro ao cadastrar usuário:', mensagem);
             }
             setReload(!reload);
         } catch (err) {
@@ -372,9 +389,10 @@ export default function Admin() {
                 },
                 body: JSON.stringify({ tecnico_id: tecnicoId }),
             });
-            if (!response.ok) {
-                console.error('Erro ao cadastrar usuário:', response.status);
-                return;
+            if (response.status !== 200) {
+                const { mensagem } = await response.json();
+                alert(mensagem);
+                console.error('Erro ao cadastrar usuário:', mensagem);
             }
             setReload(!reload);
             setChamadoSelecionado(null);
@@ -383,21 +401,121 @@ export default function Admin() {
         }
     }
 
+    async function gerarPDF() {
+        if (!chamadoSelecionadoPdf) return;
+        const token = document.cookie
+            .split('; ')
+            .find((row) => row.startsWith('token='))
+            ?.split('=')[1];
+        try {
+            const response = await fetch(API.GENERATE_PDF(chamadoSelecionadoPdf), {
+                method: 'GET',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            if (response.status !== 200) {
+                const { mensagem } = await response.json();
+                alert(mensagem);
+                console.error('Erro ao gerar PDF:', mensagem);
+            }
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `chamado_${chamadoSelecionadoPdf}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error('Erro na requisição:', err);
+            alert('Erro ao gerar PDF do chamado.');
+        }
+    }
+
+    async function gerarPDFTodosChamados() {
+        const token = document.cookie
+            .split('; ')
+            .find((row) => row.startsWith('token='))
+            ?.split('=')[1];
+        try {
+            const response = await fetch(API.GENERATE_ALL_TICKETS_PDF, {
+                method: 'GET',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            if (response.status !== 200) {
+                const { mensagem } = await response.json();
+                alert(mensagem);
+                console.error('Erro ao gerar PDF:', mensagem);
+            }
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', 'todos_chamados.pdf');
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error('Erro na requisição:', err);
+            alert('Erro ao gerar PDF dos chamados.');
+        }
+    }
+
     function GraficoDeChamados({ data }) {
+        // Gera cor fixa a partir do nome da categoria
+        const categoriaParaCor = {};
+        data.forEach((item) => {
+            categoriaParaCor[item.categoria] = stringToColor(item.categoria);
+        });
+
+        // Legend customizado
+        const renderLegend = () => (
+            <ul className="flex flex-wrap gap-4 justify-center mt-2">
+                {Object.entries(categoriaParaCor).map(([categoria, cor]) => (
+                    <li key={categoria} className="flex items-center gap-2">
+                        <span style={{ backgroundColor: cor }} className="w-4 h-4 rounded-sm inline-block" />
+                        <span className="text-gray-900">{categoria}</span>
+                    </li>
+                ))}
+            </ul>
+        );
+
         return (
-            <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={data}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="categoria" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="quantidade" fill="#d88484ff" />
+            <ResponsiveContainer width="100%" height={320}>
+                <BarChart data={data} margin={{ top: 20, right: 30, left: 0, bottom: 10 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                    <XAxis dataKey="categoria" tick={{ fontSize: 12 }} />
+                    <YAxis tickFormatter={(v) => v.toLocaleString()} />
+                    <Tooltip
+                        contentStyle={{ backgroundColor: '#fff', borderRadius: '8px', border: '1px solid #ddd' }}
+                        labelStyle={{ fontWeight: 'bold', color: '#191b1fff' }}
+                    />
+                    <Legend content={renderLegend} />
+                    <Bar dataKey="quantidade" radius={[6, 6, 0, 0]}>
+                        {data.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={categoriaParaCor[entry.categoria]} />
+                        ))}
+                        <LabelList dataKey="quantidade" position="top" />
+                    </Bar>
                 </BarChart>
             </ResponsiveContainer>
         );
     }
 
+    // Função auxiliar para gerar cor única por categoria
+    function stringToColor(str) {
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+            hash = str.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        const hue = Math.abs(hash) % 360;
+        return `hsl(${hue}, 70%, 50%)`;
+    }
     // Dados simulados para o dashboard
     const estatisticas = {
         totalUsuarios: usuarios.filter((user) => user.funcao === 'usuario').length,
@@ -458,9 +576,10 @@ export default function Admin() {
                     },
                 });
 
-                if (!response.ok) {
-                    console.error('Erro ao buscar tickets:', response.status);
-                    return;
+                if (response.status !== 200) {
+                    const { mensagem } = await response.json();
+                    alert(mensagem);
+                    console.error('Erro ao buscar tickets:', mensagem);
                 }
                 const data = await response.json();
                 setChamados(data);
@@ -539,9 +658,10 @@ export default function Admin() {
                 },
                 body: JSON.stringify(body),
             });
-            if (!response.ok) {
-                alert('Erro ao atualizar usuário.');
-                return;
+            if (response.status !== 200) {
+                const { mensagem } = await response.json();
+                alert(mensagem);
+                console.error('Erro ao atualizar usuário:', mensagem);
             }
             setShowEditUserModal(false);
             setReload((r) => !r);
@@ -587,8 +707,8 @@ export default function Admin() {
             const mensagem = await response.json();
 
             if (!response.ok) {
-                setError('Erro ao criar chamado.');
-                alert(mensagem.mensagem);
+                setError(mensagem.mensagem || 'Erro ao criar chamado.');
+                alert(mensagem.mensagem || 'Erro ao criar chamado.');
                 setLoading(false);
                 return;
             }
@@ -596,7 +716,7 @@ export default function Admin() {
             setSuccess(true);
             setFormData({ equipamentoId: '', categoria: '', descricao: '' });
         } catch (err) {
-            setError('Erro na requisição.');
+            setError(err?.message || 'Erro na requisição.');
         } finally {
             setLoading(false);
         }
@@ -644,7 +764,7 @@ export default function Admin() {
                                     : 'hover:bg-gray-100'
                             }`}
                         >
-                            <PieChart className="h-5 w-5" />
+                            <NotepadText className="h-5 w-5" />
                             <span>Relatórios</span>
                         </button>
                         <button
@@ -664,7 +784,7 @@ export default function Admin() {
                                     : 'hover:bg-gray-100'
                             }`}
                         >
-                            <PieChart className="h-5 w-5" />
+                            <Layers2 className="h-5 w-5" />
                             <span>Categorias</span>
                         </button>
                         <button
@@ -850,9 +970,9 @@ export default function Admin() {
                                                 {showEditUserModal && (
                                                     <div className="fixed inset-0 backdrop-blur-xs bg-black/20 flex items-center justify-center z-50 p-4">
                                                         <div className="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto border border-gray-200">
-                                                            <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-blue-100 rounded-t-xl">
+                                                            <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-red-50 to-red-100 rounded-t-xl">
                                                                 <h2 className="text-xl font-semibold text-gray-800 flex items-center">
-                                                                    <Settings className="h-5 w-5 mr-2 text-blue-600" />
+                                                                    <Settings className="h-5 w-5 mr-2 text-red-600" />
                                                                     Editar Usuário
                                                                 </h2>
                                                                 <button
@@ -876,7 +996,7 @@ export default function Admin() {
                                                                         value={editUserData.nome}
                                                                         onChange={handleEditInputChange}
                                                                         required
-                                                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-700"
+                                                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all text-gray-700"
                                                                         placeholder="Digite o nome completo"
                                                                     />
                                                                 </div>
@@ -890,7 +1010,7 @@ export default function Admin() {
                                                                         value={editUserData.email}
                                                                         onChange={handleEditInputChange}
                                                                         required
-                                                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-700"
+                                                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all text-gray-700"
                                                                         placeholder="usuario@email.com"
                                                                     />
                                                                 </div>
@@ -903,7 +1023,7 @@ export default function Admin() {
                                                                         name="senha"
                                                                         value={editUserData.senha}
                                                                         onChange={handleEditInputChange}
-                                                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-700"
+                                                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all text-gray-700"
                                                                         placeholder="Digite a nova senha"
                                                                     />
                                                                 </div>
@@ -915,7 +1035,7 @@ export default function Admin() {
                                                                         name="funcao"
                                                                         value={editUserData.funcao}
                                                                         onChange={handleEditInputChange}
-                                                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-500"
+                                                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all text-gray-500"
                                                                         required
                                                                     >
                                                                         <option value="usuario">Usuário</option>
@@ -932,7 +1052,7 @@ export default function Admin() {
                                                                             name="categoria"
                                                                             value={editUserData.categoria}
                                                                             onChange={handleEditInputChange}
-                                                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-500"
+                                                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all text-gray-500"
                                                                         >
                                                                             <option value="">
                                                                                 Selecione uma categoria
@@ -955,7 +1075,7 @@ export default function Admin() {
                                                                     </button>
                                                                     <button
                                                                         type="submit"
-                                                                        className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all font-medium shadow-md hover:shadow-lg"
+                                                                        className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all font-medium shadow-md hover:shadow-lg"
                                                                     >
                                                                         Salvar Alterações
                                                                     </button>
@@ -965,13 +1085,24 @@ export default function Admin() {
                                                     </div>
                                                 )}
                                                 {usuario.status === 'ativo' && (
-                                                    <button
-                                                        className="text-red-600 hover:text-red-900 text-sm font-medium flex items-center"
-                                                        onClick={() => updataStatus(usuario.id, 'inativo')}
-                                                    >
-                                                        <User className="h-3 w-3 mr-1" />
-                                                        Desativar
-                                                    </button>
+                                                    usuario.email === 'admin@email.com' ? (
+                                                        <button
+                                                            className="text-gray-400 cursor-not-allowed text-sm font-medium flex items-center"
+                                                            title="Este usuário administrador não pode ser desativado."
+                                                            disabled
+                                                        >
+                                                            <User className="h-3 w-3 mr-1" />
+                                                            Desativar
+                                                        </button>
+                                                    ) : (
+                                                        <button
+                                                            className="text-red-600 hover:text-red-900 text-sm font-medium flex items-center"
+                                                            onClick={() => updataStatus(usuario.id, 'inativo')}
+                                                        >
+                                                            <User className="h-3 w-3 mr-1" />
+                                                            Desativar
+                                                        </button>
+                                                    )
                                                 )}
                                                 {usuario.status === 'inativo' && (
                                                     <button
@@ -996,82 +1127,52 @@ export default function Admin() {
                 {activeTab === 'relatorios' && (
                     <div className="bg-white rounded-xl shadow-md p-6 mb-8">
                         <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
-                            <PieChart className="h-5 w-5 mr-2 text-green-600" />
+                            <NotepadText className="h-5 w-5 mr-2 text-green-600" />
                             Relatórios e Análises
                         </h2>
 
-                        {/* Filtros e busca */}
-                        <div className="flex flex-wrap gap-4 mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                            <div className="flex-1 min-w-[200px]">
-                                <div className="relative">
-                                    <input
-                                        type="text"
-                                        placeholder="Filtrar relatórios..."
-                                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                                    />
-                                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-                                </div>
-                            </div>
-                            <div className="w-auto">
-                                <button className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">
-                                    <Download className="h-4 w-4 text-gray-500" />
-                                    <span>Exportar</span>
+                        <div className="flex flex-col md:flex-row gap-4 mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200 items-center">
+                            <button
+                                className="flex items-center space-x-2 px-4 py-2 border border-green-500 text-green-600 rounded-md hover:bg-green-50 transition-colors font-medium"
+                                onClick={gerarPDFTodosChamados}
+                            >
+                                <Download className="h-4 w-4 text-green-600" />
+                                <span>Gerar PDF de Todos os Chamados</span>
+                            </button>
+                            <div className="flex flex-col md:flex-row gap-2 items-center">
+                                <button
+                                    className="flex items-center space-x-2 px-4 py-2 border border-red-500 text-red-600 rounded-md hover:bg-red-50 transition-colors font-medium"
+                                    onClick={() => setShowSelectChamado((prev) => !prev)}
+                                >
+                                    <Download className="h-4 w-4 text-red-600" />
+                                    <span>Gerar PDF de um Chamado</span>
                                 </button>
+                                {showSelectChamado && (
+                                    <select
+                                        className="ml-2 px-3 py-2 border border-gray-300 rounded-md text-gray-700 min-w-[200px]"
+                                        value={chamadoSelecionadoPdf}
+                                        onChange={(e) => setChamadoSelecionadoPdf(e.target.value)}
+                                    >
+                                        <option value="">Selecione um chamado</option>
+                                        {chamados.map((chamado) => (
+                                            <option key={chamado.id} value={chamado.id}>
+                                                #{chamado.id} - {chamado.titulo} - {chamado.descricao?.slice(0, 40)}
+                                            </option>
+                                        ))}
+                                    </select>
+                                )}
+                                {showSelectChamado && chamadoSelecionadoPdf && (
+                                    <button
+                                        className="ml-2 px-4 py-2 border border-green-500 text-green-600 rounded-md hover:bg-green-50 transition-colors font-medium"
+                                        onClick={gerarPDF}
+                                    >
+                                        Gerar PDF
+                                    </button>
+                                )}
                             </div>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="border rounded-lg p-6 hover:shadow-md transition-shadow">
-                                <div className="flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4 mx-auto">
-                                    <BarChart2 className="h-8 w-8 text-red-500" />
-                                </div>
-                                <h3 className="text-lg font-medium text-center mb-2">Chamados por Status</h3>
-                                <p className="text-sm text-gray-600 text-center mb-4">
-                                    Visualize a distribuição de chamados por status atual.
-                                </p>
-                                <button className="w-full py-2 px-4 border border-green-500 text-green-600 rounded-md hover:bg-green-50 transition-colors">
-                                    Gerar Relatório
-                                </button>
-                            </div>
 
-                            <div className="border rounded-lg p-6 hover:shadow-md transition-shadow">
-                                <div className="flex items-center justify-center h-16 w-16 rounded-full bg-blue-100 mb-4 mx-auto">
-                                    <Clock className="h-8 w-8 text-blue-500" />
-                                </div>
-                                <h3 className="text-lg font-medium text-center mb-2">Tempo Médio de Resolução</h3>
-                                <p className="text-sm text-gray-600 text-center mb-4">
-                                    Analise o tempo médio de resolução por categoria e técnico.
-                                </p>
-                                <button className="w-full py-2 px-4 border border-green-500 text-green-600 rounded-md hover:bg-green-50 transition-colors">
-                                    Gerar Relatório
-                                </button>
-                            </div>
-
-                            <div className="border rounded-lg p-6 hover:shadow-md transition-shadow">
-                                <div className="flex items-center justify-center h-16 w-16 rounded-full bg-yellow-100 mb-4 mx-auto">
-                                    <Users className="h-8 w-8 text-yellow-500" />
-                                </div>
-                                <h3 className="text-lg font-medium text-center mb-2">Chamados por Técnico</h3>
-                                <p className="text-sm text-gray-600 text-center mb-4">
-                                    Compare o desempenho e volume de chamados por técnico.
-                                </p>
-                                <button className="w-full py-2 px-4 border border-green-500 text-green-600 rounded-md hover:bg-green-50 transition-colors">
-                                    Gerar Relatório
-                                </button>
-                            </div>
-
-                            <div className="border rounded-lg p-6 hover:shadow-md transition-shadow">
-                                <div className="flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-4 mx-auto">
-                                    <PieChart className="h-8 w-8 text-green-500" />
-                                </div>
-                                <h3 className="text-lg font-medium text-center mb-2">Chamados por Categoria</h3>
-                                <p className="text-sm text-gray-600 text-center mb-4">
-                                    Analise a distribuição de chamados por categoria e tipo.
-                                </p>
-                                <button className="w-full py-2 px-4 border border-green-500 text-green-600 rounded-md hover:bg-green-50 transition-colors">
-                                    Gerar Relatório
-                                </button>
-                            </div>
-                        </div>
+                        {/* Aqui você pode manter ou remover os cards antigos de relatório, se quiser */}
                     </div>
                 )}
 
@@ -1107,7 +1208,11 @@ export default function Admin() {
                                             type="text"
                                             name="equipamentoId"
                                             value={formChamadoData.equipamentoId}
-                                            onChange={handleChange}
+                                            onChange={(e) => {
+                                                if (e.target.value.length <= 10 && /^\d*$/.test(e.target.value)) {
+                                                    handleChange(e);
+                                                }
+                                            }}
                                             placeholder="Digite o Id do equipamento"
                                             maxLength={10}
                                             className="input-field text-gray-700"
@@ -1122,7 +1227,7 @@ export default function Admin() {
                                             name="categoria"
                                             value={formChamadoData.categoria}
                                             onChange={handleChange}
-                                            className="input-field text-gray-700 bg-red-800 hover:bg-red-200"
+                                            className="input-field text-gray-700"
                                         >
                                             <option value="">Selecione uma categoria</option>
                                             {categorias.map((categoria) => (
@@ -1179,7 +1284,7 @@ export default function Admin() {
                 {activeTab === 'categorias' && (
                     <div className="bg-white rounded-xl shadow-md p-6 mb-8">
                         <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
-                            <PieChart className="h-5 w-5 mr-2 text-pink-600" />
+                            <Layers2 className="h-5 w-5 mr-2 text-pink-600" />
                             Gerenciamento de Categorias
                         </h2>
 
@@ -1222,7 +1327,7 @@ export default function Admin() {
                                         name="categoriaDescricao"
                                         value={categoriaDescricao}
                                         onChange={handleInputChangeCategoria}
-                                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-gray-700 focus:ring-red-500 focus:border-red-500 break-words w-64"
+                                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-gray-700 focus:ring-red-500 focus:border-red-500 break-words"
                                         placeholder="Ex: Problemas com computadores e periféricos"
                                         maxLength={150}
                                         required
@@ -1443,9 +1548,9 @@ export default function Admin() {
                                         </div>
 
                                         {/* Descrição */}
-                                        <div className='w-full'>
+                                        <div>
                                             <h4 className="text-sm font-medium text-gray-700 mb-2">Descrição</h4>
-                                            <p className="text-gray-600 bg-gray-50 p-4 rounded-lg break-words">
+                                            <p className="text-gray-600 bg-gray-50 p-4 rounded-lg">
                                                 {chamadoSelecionado.descricao}
                                             </p>
                                         </div>
@@ -1479,28 +1584,8 @@ export default function Admin() {
                                             </select>
                                         </div>
 
-                                        <div className="flex justify-start mt-2 gap-3 ">
-                                            <button
-                                                type='button'
-                                                onClick={() => ''}
-                                                className={`flex items-center gap-2 px-4 py-2 rounded-2xl transition cursor-pointer
-                                                    ${
-                                                        loading
-                                                            ? 'bg-gray-300 cursor-not-allowed text-gray-600'
-                                                            : 'bg-gray-600 hover:bg-gray-500 text-white'
-                                                    }`}
-                                        
-                                            >
-                                                {loading ? (
-                                                    <span className="animate-pulse">Excluindo...</span>
-                                                ) : (
-                                                    <>
-                                                        <Trash2 size={14} />
-                                                        Excluir
-                                                    </>
-                                                )}
-                                                
-                                            </button>
+                                        <div className="flex justify-end mt-2">
+                                            {/*TODO */}
                                             <button
                                                 type="button"
                                                 onClick={() => setTechnician(tecnicoId, chamadoSelecionado.id)}
