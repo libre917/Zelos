@@ -34,6 +34,8 @@ import {
     User,
     FileText,
     Send,
+    NotepadText,
+    Layers2
 } from 'lucide-react';
 import { API } from '../../../config/routes';
 
@@ -755,7 +757,7 @@ export default function Admin() {
                                     : 'hover:bg-gray-100'
                             }`}
                         >
-                            <PieChart className="h-5 w-5" />
+                            <NotepadText className="h-5 w-5" />
                             <span>Relatórios</span>
                         </button>
                         <button
@@ -775,7 +777,7 @@ export default function Admin() {
                                     : 'hover:bg-gray-100'
                             }`}
                         >
-                            <PieChart className="h-5 w-5" />
+                            <Layers2 className="h-5 w-5" />
                             <span>Categorias</span>
                         </button>
                         <button
@@ -959,9 +961,9 @@ export default function Admin() {
                                                 {showEditUserModal && (
                                                     <div className="fixed inset-0 backdrop-blur-xs bg-black/20 flex items-center justify-center z-50 p-4">
                                                         <div className="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto border border-gray-200">
-                                                            <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-blue-100 rounded-t-xl">
+                                                            <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-red-50 to-red-100 rounded-t-xl">
                                                                 <h2 className="text-xl font-semibold text-gray-800 flex items-center">
-                                                                    <Settings className="h-5 w-5 mr-2 text-blue-600" />
+                                                                    <Settings className="h-5 w-5 mr-2 text-red-600" />
                                                                     Editar Usuário
                                                                 </h2>
                                                                 <button
@@ -985,7 +987,7 @@ export default function Admin() {
                                                                         value={editUserData.nome}
                                                                         onChange={handleEditInputChange}
                                                                         required
-                                                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-700"
+                                                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all text-gray-700"
                                                                         placeholder="Digite o nome completo"
                                                                     />
                                                                 </div>
@@ -999,7 +1001,7 @@ export default function Admin() {
                                                                         value={editUserData.email}
                                                                         onChange={handleEditInputChange}
                                                                         required
-                                                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-700"
+                                                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all text-gray-700"
                                                                         placeholder="usuario@email.com"
                                                                     />
                                                                 </div>
@@ -1012,7 +1014,7 @@ export default function Admin() {
                                                                         name="senha"
                                                                         value={editUserData.senha}
                                                                         onChange={handleEditInputChange}
-                                                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-700"
+                                                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all text-gray-700"
                                                                         placeholder="Digite a nova senha"
                                                                     />
                                                                 </div>
@@ -1024,7 +1026,7 @@ export default function Admin() {
                                                                         name="funcao"
                                                                         value={editUserData.funcao}
                                                                         onChange={handleEditInputChange}
-                                                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-500"
+                                                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all text-gray-500"
                                                                         required
                                                                     >
                                                                         <option value="usuario">Usuário</option>
@@ -1041,7 +1043,7 @@ export default function Admin() {
                                                                             name="categoria"
                                                                             value={editUserData.categoria}
                                                                             onChange={handleEditInputChange}
-                                                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-500"
+                                                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all text-gray-500"
                                                                         >
                                                                             <option value="">
                                                                                 Selecione uma categoria
@@ -1064,7 +1066,7 @@ export default function Admin() {
                                                                     </button>
                                                                     <button
                                                                         type="submit"
-                                                                        className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all font-medium shadow-md hover:shadow-lg"
+                                                                        className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all font-medium shadow-md hover:shadow-lg"
                                                                     >
                                                                         Salvar Alterações
                                                                     </button>
@@ -1104,7 +1106,7 @@ export default function Admin() {
                 {activeTab === 'relatorios' && (
                     <div className="bg-white rounded-xl shadow-md p-6 mb-8">
                         <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
-                            <PieChart className="h-5 w-5 mr-2 text-green-600" />
+                            <NotepadText className="h-5 w-5 mr-2 text-green-600" />
                             Relatórios e Análises
                         </h2>
 
@@ -1118,10 +1120,10 @@ export default function Admin() {
                             </button>
                             <div className="flex flex-col md:flex-row gap-2 items-center">
                                 <button
-                                    className="flex items-center space-x-2 px-4 py-2 border border-blue-500 text-blue-600 rounded-md hover:bg-blue-50 transition-colors font-medium"
+                                    className="flex items-center space-x-2 px-4 py-2 border border-red-500 text-red-600 rounded-md hover:bg-red-50 transition-colors font-medium"
                                     onClick={() => setShowSelectChamado((prev) => !prev)}
                                 >
-                                    <Download className="h-4 w-4 text-blue-600" />
+                                    <Download className="h-4 w-4 text-red-600" />
                                     <span>Gerar PDF de um Chamado</span>
                                 </button>
                                 {showSelectChamado && (
@@ -1259,7 +1261,7 @@ export default function Admin() {
                 {activeTab === 'categorias' && (
                     <div className="bg-white rounded-xl shadow-md p-6 mb-8">
                         <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
-                            <PieChart className="h-5 w-5 mr-2 text-pink-600" />
+                            <Layers2 className="h-5 w-5 mr-2 text-pink-600" />
                             Gerenciamento de Categorias
                         </h2>
 
