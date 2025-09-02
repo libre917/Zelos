@@ -425,7 +425,7 @@ export default function Tecnico() {
 
                                     <div>
                                         <h4 className="text-sm font-medium text-gray-700 mb-2">Descrição</h4>
-                                        <p className="text-gray-600 bg-gray-50 p-4 rounded-lg">
+                                        <p className="text-gray-600 bg-gray-50 p-4 rounded-lg break-words">
                                             {chamadoSelecionado.descricao}
                                         </p>
                                     </div>
