@@ -530,7 +530,7 @@ export default function Tecnico() {
                                         <div className="border-t pt-4">
                                             <button
                                                 onClick={handleCandidatar}
-                                                className="w-full px-4 py-3 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+                                                className="w-full px-4 py-3 rounded-lg bg-red-600 text-white font-medium hover:bg-red-700 transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2"
                                             >
                                                 <Send size={16} />
                                                 Atribuir-se ao Chamado
