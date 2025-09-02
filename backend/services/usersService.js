@@ -101,7 +101,7 @@ export async function createTechnician(id_admin, data, id_pool) {
         const userData = new User(data);
 
         validarEmail(userData.email);
-        validarRole(userData.funcao, ['tecnico']);
+        await validarRole(userData.funcao, ['tecnico']);
         await checkEmailDuplicado(userData.email);
 
         userData.senha = await generateHashedPassword(userData.senha);

@@ -489,9 +489,10 @@ export default function Tecnico() {
                                                     rows="5"
                                                     value={apontamento}
                                                     onChange={(e) => setApontamento(e.target.value)}
+                                                    maxLength={500}
                                                     placeholder="Descreva o que foi feito para resolver o chamado, incluindo as ações tomadas, problemas encontrados e a solução aplicada..."
                                                 />
-                                                <p className="text-xs text-gray-500 mt-1">
+                                                <p className="text-xs text-gray-500 mt-1" >
                                                     {apontamento.length}/500 caracteres
                                                 </p>
                                             </div>
