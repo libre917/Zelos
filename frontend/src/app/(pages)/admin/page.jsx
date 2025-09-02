@@ -35,7 +35,8 @@ import {
     FileText,
     Send,
     NotepadText,
-    Layers2
+    Layers2,
+    Trash2,
 } from 'lucide-react';
 import { API } from '../../../config/routes';
 
@@ -1205,7 +1206,7 @@ export default function Admin() {
                                             name="categoria"
                                             value={formChamadoData.categoria}
                                             onChange={handleChange}
-                                            className="input-field text-gray-700"
+                                            className="input-field text-gray-700 bg-red-800 hover:bg-red-200"
                                         >
                                             <option value="">Selecione uma categoria</option>
                                             {categorias.map((categoria) => (
@@ -1524,9 +1525,9 @@ export default function Admin() {
                                         </div>
 
                                         {/* Descrição */}
-                                        <div>
+                                        <div className='w-full'>
                                             <h4 className="text-sm font-medium text-gray-700 mb-2">Descrição</h4>
-                                            <p className="text-gray-600 bg-gray-50 p-4 rounded-lg">
+                                            <p className="text-gray-600 bg-gray-50 p-4 rounded-lg break-words">
                                                 {chamadoSelecionado.descricao}
                                             </p>
                                         </div>
@@ -1560,8 +1561,28 @@ export default function Admin() {
                                             </select>
                                         </div>
 
-                                        <div className="flex justify-end mt-2">
-                                            {/*TODO */}
+                                        <div className="flex justify-start mt-2 gap-3 ">
+                                            <button
+                                                type='button'
+                                                onClick={() => ''}
+                                                className={`flex items-center gap-2 px-4 py-2 rounded-2xl transition cursor-pointer
+                                                    ${
+                                                        loading
+                                                            ? 'bg-gray-300 cursor-not-allowed text-gray-600'
+                                                            : 'bg-gray-600 hover:bg-gray-500 text-white'
+                                                    }`}
+                                        
+                                            >
+                                                {loading ? (
+                                                    <span className="animate-pulse">Excluindo...</span>
+                                                ) : (
+                                                    <>
+                                                        <Trash2 size={14} />
+                                                        Excluir
+                                                    </>
+                                                )}
+                                                
+                                            </button>
                                             <button
                                                 type="button"
                                                 onClick={() => setTechnician(tecnicoId, chamadoSelecionado.id)}
