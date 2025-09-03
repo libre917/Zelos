@@ -149,15 +149,11 @@ JWT_SECRET=sua_chave_secreta_super_segura_aqui
 # Application
 PORT=8080
 FRONTEND_URL=http://localhost:3000
-
-# Active Directory (Opcional)
-AD_URL=ldap://10.189.87.7:389
-AD_BASE_DN=ou=Funcionarios,ou=Usuarios123,dc=educ123,dc=sp,dc=senai,dc=br
 ```
 
 #### Frontend (`.env.local`)
 ```env
-NEXT_PUBLIC_API_URL=http://localhost:8080
+NEXT_PUBLIC_API_URL=http://localhost:8080 (A porta tem que estar de acordo com a porta do backend)
 ```
 
 ### Inicialização dos Serviços
@@ -325,34 +321,14 @@ CREATE TABLE apontamentos (
 - **🔧 Técnico**: Gerenciar chamados e apontamentos  
 - **👤 Usuário**: Criar e acompanhar próprios chamados
 
-### Integração Active Directory
-```javascript
-// Configuração LDAP para SENAI
-const ldapConfig = {
-    url: 'ldap://10.189.87.7:389',
-    baseDN: 'ou=Funcionarios,ou=Usuarios123,dc=educ123,dc=sp,dc=senai,dc=br',
-    filter: '(sAMAccountName={{username}})'
-};
-```
-
 ---
 
 ## 💻 Desenvolvimento
 
 ### Scripts Disponíveis
 ```bash
-# Desenvolvimento
-npm run dev          # Inicia ambos os serviços
-npm run startBack    # Apenas backend
-npm run startFront   # Apenas frontend
-
-# Produção
-npm run build        # Build do projeto
-npm run start        # Iniciar produção
-
-# Utilitários
-npm run test         # Executar testes
-npm run lint         # Verificar código
+npm run startBack   
+npm run startFront 
 ```
 
 ### Padrões de Código
@@ -369,53 +345,6 @@ curl http://localhost:8080/health
 
 ---
 
-## 🚀 Deploy
-
-### Docker
-```bash
-# Build da imagem
-docker build -t zelos .
-
-# Executar container
-docker run -p 3000:3000 -p 8080:8080 zelos
-```
-
-### Variáveis de Produção
-```env
-NODE_ENV=production
-DB_HOST=seu_host_producao
-JWT_SECRET=chave_super_segura_producao
-```
-
----
-
-## 🤝 Contribuição
-
-### Como Contribuir
-1. Fork o projeto
-2. Crie sua feature branch (`git checkout -b feature/NovaFuncionalidade`)
-3. Commit suas mudanças (`git commit -m 'Adiciona nova funcionalidade'`)
-4. Push para a branch (`git push origin feature/NovaFuncionalidade`)
-5. Abra um Pull Request
-
-### Padrões de Commit
-```
-feat: adiciona nova funcionalidade
-fix: corrige bug específico
-docs: atualiza documentação
-style: formatação de código
-refactor: refatoração de código
-test: adiciona testes
-```
-
----
-
-## 📄 Licença
-
-Este projeto está sob a licença **MIT**. Veja o arquivo [LICENSE](LICENSE) para detalhes.
-
----
-
 ## 👥 Equipe
 
 - **Lucas Soalheiro** - *Desenvolvedor Backend*
@@ -423,17 +352,7 @@ Este projeto está sob a licença **MIT**. Veja o arquivo [LICENSE](LICENSE) par
 - **Lucas Barberini** - *Arquiteto de Software*
 
 ---
-
-## 📞 Suporte
-
-Para dúvidas ou sugestões:
-- 📧 Email: suporte@senai.br
-- 🌐 Portal: [SENAI Armando de Arruda Pereira](https://senai.br)
-- 📱 Issues: [GitHub Issues](https://github.com/libre917/Zelos/issues)
-
----
-
 <div align="center">
-  <p>Desenvolvido com ❤️ pela equipe SENAI</p>
-  <p>© 2024 Escola SENAI Armando de Arruda Pereira</p>
+  <p>Desenvolvido pelos alunos do SENAI</p>
+  <p>© 2025 Escola SENAI Armando de Arruda Pereira</p>
 </div>

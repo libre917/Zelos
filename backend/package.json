@@ -21,8 +21,6 @@
     "ldapjs": "^3.0.7",
     "multer": "^1.4.5-lts.2",
     "mysql2": "^3.14.1",
-    "passport": "^0.7.0",
-    "passport-ldapauth": "^3.0.1",
     "pdfkit": "^0.17.1"
   }
 }
