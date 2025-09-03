@@ -470,21 +470,6 @@ KEY `tecnico_id` (`tecnico_id`)
 KEY `usuario_id` (`usuario_id`)
 KEY `chamado_id` (`chamado_id`)
 ```
-#### `apontamentos`
-```sql
-CREATE TABLE apontamentos (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    chamado_id INT NOT NULL,
-    tecnico_id INT NOT NULL,
-    descricao TEXT,
-    comeco TIMESTAMP NOT NULL,
-    fim TIMESTAMP NULL,
-    duracao INT AS (TIMESTAMPDIFF(SECOND, comeco, fim)) STORED,
-    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (chamado_id) REFERENCES chamados(id),
-    FOREIGN KEY (tecnico_id) REFERENCES usuarios(id)
-);
-```
 
 ---
 
