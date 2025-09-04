@@ -36,9 +36,10 @@ import {
     Send,
     NotepadText,
     Layers2,
-    Trash2
+    Trash2,
 } from 'lucide-react';
 import { API } from '../../../config/routes';
+import { data } from 'autoprefixer';
 
 export default function Admin() {
     const router = useRouter();
@@ -52,6 +53,8 @@ export default function Admin() {
     const [categoriasChamados, setCategoriasChamados] = useState([]);
     const [loadingUsers, setLoadingUsers] = useState(true);
     const [chamadoSelecionado, setChamadoSelecionado] = useState(null);
+    const [apontamentos, setApontamentos] = useState([]);
+    const [loadingApontamentos, setLoadingApontamentos] = useState(false);
     const [chamados, setChamados] = useState([]);
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
@@ -590,9 +593,38 @@ export default function Admin() {
         })();
     }, [reload]);
 
-    const handleChamadoClick = (chamado) => {
+    const handleChamadoClick = async (chamado) => {
         setChamadoSelecionado(chamado);
+        setApontamentos([]);
+        if (chamado.status === 'concluido') {
+            setLoadingApontamentos(true);
+            try {
+                const token =
+                    localStorage.getItem('token') ||
+                    document.cookie
+                        .split('; ')
+                        .find((row) => row.startsWith('token='))
+                        ?.split('=')[1];
+                const apontamentosResponse = await fetch(API.GET_TICKET_NOTES(chamado.id), {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                if (apontamentosResponse.ok) {
+                    const data = await apontamentosResponse.json();
+                    setApontamentos(data);
+                } else {
+                    setApontamentos([]);
+                }
+            } catch (e) {
+                setApontamentos([]);
+            }
+            setLoadingApontamentos(false);
+        }
     };
+    
 
     const handleFecharDetalhes = () => {
         setChamadoSelecionado(null);
@@ -1084,8 +1116,8 @@ export default function Admin() {
                                                         </div>
                                                     </div>
                                                 )}
-                                                {usuario.status === 'ativo' && (
-                                                    usuario.email === 'admin@email.com' ? (
+                                                {usuario.status === 'ativo' &&
+                                                    (usuario.email === 'admin@email.com' ? (
                                                         <button
                                                             className="text-gray-400 cursor-not-allowed text-sm font-medium flex items-center"
                                                             title="Este usuário administrador não pode ser desativado."
@@ -1102,8 +1134,7 @@ export default function Admin() {
                                                             <User className="h-3 w-3 mr-1" />
                                                             Desativar
                                                         </button>
-                                                    )
-                                                )}
+                                                    ))}
                                                 {usuario.status === 'inativo' && (
                                                     <button
                                                         className="text-red-600 hover:text-red-900 text-sm font-medium flex items-center"
@@ -1555,58 +1586,95 @@ export default function Admin() {
                                             </p>
                                         </div>
 
-                                        <div>
-                                            <label
-                                                htmlFor="atribuir"
-                                                className="block text-sm font-medium text-gray-700"
-                                            >
-                                                Atribuir a um técnico
-                                            </label>
-
-                                            <select
-                                                id="atribuir"
-                                                value={tecnicoId}
-                                                onChange={(e) => setTecnicoId(e.target.value)}
-                                                className="mt-1 block w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-red-400 focus:border-red-400 transition outline-none bg-gray-50 shadow-sm text-black"
-                                            >
-                                                <option value="">Selecione um técnico</option>
-                                                {tecnicos
-                                                    .filter(
-                                                        (tecnico) =>
-                                                            tecnico.status === 'ativo' &&
-                                                            tecnico.categorys == chamadoSelecionado.tipo_id
-                                                    )
-                                                    .map((tecnico) => (
-                                                        <option key={tecnico.id} value={tecnico.id}>
-                                                            {tecnico.nome} ({tecnico.email})
-                                                        </option>
-                                                    ))}
-                                            </select>
-                                        </div>
-
-                                        <div className="flex justify-end mt-2">
-                                            {/*TODO */}
-                                            <button
-                                                type="button"
-                                                onClick={() => setTechnician(tecnicoId, chamadoSelecionado.id)}
-                                                disabled={loading}
-                                                className={`flex items-center gap-2 px-4 py-2 rounded-2xl transition cursor-pointer
-                                                    ${
-                                                        loading
-                                                            ? 'bg-gray-300 cursor-not-allowed text-gray-600'
-                                                            : 'bg-red-600 hover:bg-red-500 text-white'
-                                                    }`}
-                                            >
-                                                {loading ? (
-                                                    <span className="animate-pulse">Enviando...</span>
-                                                ) : (
-                                                    <>
-                                                        <Send size={14} />
-                                                        Enviar
-                                                    </>
-                                                )}
-                                            </button>
-                                        </div>
+                                        {chamadoSelecionado.status !== 'concluido' ? (
+                                            <>
+                                                <div>
+                                                    <label
+                                                        htmlFor="atribuir"
+                                                        className="block text-sm font-medium text-gray-700"
+                                                    >
+                                                        Atribuir a um técnico
+                                                    </label>
+                                                    <select
+                                                        id="atribuir"
+                                                        value={tecnicoId}
+                                                        onChange={(e) => setTecnicoId(e.target.value)}
+                                                        className="mt-1 block w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-red-400 focus:border-red-400 transition outline-none bg-gray-50 shadow-sm text-black"
+                                                    >
+                                                        <option value="">Selecione um técnico</option>
+                                                        {tecnicos
+                                                            .filter(
+                                                                (tecnico) =>
+                                                                    tecnico.status === 'ativo' &&
+                                                                    tecnico.categorys == chamadoSelecionado.tipo_id
+                                                            )
+                                                            .map((tecnico) => (
+                                                                <option key={tecnico.id} value={tecnico.id}>
+                                                                    {tecnico.nome} ({tecnico.email})
+                                                                </option>
+                                                            ))}
+                                                    </select>
+                                                </div>
+                                                <div className="flex justify-end mt-2">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setTechnician(tecnicoId, chamadoSelecionado.id)}
+                                                        disabled={loading}
+                                                        className={`flex items-center gap-2 px-4 py-2 rounded-2xl transition cursor-pointer
+                                                            ${
+                                                                loading
+                                                                    ? 'bg-gray-300 cursor-not-allowed text-gray-600'
+                                                                    : 'bg-red-600 hover:bg-red-500 text-white'
+                                                            }`}
+                                                    >
+                                                        {loading ? (
+                                                            <span className="animate-pulse">Enviando...</span>
+                                                        ) : (
+                                                            <>
+                                                                <Send size={14} />
+                                                                Enviar
+                                                            </>
+                                                        )}
+                                                    </button>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <div>
+                                                <h4 className="text-sm font-medium text-gray-700 mb-2 flex items-center">
+                                                    <FileText className="h-4 w-4 mr-1" />
+                                                    Apontamentos da Resolução
+                                                </h4>
+                                                <div className="bg-green-50 border-l-4 border-green-400 p-4 rounded-lg">
+                                                    {loadingApontamentos ? (
+                                                        <p className="text-green-700">Carregando apontamentos...</p>
+                                                    ) : apontamentos && apontamentos.length > 0 ? (
+                                                        <div className="space-y-3">
+                                                            {apontamentos.map((apontamento, index) => (
+                                                                <div
+                                                                    key={apontamento.id}
+                                                                    className="border-b border-green-200 last:border-b-0 pb-2 last:pb-0"
+                                                                >
+                                                                    <p className="text-green-700 whitespace-pre-wrap break-words">
+                                                                        {apontamento.descricao}
+                                                                    </p>
+                                                                    <p className="text-xs text-green-600 mt-1">
+                                                                        {new Date(apontamento.criado_em).toLocaleString(
+                                                                            'pt-BR'
+                                                                        )}
+                                                                        {apontamento.duracao &&
+                                                                            ` • Duração: ${Math.round(
+                                                                                apontamento.duracao / 60
+                                                                            )} min`}
+                                                                    </p>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    ) : (
+                                                        <p className="text-green-700">Nenhum apontamento encontrado.</p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             )}

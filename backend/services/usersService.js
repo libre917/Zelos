@@ -71,7 +71,7 @@ export async function createUser(id_admin, data) {
         const userData = new User(data);
 
         validarEmail(userData.email);
-        validarRole(userData.funcao, ['admin', 'usuario', 'tecnico']);
+        await validarRole(id_admin, ['admin']);
         await checkEmailDuplicado(userData.email);
 
         userData.senha = await generateHashedPassword(userData.senha);
@@ -101,7 +101,7 @@ export async function createTechnician(id_admin, data, id_pool) {
         const userData = new User(data);
 
         validarEmail(userData.email);
-        await validarRole(userData.funcao, ['tecnico']);
+        await validarRole(id_admin, ['admin']);
         await checkEmailDuplicado(userData.email);
 
         userData.senha = await generateHashedPassword(userData.senha);

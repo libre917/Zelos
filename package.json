@@ -4,5 +4,4 @@
         "back": "cd ./backend && node --watch app.js",
         "front": "cd ./frontend && npm run dev"
     }
-
 }
