@@ -5,17 +5,9 @@ import { useState, useEffect } from 'react';
 import {
     PlusCircle,
     FileText,
-    Paperclip,
-    Search,
     Filter,
     Calendar,
-    Layers,
-    MessageSquare,
-    Settings,
-    User,
     CheckCircle,
-    Clock,
-    AlertCircle,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { API } from '../../../config/routes';

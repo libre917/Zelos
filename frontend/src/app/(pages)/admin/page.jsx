@@ -19,24 +19,18 @@ import {
     PlusCircle,
     BarChart2,
     PieChart,
-    TrendingUp,
     Calendar,
     Settings,
     UserPlus,
-    Briefcase,
     Search,
     Download,
     Filter,
     Layers,
-    MessageSquare,
-    CheckCircle,
-    Clock,
     User,
     FileText,
     Send,
     NotepadText,
     Layers2,
-    Trash2,
 } from 'lucide-react';
 import { API } from '../../../config/routes';
 import { data } from 'autoprefixer';
@@ -1446,7 +1440,7 @@ export default function Admin() {
                                 } bg-white rounded-lg border border-gray-200`}
                             >
                                 {/* Lista de chamados */}
-                                <div className="space-y-4 p-4">
+                                <div className="space-y-4 p-4 h-[600px] overflow-y-auto">
                                     {chamados
                                         .filter((chamado) => {
                                             let statusOk = true;
@@ -1579,7 +1573,7 @@ export default function Admin() {
                                         </div>
 
                                         {/* Descrição */}
-                                        <div>
+                                        <div className='break-words'>
                                             <h4 className="text-sm font-medium text-gray-700 mb-2">Descrição</h4>
                                             <p className="text-gray-600 bg-gray-50 p-4 rounded-lg">
                                                 {chamadoSelecionado.descricao}
