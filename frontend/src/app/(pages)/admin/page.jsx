@@ -874,7 +874,7 @@ export default function Admin() {
                                         </p>
                                     </div>
                                     <div>
-                                        <p className="text-sm text-gray-500">Fechados</p>
+                                        <p className="text-sm text-gray-500">Concluídos</p>
                                         <p className="text-2xl font-bold text-gray-800">
                                             {estatisticas.chamadosFechados}
                                         </p>
