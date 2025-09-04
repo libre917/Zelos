@@ -183,12 +183,12 @@ export default function Usuario() {
     const chamadosFiltrados = chamados.filter((chamado) => {
         let statusOk = true;
         let categoriaOk = true;
-        if (statusFiltro && statusFiltro !== 'Todos') {
+        if (statusFiltro && statusFiltro !== '') {
             statusOk = chamado.status === statusFiltro;
         }
-        if (categoriaFiltro && categoriaFiltro !== 'Todas') {
+        if (categoriaFiltro && categoriaFiltro !== '') {
             // categoriaFiltro é o id da categoria
-            categoriaOk = String(chamado.tipo) === String(categoriaFiltro);
+            categoriaOk = String(chamado.tipo_id) === String(categoriaFiltro);
         }
         return statusOk && categoriaOk;
     });
@@ -213,15 +213,15 @@ export default function Usuario() {
                 </div>
             </header>
 
-            <div className="container mx-auto p-6 flex-1 overflow-auto">
+            <div className="container mx-auto p-6 flex-1">
                 {/* Menu de navegação principal */}
                 <div className="bg-white rounded-xl shadow-md p-4 mb-8">
                     <nav className="flex flex-wrap gap-4">
                         <button
                             onClick={() => setActiveTab('criarChamado')}
                             className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${activeTab === 'criarChamado'
-                                    ? 'bg-red-100 text-red-700 font-medium'
-                                    : 'hover:bg-gray-100'
+                                ? 'bg-red-100 text-red-700 font-medium'
+                                : 'hover:bg-gray-100'
                                 }`}
                         >
                             <PlusCircle className="h-5 w-5" />
@@ -230,8 +230,8 @@ export default function Usuario() {
                         <button
                             onClick={() => setActiveTab('meusChamados')}
                             className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${activeTab === 'meusChamados'
-                                    ? 'bg-yellow-100 text-yellow-700 font-medium'
-                                    : 'hover:bg-gray-100'
+                                ? 'bg-yellow-100 text-yellow-700 font-medium'
+                                : 'hover:bg-gray-100'
                                 }`}
                         >
                             <FileText className="h-5 w-5" />
@@ -349,7 +349,7 @@ export default function Usuario() {
                                     <option value="">Todos os status</option>
                                     <option value="pendente">Pendente</option>
                                     <option value="em andamento">Em Andamento</option>
-                                    <option value="concluído">Concluído</option>
+                                    <option value="concluido">Concluído</option>
                                 </select>
                             </div>
 

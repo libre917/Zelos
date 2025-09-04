@@ -179,6 +179,12 @@ export default function Tecnico() {
         setApontamento('');
     };
 
+    // Fecha detalhes ao trocar de aba
+    const handleTabChange = (tab) => {
+        setActiveTab(tab);
+        handleFecharDetalhes();
+    };
+
     return (
         <div className="flex flex-col h-screen bg-gray-50">
             <header className="bg-gradient-to-r from-red-600 to-red-800 text-white p-6 shadow-md">
@@ -188,11 +194,11 @@ export default function Tecnico() {
                 </div>
             </header>
 
-            <div className="container mx-auto p-6 flex-1 overflow-auto">
+            <div className="container mx-auto p-6 flex-1">
                 <div className="bg-white rounded-xl shadow-md p-4 mb-8">
                     <nav className="flex flex-wrap gap-4">
                         <button
-                            onClick={() => setActiveTab('pool')}
+                            onClick={() => handleTabChange('pool')}
                             className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${
                                 activeTab === 'pool' ? 'bg-red-100 text-red-700 font-medium' : 'hover:bg-gray-100'
                             }`}
@@ -201,7 +207,7 @@ export default function Tecnico() {
                             <span>Pool de Chamados</span>
                         </button>
                         <button
-                            onClick={() => setActiveTab('emProgresso')}
+                            onClick={() => handleTabChange('emProgresso')}
                             className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${
                                 activeTab === 'emProgresso'
                                     ? 'bg-yellow-100 text-yellow-700 font-medium'
@@ -212,7 +218,7 @@ export default function Tecnico() {
                             <span>Em Andamento</span>
                         </button>
                         <button
-                            onClick={() => setActiveTab('concluidos')}
+                            onClick={() => handleTabChange('concluidos')}
                             className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all text-gray-500 ${
                                 activeTab === 'concluidos'
                                     ? 'bg-green-100 text-green-700 font-medium'
@@ -241,7 +247,7 @@ export default function Tecnico() {
                                 chamadoSelecionado ? 'lg:w-1/2' : 'w-full'
                             } bg-white rounded-lg border border-gray-200`}
                         >
-                            <div className="space-y-4 p-4">
+                            <div className="space-y-4 p-4 h-[600px] overflow-y-auto">
                                 {chamados
                                     .filter((chamado) => {
                                         if (activeTab === 'pool')
