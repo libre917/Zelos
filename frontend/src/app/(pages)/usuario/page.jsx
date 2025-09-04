@@ -269,6 +269,7 @@ export default function Usuario() {
                                         name="equipamentoId"
                                         value={formData.equipamentoId}
                                         onChange={handleChange}
+                                        maxLength={10}
                                         placeholder="Digite o Id do equipamento"
                                         className="input-field text-gray-700"
                                     />
