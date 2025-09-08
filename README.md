@@ -491,8 +491,8 @@ KEY `chamado_id` (`chamado_id`)
 
 ### Scripts Disponíveis
 ```bash
-npm run startBack   
-npm run startFront 
+npm run back   
+npm run front 
 ```
 
 ### Padrões de Código
